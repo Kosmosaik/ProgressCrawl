@@ -90,3 +90,14 @@ button {
 .stack-variants { margin-left: 12px; padding-left: 8px; border-left: 1px solid #333; }
 .meta { opacity: 0.9; font-size: 0.95rem; }
 
+/* Rarity colors (accessible on dark bg) */
+.rarity { font-weight: 600; }
+.r-abundant { color: #9aa5b1; }   /* gray */
+.r-common   { color: #e0e4e8; }   /* light */
+.r-uncommon { color: #22c55e; }   /* green */
+.r-rare     { color: #3b82f6; }   /* blue */
+.r-exotic   { color: #a855f7; }   /* purple */
+
+/* Optional: subtle hover hint (keeps text-only style) */
+.inventory-stack > summary:hover { text-decoration: underline; }
+
