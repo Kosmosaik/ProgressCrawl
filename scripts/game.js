@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.22 - Fixeri Fixera");
+console.log("game.js loaded v0.23 - Better tooltip , improved expanded inventory list");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -31,6 +31,19 @@ function rollQuality() {
     return { item: n, weight: sublevelWeight(n) };
   }));
   return `${tier}${sub}`;
+}
+
+// Pretty labels for stats
+const STAT_LABELS = {
+  damage: "Damage",
+  attackSpeed: "Attack Speed",
+  block: "Block",
+  staminaUse: "Stamina Use",
+};
+function formatStatsReadable(stats = {}) {
+  const keys = Object.keys(stats);
+  if (!keys.length) return "";
+  return keys.map(k => `${STAT_LABELS[k] ?? k}: ${fmt(stats[k])}`).join(" , ");
 }
 
 function qualityMultiplier(q) {
@@ -76,6 +89,42 @@ function rollStats(statRanges, mult) {
   }
   return out;
 }
+
+// --- Tooltip system (custom, styled)
+const Tooltip = (() => {
+  const el = document.createElement("div");
+  el.id = "tooltip";
+  document.body.appendChild(el);
+
+  let visible = false;
+  function show(text, x, y) {
+    el.textContent = "";       // clear
+    el.textContent = text;     // simple text; swap to innerHTML if you want rich markup
+    el.style.left = (x + 12) + "px";
+    el.style.top  = (y + 12) + "px";
+    el.classList.add("show");
+    visible = true;
+  }
+  function move(x, y) {
+    if (!visible) return;
+    el.style.left = (x + 12) + "px";
+    el.style.top  = (y + 12) + "px";
+  }
+  function hide() {
+    el.classList.remove("show");
+    visible = false;
+  }
+
+  window.addEventListener("mousemove", e => move(e.clientX, e.clientY));
+  return {
+    bind(elm, textOrFn) {
+      const getText = (typeof textOrFn === "function") ? textOrFn : () => textOrFn;
+      elm.addEventListener("mouseenter", e => show(getText(), e.clientX, e.clientY));
+      elm.addEventListener("mousemove",  e => move(e.clientX, e.clientY));
+      elm.addEventListener("mouseleave", hide);
+    }
+  };
+})();
 
 // UI events
 lootButton.addEventListener("click", startLoot);
@@ -168,7 +217,13 @@ function renderInventory() {
     const summary = document.createElement("summary");
     // tooltip for the stack
     const first = stack.items[0] || {};
-    summary.title = `${name}\n${first.description || ""}`.trim();
+    Tooltip.bind(summary, () => {
+      const desc = first.description || "";
+      const qRange = summarizeQualityRange(stack.items);
+      return [name, desc, qRange ? `Quality Range: ${qRange}` : ""]
+        .filter(Boolean)
+        .join("\n");
+    });
 
     // Build: <name> <rarity-span> xQty <qRange>
     summary.appendChild(document.createTextNode(`${name} `));
@@ -197,32 +252,34 @@ function makeVariantLine(inst, idx) {
   const div = document.createElement("div");
   div.className = "meta";
 
-  const statStr = formatStats(inst.stats);
-  div.title = [
-    inst.name,
-    inst.description,
-    `Quality: ${inst.quality}`,
-    statStr ? `Stats: ${statStr}` : ""
-  ].filter(Boolean).join("\n");
-
-  const bullet = document.createTextNode("• ");
+  // Build: [Common] - F6 - Damage: 3 , Attack Speed: 0.83
   const rar = span(`[${inst.rarity}]`, `rarity ${rarityClass(inst.rarity)}`);
-  const qualityTxt = document.createTextNode(` Q:${inst.quality}`);
-  const statsTxt = statStr ? document.createTextNode(` { ${statStr} }`) : null;
+  const dash1 = document.createTextNode(" - ");
+  const qtxt  = document.createTextNode(inst.quality);
+  const dash2 = document.createTextNode(" - ");
 
-  div.appendChild(bullet);
+  const statsPretty = formatStatsReadable(inst.stats);
+  const statsNode = statsPretty ? document.createTextNode(statsPretty) : document.createTextNode("");
+
+  // assemble
   div.appendChild(rar);
-  div.appendChild(qualityTxt);
-  if (statsTxt) div.appendChild(statsTxt);
+  div.appendChild(dash1);
+  div.appendChild(qtxt);
+  if (statsPretty) {
+    div.appendChild(dash2);
+    div.appendChild(statsNode);
+  }
+
+  // Custom tooltip with full info (same style as stack)
+  Tooltip.bind(div, () => {
+    const base = [
+      inst.name,
+      inst.description || "",
+      `Quality: ${inst.quality}`,
+    ];
+    if (statsPretty) base.push(`Stats: ${statsPretty}`);
+    return base.filter(Boolean).join("\n");
+  });
 
   return div;
-}
-
-function formatStats(stats = {}) {
-  const keys = Object.keys(stats);
-  if (!keys.length) return "";
-  return keys.map(k => `${k}:${fmt(stats[k])}`).join(", ");
-}
-function fmt(v) {
-  return (typeof v === "number" && !Number.isInteger(v)) ? v.toFixed(2) : v;
 }
