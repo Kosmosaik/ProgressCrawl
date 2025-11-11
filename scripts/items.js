@@ -62,23 +62,42 @@ const ItemCatalog = [
 
 // ---- Rarity-weighted random (as you liked)
 function getRandomItem() {
-  const rarities = {
-    Abundant: 40,
-    Common: 30,
-    Uncommon: 20,
-    Rare: 8,
-    Exotic: 2
-  };
+// Keep your weights as-is
+const RARITY_WEIGHTS = {
+  Abundant: 40,
+  Common: 30,
+  Uncommon: 20,
+  Rare: 8,
+  Exotic: 2,
+};
 
-  const total = Object.values(rarities).reduce((a,b)=>a+b,0);
-  const roll = Math.random() * total;
-  let cumulative = 0, chosenRarity = "Common";
+function getRandomItem() {
+  // Group items by rarity
+  const pools = {};
+  ItemCatalog.forEach(it => {
+    (pools[it.rarity] ||= []).push(it);
+  });
 
-  for (const [r, w] of Object.entries(rarities)) {
-    cumulative += w;
-    if (roll <= cumulative) { chosenRarity = r; break; }
+  // Build weighted pairs only for rarities that have items
+  const pairs = Object.entries(RARITY_WEIGHTS)
+    .filter(([r]) => pools[r]?.length)
+    .map(([r, w]) => ({ rarity: r, weight: w }));
+
+  // Fallback: if somehow no pairs, pick any item
+  if (!pairs.length) {
+    return ItemCatalog[Math.floor(Math.random() * ItemCatalog.length)];
   }
 
-  const possibleItems = ItemCatalog.filter(i => i.rarity === chosenRarity);
-  return possibleItems[Math.floor(Math.random() * possibleItems.length)];
+  // Weighted pick a rarity
+  const total = pairs.reduce((s, p) => s + p.weight, 0);
+  let roll = Math.random() * total;
+  let chosen = pairs[0].rarity;
+  for (const p of pairs) {
+    if ((roll -= p.weight) <= 0) { chosen = p.rarity; break; }
+  }
+
+  // Pick a random item from that rarity’s pool
+  const pool = pools[chosen];
+  return pool[Math.floor(Math.random() * pool.length)];
 }
+
