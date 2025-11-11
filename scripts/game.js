@@ -130,11 +130,50 @@ function renderInventory() {
 
   names.forEach(name => {
     const stack = inventory[name];
-    const row = document.createElement("div");
-    // For now, simple stacked line: Name [Rarity] xQty
-    // (We keep per-instance quality/stats internally for later UI)
     const rarity = stack.items[0]?.rarity || "";
-    row.textContent = `${name} [${rarity}] x${stack.qty}`;
-    inventoryList.appendChild(row);
+
+    // <details> wrapper for expand/collapse
+    const details = document.createElement("details");
+    details.className = "inventory-stack";
+
+    // <summary> shows the compact line (Name [Rarity] xQty)
+    const summary = document.createElement("summary");
+    summary.textContent = `${name} [${rarity}] x${stack.qty}`;
+    details.appendChild(summary);
+
+    // Variants container (indented list)
+    const variantsWrap = document.createElement("div");
+    variantsWrap.className = "stack-variants";
+
+    stack.items.forEach((inst, idx) => {
+      variantsWrap.appendChild(makeVariantLine(inst, idx));
+    });
+
+    details.appendChild(variantsWrap);
+    inventoryList.appendChild(details);
   });
+}
+
+// Helper: make one variant line like:
+// • [Common] Q:E7 { damage:5, attackSpeed:1.1 }
+function makeVariantLine(inst, idx) {
+  const div = document.createElement("div");
+  div.className = "meta";
+  const statStr = formatStats(inst.stats);
+  div.textContent =
+    `• [${inst.rarity}] Q:${inst.quality}` +
+    (statStr ? ` { ${statStr} }` : "");
+  return div;
+}
+
+function formatStats(stats = {}) {
+  const keys = Object.keys(stats);
+  if (!keys.length) return "";
+  return keys
+    .map(k => `${k}:${fmt(stats[k])}`)
+    .join(", ");
+}
+
+function fmt(v) {
+  return (typeof v === "number" && !Number.isInteger(v)) ? v.toFixed(2) : v;
 }
