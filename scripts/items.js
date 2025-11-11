@@ -1,4 +1,7 @@
 // scripts/items.js
+// Keep your rarity-weighted random, but add optional stat ranges per item.
+// Items WITHOUT statRanges will still get a quality, just no rolled stats.
+
 const ItemCatalog = [
   {
     name: "Rusty Dagger",
@@ -6,9 +9,12 @@ const ItemCatalog = [
     description: "A dull old dagger, but still sharp enough to draw blood.",
     rarity: "Common",
     usage: "Basic melee weapon.",
-    quality: "E7",
-    stats: { damage: 4, attackSpeed: 1.1 },
-    affix: "+1 STR"
+    // Optional: define stat ranges for RNG
+    statRanges: {
+      // [min, max]
+      damage: [3, 6],           // integers
+      attackSpeed: [1.0, 1.3],  // decimals OK
+    },
   },
   {
     name: "Slime Core",
@@ -16,7 +22,6 @@ const ItemCatalog = [
     description: "A gelatinous orb pulsating with faint energy.",
     rarity: "Uncommon",
     usage: "Used for alchemy or crafting slime-based tools.",
-    quality: "D4"
   },
   {
     name: "Iron Ore",
@@ -24,7 +29,6 @@ const ItemCatalog = [
     description: "A chunk of iron ore ready to be smelted.",
     rarity: "Abundant",
     usage: "Refine into ingots at a forge.",
-    quality: "F3"
   },
   {
     name: "Healing Herb",
@@ -32,11 +36,10 @@ const ItemCatalog = [
     description: "A fragrant herb used to create basic healing potions.",
     rarity: "Common",
     usage: "Restores 10 HP when brewed or eaten raw.",
-    quality: "E9"
   }
 ];
 
-// Function to get a random item (weighted by rarity)
+// ---- Rarity-weighted random (as you liked)
 function getRandomItem() {
   const rarities = {
     Abundant: 40,
@@ -46,16 +49,13 @@ function getRandomItem() {
     Exotic: 2
   };
 
-  // Weighted random
   const total = Object.values(rarities).reduce((a,b)=>a+b,0);
   const roll = Math.random() * total;
   let cumulative = 0, chosenRarity = "Common";
 
   for (const [r, w] of Object.entries(rarities)) {
     cumulative += w;
-    if (roll <= cumulative) {
-      chosenRarity = r; break;
-    }
+    if (roll <= cumulative) { chosenRarity = r; break; }
   }
 
   const possibleItems = ItemCatalog.filter(i => i.rarity === chosenRarity);
