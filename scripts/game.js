@@ -214,7 +214,7 @@ function renderInventory() {
     summary.appendChild(document.createTextNode(` x${stack.qty} `));
     const qRange = summarizeQualityRange(stack.items); // you already added this
     if (qRange) summary.appendChild(document.createTextNode(qRange));
-    
+    summary.textContent = `${name} [${rarity}] x${stack.qty} ${qRange}`;
     details.appendChild(summary);
 
     // Variants container (indented list)
