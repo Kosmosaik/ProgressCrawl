@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.25 - Improved tooltip readability and design");
+console.log("game.js loaded v0.25 - Improved tooltip readability and design + bop");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
