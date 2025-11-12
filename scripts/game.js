@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.24 - Fix for items with stats throwing error.");
+console.log("game.js loaded v0.25 - Improved tooltip readability and design");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -104,19 +104,20 @@ const Tooltip = (() => {
   document.body.appendChild(el);
 
   let visible = false;
-  function show(text, x, y) {
-    el.textContent = "";       // clear
-    el.textContent = text;     // simple text; swap to innerHTML if you want rich markup
+  function show(html, x, y) {
+    el.innerHTML = html; // allow HTML + line breaks
     el.style.left = (x + 12) + "px";
     el.style.top  = (y + 12) + "px";
     el.classList.add("show");
     visible = true;
   }
+  
   function move(x, y) {
     if (!visible) return;
     el.style.left = (x + 12) + "px";
     el.style.top  = (y + 12) + "px";
   }
+  
   function hide() {
     el.classList.remove("show");
     visible = false;
@@ -279,13 +280,21 @@ function makeVariantLine(inst, idx) {
 
   // Custom tooltip with full info (same style as stack)
   Tooltip.bind(div, () => {
-    const base = [
-      inst.name,
-      inst.description || "",
-      `Quality: ${inst.quality}`,
-    ];
-    if (statsPretty) base.push(`Stats: ${statsPretty}`);
-    return base.filter(Boolean).join("\n");
+    const lines = [];
+    lines.push(`<strong>${inst.name}</strong>`);
+    if (inst.description) lines.push(inst.description);
+    lines.push(`<span>Quality: ${inst.quality}</span>`);
+  
+    // split each stat to its own line
+    const statLines = Object.entries(inst.stats || {})
+      .map(([k,v]) => {
+        const label = STAT_LABELS[k] ?? k;
+        return `<span>${label}: ${fmt(v)}</span>`;
+      });
+    lines.push(...statLines);
+  
+    // join lines with <br>
+    return lines.join("<br>");
   });
 
   return div;
