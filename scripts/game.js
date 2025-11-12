@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.29 - Changed animation coloring etc + blup  blupper +  focus");
+console.log("game.js loaded v0.30 - Changed inventory list info text. Added item category text. Separated stat items with same quality but different stats. Added throw-button to remove items.");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -219,14 +219,6 @@ function summarizeQualityRange(items = []) {
   return `[${minQ} - ${maxQ}]`;
 }
 
-function groupByQuality(items = []) {
-  const g = {};
-  for (const it of items) (g[it.quality] ||= []).push(it);
-  // sort qualities from worst → best for stable UI
-  const keys = Object.keys(g).sort((a,b) => qualityStep(a) - qualityStep(b));
-  return keys.map(k => [k, g[k]]);
-}
-
 function statsEqual(a = {}, b = {}) {
   const ka = Object.keys(a), kb = Object.keys(b);
   if (ka.length !== kb.length) return false;
@@ -238,6 +230,54 @@ function statsAllSame(arr) {
   if (arr.length <= 1) return true;
   for (let i = 1; i < arr.length; i++) if (!statsEqual(arr[0].stats, arr[i].stats)) return false;
   return true;
+}
+
+// Compare two stats objects for exact equality
+function statsEqual(a = {}, b = {}) {
+  const ka = Object.keys(a), kb = Object.keys(b);
+  if (ka.length !== kb.length) return false;
+  for (const k of ka) if (a[k] !== b[k]) return false;
+  return true;
+}
+
+// Stable signature for stats (for grouping)
+function statsSignature(stats = {}) {
+  const keys = Object.keys(stats).sort();
+  return keys.map(k => `${k}:${stats[k]}`).join("|"); // e.g., "attackSpeed:1.1|damage:5"
+}
+
+// Group items by identical (quality + stats)
+function groupByIdentical(items = []) {
+  const map = new Map();
+  for (const it of items) {
+    const sig = `${it.quality}__${statsSignature(it.stats)}`;
+    if (!map.has(sig)) map.set(sig, { quality: it.quality, items: [] });
+    map.get(sig).items.push(it);
+  }
+  // sort groups by quality (worst → best), then by count desc
+  const arr = Array.from(map.values());
+  arr.sort((A, B) => {
+    const q = qualityStep(A.quality) - qualityStep(B.quality);
+    if (q !== 0) return q;
+    return B.items.length - A.items.length;
+  });
+  return arr;
+}
+
+function removeOneFromGroup(itemName, quality, stats) {
+  const stack = inventory[itemName];
+  if (!stack) return;
+
+  // find an index of an item with same quality AND same stats
+  const idx = stack.items.findIndex(it => it.quality === quality && statsEqual(it.stats, stats));
+  if (idx !== -1) {
+    stack.items.splice(idx, 1);
+    stack.qty -= 1;
+    if (stack.items.length === 0) {
+      delete inventory[itemName];
+    }
+    renderInventory();
+  }
 }
 
 function renderInventory() {
@@ -258,13 +298,11 @@ function renderInventory() {
     Tooltip.bind(summary, () => {
       const lines = [
         `<strong>${name}</strong>`,
-        `<span>${rarity}</span>`,                       // (optional) show rarity line under name
+        `<span>${rarity}</span>`,
         first.description || "",
       ];
-    
       const qRange = summarizeQualityRange(stack.items);
       if (qRange) lines.push(`Quality Range: ${qRange}`);
-    
       return lines.filter(Boolean).join("<br>");
     });
 
@@ -281,66 +319,15 @@ function renderInventory() {
 
     const variantsWrap = document.createElement("div");
     variantsWrap.className = "stack-variants";
-    const groups = groupByQuality(stack.items);
-    groups.forEach(([q, arr]) => {
-      variantsWrap.appendChild(makeQualityGroupLine(rarity, q, arr));
+    const groups = groupByIdentical(stack.items);
+    groups.forEach(group => {
+      variantsWrap.appendChild(makeIdenticalGroupLine(name, rarity, group));
     });
     details.appendChild(variantsWrap);
 
     inventoryList.appendChild(details);
   });
 }
-
-function makeQualityGroupLine(rarity, quality, items) {
-  const div = document.createElement("div");
-  div.className = "meta";
-
-  const rarSpan = span(`[${rarity}]`, `rarity ${rarityClass(rarity)}`);
-  const dash1 = document.createTextNode(" - ");
-  const qtxt  = document.createTextNode(quality);
-
-  const count = items.length;
-  const countTxt = document.createTextNode(count > 1 ? ` x${count}` : "");
-
-  // If all rolled stats are identical, print them; else say varied
-  const same = statsAllSame(items);
-  const statsPretty = same ? formatStatsReadable(items[0].stats) : "";
-  const tail = same
-    ? (statsPretty ? document.createTextNode(` - ${statsPretty}`) : null)
-    : document.createTextNode(count > 1 ? " - (varied stats)" : "");
-
-  div.appendChild(rarSpan);
-  div.appendChild(dash1);
-  div.appendChild(qtxt);
-  div.appendChild(countTxt);
-  if (tail) div.appendChild(tail);
-
-  // Tooltip (this is Step 3)
-  const first = items[0];
-  Tooltip.bind(div, () => {
-    const lines = [
-      `<strong>${first.name}</strong>`,
-      `<span>${rarity}</span>`,                   // rarity directly under name
-      first.description || "",
-      `Quality: ${quality}`,
-    ];
-
-    // One blank line before stats (if there are stats)
-    const statLines = same
-      ? Object.entries(first.stats || {}).map(([k, v]) =>
-          `<span>${STAT_LABELS[k] ?? k}: ${fmt(v)}</span>`
-        )
-      : [];
-
-    if (statLines.length) lines.push("");         // <-- exactly one blank line
-    lines.push(...statLines);                     // Damage, Attack Speed on consecutive lines
-
-    return lines.filter(Boolean).join("<br>");
-  });
-
-  return div;
-}
-
 
 // Variant line
 function makeVariantLine(inst, idx) {
@@ -386,3 +373,62 @@ function makeVariantLine(inst, idx) {
 
   return div;
 }
+
+function makeIdenticalGroupLine(itemName, rarity, group) {
+  const div = document.createElement("div");
+  div.className = "meta";
+
+  const count = group.items.length;
+  const rep = group.items[0]; // representative instance
+  const quality = group.quality;
+
+  // Row text: [Rarity] - Name - Quality xN
+  const rarSpan = span(`[${rarity}]`, `rarity ${rarityClass(rarity)}`);
+  const t1 = document.createTextNode(" - ");
+  const nameNode = document.createTextNode(itemName);
+  const t2 = document.createTextNode(" - ");
+  const qualNode = document.createTextNode(quality);
+  const countNode = document.createTextNode(count > 1 ? ` x${count}` : "");
+
+  div.appendChild(rarSpan);
+  div.appendChild(t1);
+  div.appendChild(nameNode);
+  div.appendChild(t2);
+  div.appendChild(qualNode);
+  if (count > 1) div.appendChild(countNode);
+
+  // Tooltip (with line break between Quality and first stat; no blank between stats)
+  Tooltip.bind(div, () => {
+    const lines = [
+      `<strong>${itemName}</strong>`,
+      `<span>${rarity}</span>`,
+      rep.description || "",
+      `Quality: ${quality}`,
+    ];
+    const stats = rep.stats || {};
+    const statKeys = Object.keys(stats);
+    if (statKeys.length) {
+      lines.push(""); // exactly one blank line before stats
+      statKeys.forEach(k => {
+        const label = STAT_LABELS[k] ?? k;
+        lines.push(`<span>${label}: ${fmt(stats[k])}</span>`);
+      });
+    }
+    return lines.filter(Boolean).join("<br>");
+  });
+
+  // Trash button (removes ONE item from this identical group)
+  const trashBtn = document.createElement("button");
+  trashBtn.className = "trash-btn";
+  trashBtn.textContent = "Trash";
+  trashBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // don’t toggle <details>
+    removeOneFromGroup(itemName, quality, rep.stats);
+  });
+  // a little space before the button
+  div.appendChild(document.createTextNode(" "));
+  div.appendChild(trashBtn);
+
+  return div;
+}
+
