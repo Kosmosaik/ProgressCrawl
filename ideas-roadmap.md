@@ -23,3 +23,7 @@ FEATURE: Equipment view
   @ Add equip/unequip function (move item from inventory to equipment and vice versa. Make slot busy/available)
   @ Add stats from equipment
    
+
+OTHER:
+@ Quality (F9 -> S1 = Higher Quality = Higher stat multipliers / higher enhancement values in crafting / higher success rates etc).
+@ Gear Score: Score summarized from item stats (Damage, Attack Speed etc)
