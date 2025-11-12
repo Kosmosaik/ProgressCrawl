@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.29 - Changed animation coloring etc + blup  blupper");
+console.log("game.js loaded v0.29 - Changed animation coloring etc + blup  blupper +  focus");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -184,7 +184,7 @@ function startLoot() {
       setTimeout(() => inventoryButton.classList.remove("inventory-unlock"), 3000);
 
       // optional: focus it for keyboard users (helps discovery)
-      // setTimeout(() => inventoryButton.focus(), 200);
+      setTimeout(() => inventoryButton.focus(), 200);
       }
     }
   }, 100);
