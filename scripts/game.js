@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.26 - Improved item handling, tooltip and visibility + button + bump");
+console.log("game.js loaded v0.27 - Changed text sizes and coloring.");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
