@@ -65,6 +65,26 @@ button {
   border-color: #3b82f6;
 }
 
+.trash-btn {
+  background: transparent;
+  color: #a8b3c2;
+  border: 1px solid #2a2f3a;
+  border-radius: 8px;
+  padding: 2px 8px;
+  margin-left: 6px;
+  font: inherit;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.trash-btn:hover {
+  background: #1b2230;
+  color: #e0e4e8;
+  border-color: #3a4150;
+}
+.trash-btn:active {
+  background: #202a36;
+}
+
 /* Progress bar under the loot button */
 #progress-container {
   position: fixed;
@@ -77,6 +97,7 @@ button {
   display: none;
   border-radius: 5px;
 }
+
 #progress {
   height: 100%;
   width: 0%;
@@ -109,7 +130,7 @@ button {
   font-size: 0.95rem;
 }
 
-/* Optional: nicer expanders */
+/* Nicer expanders */
 .inventory-stack { margin: 6px 0; }
 .inventory-stack > summary { cursor: pointer; }
 .stack-variants { margin-left: 12px; padding-left: 8px; border-left: 1px solid #555; }
@@ -176,7 +197,7 @@ button {
   100% { text-shadow: 0 0 0rem rgba(246,244,110,0.0); }
 }
 
-/* optional: a subtle expanding ring behind the text */
+/* A subtle expanding ring behind the text */
 .inventory-unlock::after {
   content: "";
   position: absolute;
