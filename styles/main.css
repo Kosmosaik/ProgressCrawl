@@ -92,7 +92,7 @@ button {
   left: 20px;
   display: none;
   background: #111;
-  border: 1px solid #333;
+  border: 1px solid #555;
   padding: 10px;
   border-radius: 8px;
   width: 350px;
@@ -112,7 +112,7 @@ button {
 /* Optional: nicer expanders */
 .inventory-stack { margin: 6px 0; }
 .inventory-stack > summary { cursor: pointer; }
-.stack-variants { margin-left: 12px; padding-left: 8px; border-left: 1px solid #333; }
+.stack-variants { margin-left: 12px; padding-left: 8px; border-left: 1px solid #555; }
 .meta { opacity: 0.8; font-size: 0.8rem; }
 
 /* Rarity colors (accessible on dark bg) */
@@ -133,7 +133,7 @@ button {
   max-width: 280px;
   background: #111;
   color: #e0e4e8;
-  border: 1px solid #333;
+  border: 1px solid #555;
   border-radius: 8px;
   padding: 8px 10px;
   box-shadow: 0 8px 24px rgba(0,0,0,.35);
