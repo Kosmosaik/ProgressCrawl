@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.29 - Changed animation coloring etc + blup");
+console.log("game.js loaded v0.29 - Changed animation coloring etc + blup  blupper");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
