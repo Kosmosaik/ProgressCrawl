@@ -6,7 +6,7 @@ const ItemCatalog = [
     name: "Rusty Dagger",
     category: "Weapon",
     description: "A dull old dagger, but still sharp enough to draw blood.",
-    rarity: "Common",
+    rarity: "Abundant",
     usage: "Basic melee weapon.",
     statRanges: {
       damage: [3, 6],
@@ -24,7 +24,7 @@ const ItemCatalog = [
     name: "Iron Ore",
     category: "Resource",
     description: "A chunk of iron ore ready to be smelted.",
-    rarity: "Abundant",
+    rarity: "Common",
     usage: "Refine into ingots at a forge.",
   },
   {
@@ -38,7 +38,7 @@ const ItemCatalog = [
     name: "Basic Fishing Rod",
     category: "Tool",
     description: "A basic fishing rod used to fish.",
-    rarity: "Uncommon",
+    rarity: "Rare",
     usage: "Fishing",
   },
   {
@@ -52,16 +52,22 @@ const ItemCatalog = [
     name: "Small Stone",
     category: "Resource",
     description: "Small stone used in primitive crafting.",
-    rarity: "Abundant",
+    rarity: "Common",
     usage: "Craft primitive items",
+  }
+    name: "Mythic Fragment",
+    category: "Material",
+    description: "Super rare thingy McDingy",
+    rarity: "Exotic",
+    usage: "eh oh",
   }
 ];
 
 // Rarity weights (use only buckets that actually exist)
 const RARITY_WEIGHTS = {
-  Abundant: 40,
-  Common:   30,
-  Uncommon: 20,
+  Abundant: 70,
+  Common:   40,
+  Uncommon: 18,
   Rare:      8,
   Exotic:    2,
 };
