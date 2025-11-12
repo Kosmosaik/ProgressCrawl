@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.23 - Better tooltip , improved expanded inventory list");
+console.log("game.js loaded v0.24 - Fix for items with stats throwing error.");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -33,17 +33,24 @@ function rollQuality() {
   return `${tier}${sub}`;
 }
 
-// Pretty labels for stats
+function fmt(v) {
+  return (typeof v === "number" && !Number.isInteger(v)) ? v.toFixed(2) : v;
+}
+
 const STAT_LABELS = {
   damage: "Damage",
   attackSpeed: "Attack Speed",
   block: "Block",
   staminaUse: "Stamina Use",
 };
+
 function formatStatsReadable(stats = {}) {
+  if (!stats || typeof stats !== "object") return "";
   const keys = Object.keys(stats);
   if (!keys.length) return "";
-  return keys.map(k => `${STAT_LABELS[k] ?? k}: ${fmt(stats[k])}`).join(" , ");
+  return keys
+    .map(k => `${STAT_LABELS[k] ?? k}: ${fmt(stats[k])}`)
+    .join(" , ");
 }
 
 function qualityMultiplier(q) {
