@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.35 - Added expandable categories. Fixed expanded item list shrinking everytime inventory updates.");
+console.log("game.js loaded v0.35b - Added expandable categories. Fixed expanded item list shrinking everytime inventory updates.");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
