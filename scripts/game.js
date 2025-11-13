@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.33d - Improved tooltip spacing");
+console.log("game.js loaded v0.34 - Added categorization to inventory");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -250,6 +250,15 @@ function groupByIdentical(items = []) {
   return arr;
 }
 
+function categoryHeaderLabel(category = "Other") {
+  const trimmed = (category || "Other").trim();
+  if (!trimmed) return "OTHER";
+  // Naive plural: Weapon -> Weapons, Crafting Component -> Crafting Components
+  const endsWithS = /s$/i.test(trimmed);
+  const base = endsWithS ? trimmed : trimmed + "s";
+  return base.toUpperCase();
+}
+
 function removeOneFromGroup(itemName, quality, stats) {
   const stack = inventory[itemName];
   if (!stack) return;
@@ -268,62 +277,104 @@ function removeOneFromGroup(itemName, quality, stats) {
 
 function renderInventory() {
   inventoryList.innerHTML = "";
-  const names = Object.keys(inventory).sort();
+  const names = Object.keys(inventory);
   if (!names.length) return;
+
+  // Group stacks by category (taken from the first item in each stack)
+  const categoryMap = Object.create(null);
 
   names.forEach(name => {
     const stack = inventory[name];
-    const rarity = stack.items[0]?.rarity || "";
-
-    const details = document.createElement("details");
-    details.className = "inventory-stack";
-
-    const summary = document.createElement("summary");
-    // tooltip for the stack
     const first = stack.items[0] || {};
-    Tooltip.bind(summary, () => {
-      // Desired layout (no blank between name/rarity; quality line directly below rarity;
-      // one blank line before description)
-      const lines = [
-        `<strong>${name}</strong>`,
-        `<span class="rarity ${rarityClass(rarity)}">${rarity}</span>`,
-      ];
+    const category = first.category || "Other";
+    if (!categoryMap[category]) categoryMap[category] = [];
+    categoryMap[category].push({ name, stack });
+  });
+
+  // Optional: preferred category display order
+  const CATEGORY_ORDER = [
+    "Material",
+    "Crafting Component",
+    "Resource",
+    "Weapon",
+    "Tool",
+    "Wood",
+    "Other"
+  ];
+
+  const categoryKeys = Object.keys(categoryMap).sort((a, b) => {
+    const ia = CATEGORY_ORDER.indexOf(a);
+    const ib = CATEGORY_ORDER.indexOf(b);
+    if (ia === -1 && ib === -1) {
+      return a.localeCompare(b); // both unknown -> alphabetical
+    }
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+
+  categoryKeys.forEach(cat => {
+    const group = categoryMap[cat];
+
+    // ---- Category header line ----
+    const header = document.createElement("div");
+    header.className = "inventory-category-header";
+    header.textContent = `---------- ${categoryHeaderLabel(cat)} ----------`;
+    inventoryList.appendChild(header);
+
+    // Sort items inside this category by name
+    group.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Render each stack as before
+    group.forEach(({ name, stack }) => {
+      const rarity = stack.items[0]?.rarity || "";
+
+      const details = document.createElement("details");
+      details.className = "inventory-stack";
+
+      const summary = document.createElement("summary");
+      // tooltip for the stack
+      const first = stack.items[0] || {};
+      Tooltip.bind(summary, () => {
+        const lines = [
+          `<strong>${name}</strong>`,
+          `<span class="rarity ${rarityClass(rarity)}">${rarity}</span>`,
+        ];
+        const qRange = summarizeQualityRange(stack.items);
+        if (qRange) lines.push(`Quality Range: ${qRange}`);
+        // blank line before description
+        if (first.description) {
+          lines.push("");
+          lines.push(first.description);
+        }
+        return lines
+          .filter(v => v !== undefined && v !== null)
+          .join("<br>");
+      });
+
+      // Build: <name> <rarity-span> xQty <qRange>
+      summary.appendChild(document.createTextNode(`${name} `));
+      const rarSpan = span(`[${rarity}]`, `rarity ${rarityClass(rarity)}`);
+      summary.appendChild(rarSpan);
+      summary.appendChild(document.createTextNode(` x${stack.qty}`));
+
       const qRange = summarizeQualityRange(stack.items);
-      if (qRange) lines.push(`Quality Range: ${qRange}`);
-      // blank line before description
-      if (first.description) {
-        lines.push("");
-        lines.push(first.description);
-      }
-      // join while preserving intentional blank lines
-      return lines
-        .filter(v => v !== undefined && v !== null)
-        .join("<br>");
+      if (qRange) summary.appendChild(document.createTextNode(` ${qRange}`));
+
+      details.appendChild(summary);
+
+      const variantsWrap = document.createElement("div");
+      variantsWrap.className = "stack-variants";
+      const groups = groupByIdentical(stack.items);
+      groups.forEach(g => {
+        variantsWrap.appendChild(makeIdenticalGroupLine(name, rarity, g));
+      });
+      details.appendChild(variantsWrap);
+
+      inventoryList.appendChild(details);
     });
-
-    // Build: <name> <rarity-span> xQty <qRange>
-    summary.appendChild(document.createTextNode(`${name} `));
-    const rarSpan = span(`[${rarity}]`, `rarity ${rarityClass(rarity)}`);
-    summary.appendChild(rarSpan);
-    summary.appendChild(document.createTextNode(` x${stack.qty}`));
-
-    const qRange = summarizeQualityRange(stack.items);
-    if (qRange) summary.appendChild(document.createTextNode(` ${qRange}`));
-
-    details.appendChild(summary);
-
-    const variantsWrap = document.createElement("div");
-    variantsWrap.className = "stack-variants";
-    const groups = groupByIdentical(stack.items);
-    groups.forEach(group => {
-      variantsWrap.appendChild(makeIdenticalGroupLine(name, rarity, group));
-    });
-    details.appendChild(variantsWrap);
-
-    inventoryList.appendChild(details);
   });
 }
-
 
 function makeIdenticalGroupLine(itemName, rarity, group) {
   const div = document.createElement("div");
