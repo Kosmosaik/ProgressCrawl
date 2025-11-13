@@ -164,13 +164,17 @@ button {
   content: "";
   flex: 1;
   height: 2px;
-  .inventory-category-header::before {
-    background: linear-gradient(to left, transparent, #6b7280);
-  }
-  
-  .inventory-category-header::after {
-    background: linear-gradient(to right, transparent, #6b7280);
-  }
+}
+
+/* Left line */
+.inventory-category-header::before {
+  background: linear-gradient(to left, transparent, #6b7280);
+}
+
+/* Right line */
+.inventory-category-header::after {
+  background: linear-gradient(to right, transparent, #6b7280);
+}
 
 /* Floating tooltip */
 #tooltip {
