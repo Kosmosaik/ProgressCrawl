@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.38 - Added bottom text field for title and version");
+console.log("game.js loaded v0.38b - Added bottom text field for title and version");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
