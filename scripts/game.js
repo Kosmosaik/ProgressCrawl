@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.31 - Changed hover tooltip text positions. Added rarity color to tooltip.");
+console.log("game.js loaded v0.32 - Changed loot drop rate.");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -13,7 +13,7 @@ const inventory = Object.create(null);
 
 // ---- RNG + Quality
 const TIER_ORDER = ["F","E","D","C","B","A","S"];
-const TIER_WEIGHTS = { F: 100, E: 80, D: 60, C: 40, B: 20, A: 10, S: 1 };
+const TIER_WEIGHTS = { F: 120, E: 70, D: 40, C: 25, B: 10, A: 5, S: 1 };
 
 function sublevelWeight(n) { return (n === 9) ? 10 : (10 - n); }
 
