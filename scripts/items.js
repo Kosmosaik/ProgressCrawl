@@ -9,18 +9,18 @@ const ItemCatalog = [
     rarity: "Abundant",
     usage: "Basic melee weapon.",
     statRanges: {
-      damage: [3, 6],
-      attackSpeed: [1.0, 1.3],
-    },
+    damage: [3, 6],
+    attackSpeed: [1.0, 1.3],
+  },
+  {
     name: "Simple Dagger",
     category: "Weapon",
     description: "A dull old dagger, but still sharp enough to draw blood.",
     rarity: "Uncommon",
     usage: "Basic melee weapon.",
     statRanges: {
-      damage: [4, 10],
-      attackSpeed: [1.0, 1.35],
-    },
+    damage: [4, 10],
+    attackSpeed: [1.0, 1.35],
   },
   {
     name: "Slime Core",
