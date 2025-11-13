@@ -176,6 +176,10 @@ button {
   background: linear-gradient(to right, transparent, #6b7280);
 }
 
+.inventory-category-header {
+  cursor: pointer;
+}
+
 /* Floating tooltip */
 #tooltip {
   position: fixed;
