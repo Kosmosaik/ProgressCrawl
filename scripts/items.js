@@ -11,6 +11,7 @@ const ItemCatalog = [
     statRanges: {
     damage: [3, 6],
     attackSpeed: [1.0, 1.3],
+    }
   },
   {
     name: "Simple Dagger",
@@ -21,6 +22,7 @@ const ItemCatalog = [
     statRanges: {
     damage: [4, 10],
     attackSpeed: [1.0, 1.35],
+    }
   },
   {
     name: "Slime Core",
