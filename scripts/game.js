@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.32c - Changed loot drop rate.");
+console.log("game.js loaded v0.33 - Improved tooltip spacing");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -350,32 +350,23 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
 
   // Tooltip (Name, Rarity (colored), Quality; blank; Description; blank; then stats stacked)
   Tooltip.bind(div, () => {
-    const lines = [
-      `<strong>${itemName}</strong>`,
-      `<span class="rarity ${rarityClass(rarity)}">${rarity}</span>`,
-      `Quality: ${quality}`,
-    ];
+    const header =
+      `<strong>${itemName}</strong><br>` +
+      `<span class="rarity ${rarityClass(rarity)}">${rarity}</span><br>` +
+      `Quality: ${quality}`;
 
-    // blank line before description
-    if (rep.description) {
-      lines.push("");
-      lines.push(rep.description);
-    }
+    const desc = rep.description ? `<br><br>${rep.description}` : "";
 
-    const stats = rep.stats || {};
-    const statKeys = Object.keys(stats);
-    if (statKeys.length) {
-      lines.push(""); // exactly one blank line before stats
-      statKeys.forEach(k => {
-        const label = STAT_LABELS[k] ?? k;
-        lines.push(`<span>${label}: ${fmt(stats[k])}</span>`);
-      });
-    }
+    // Stats as plain text lines (no spans) to avoid extra spacing
+    const statsObj = rep.stats || {};
+    const statKeys = Object.keys(statsObj);
+    const stats = statKeys.length
+      ? `<br><br>${statKeys
+          .map(k => `${STAT_LABELS[k] ?? k}: ${fmt(statsObj[k])}`)
+          .join("<br>")}`
+      : "";
 
-    // join while preserving intentional blank lines
-    return lines
-      .filter(v => v !== undefined && v !== null)
-      .join("<br>");
+    return header + desc + stats;
   });
 
   // Trash button (removes ONE item from this identical group)
@@ -392,3 +383,4 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
 
   return div;
 }
+
