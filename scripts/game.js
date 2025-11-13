@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.34d - Added categorization to inventory.");
+console.log("game.js loaded v0.34e - Added categorization to inventory + category header label.");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -251,12 +251,16 @@ function groupByIdentical(items = []) {
 }
 
 function categoryHeaderLabel(category = "Other") {
-  const trimmed = (category || "Other").trim();
-  if (!trimmed) return "OTHER";
-  // Naive plural: Weapon -> Weapons, Crafting Component -> Crafting Components
-  const endsWithS = /s$/i.test(trimmed);
-  const base = endsWithS ? trimmed : trimmed + "s";
-  return base.toUpperCase();
+  const map = {
+    "Wood": "WOOD",
+    "Material": "MATERIALS",
+    "Crafting Component": "CRAFTING COMPONENTS",
+    "Resource": "RESOURCES",
+    "Weapon": "WEAPONS",
+    "Tool": "TOOLS",
+  };
+
+  return map[category] || category.toUpperCase();
 }
 
 function removeOneFromGroup(itemName, quality, stats) {
