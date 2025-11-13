@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.34f - Added categorization to inventory + category header label. + fix");
+console.log("game.js loaded v0.35 - Added expandable categories. Fixed expanded item list shrinking everytime inventory updates.");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -10,6 +10,11 @@ const inventoryButton = document.getElementById("inventory-btn");
 
 let inventoryUnlocked = false;
 const inventory = Object.create(null);
+
+// Remember which stacks are expanded in the UI (persists across re-renders)
+const openStacks = new Set();
+// Remember which categories are collapsed
+const collapsedCategories = new Set();
 
 // ---- RNG + Quality
 const TIER_ORDER = ["F","E","D","C","B","A","S"];
@@ -279,12 +284,25 @@ function removeOneFromGroup(itemName, quality, stats) {
   }
 }
 
+function categoryHeaderLabel(category = "Other") {
+  // You can customize this map however you like
+  const map = {
+    "Material": "MATERIALS",
+    "Crafting Component": "CRAFTING COMPONENTS",
+    "Resource": "RESOURCES",
+    "Weapon": "WEAPONS",
+    "Tool": "TOOLS",
+    "Wood": "WOOD",
+  };
+  return map[category] || (category || "OTHER").toUpperCase();
+}
+
 function renderInventory() {
   inventoryList.innerHTML = "";
   const names = Object.keys(inventory);
   if (!names.length) return;
 
-  // Group stacks by category (taken from the first item in each stack)
+  // --- Group stacks by category (from first item in each stack)
   const categoryMap = Object.create(null);
 
   names.forEach(name => {
@@ -295,7 +313,7 @@ function renderInventory() {
     categoryMap[category].push({ name, stack });
   });
 
-  // Optional: preferred category display order
+  // Optional: preferred category order
   const CATEGORY_ORDER = [
     "Material",
     "Crafting Component",
@@ -309,9 +327,7 @@ function renderInventory() {
   const categoryKeys = Object.keys(categoryMap).sort((a, b) => {
     const ia = CATEGORY_ORDER.indexOf(a);
     const ib = CATEGORY_ORDER.indexOf(b);
-    if (ia === -1 && ib === -1) {
-      return a.localeCompare(b); // both unknown -> alphabetical
-    }
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
     if (ia === -1) return 1;
     if (ib === -1) return -1;
     return ia - ib;
@@ -319,25 +335,68 @@ function renderInventory() {
 
   categoryKeys.forEach(cat => {
     const group = categoryMap[cat];
+    const isCollapsed = collapsedCategories.has(cat);
 
-    // ---- Category header line ----
+    // ---- Category header ----
     const header = document.createElement("div");
     header.className = "inventory-category-header";
-    header.textContent = categoryHeaderLabel(cat);
+    header.dataset.category = cat;
+    header.textContent = `${isCollapsed ? "▶" : "▼"} ${categoryHeaderLabel(cat)}`;
     inventoryList.appendChild(header);
 
-    // Sort items inside this category by name
+    // Clicking the header collapses/expands this category
+    header.addEventListener("click", () => {
+      const nowCollapsed = !collapsedCategories.has(cat);
+      if (nowCollapsed) {
+        collapsedCategories.add(cat);
+      } else {
+        collapsedCategories.delete(cat);
+      }
+      header.textContent = `${nowCollapsed ? "▶" : "▼"} ${categoryHeaderLabel(cat)}`;
+
+      // Show/hide all following stacks until next category header
+      let node = header.nextElementSibling;
+      while (node && !node.classList.contains("inventory-category-header")) {
+        node.style.display = nowCollapsed ? "none" : "";
+        node = node.nextElementSibling;
+      }
+    });
+
+    // Sort items within category by name
     group.sort((a, b) => a.name.localeCompare(b.name));
 
-    // Render each stack as before
+    // ---- Render each stack ----
     group.forEach(({ name, stack }) => {
       const rarity = stack.items[0]?.rarity || "";
 
       const details = document.createElement("details");
       details.className = "inventory-stack";
+      details.dataset.category = cat;
+      details.dataset.name = name;
+
+      const key = `${cat}::${name}`;
+      // Restore open/closed state from last time
+      if (openStacks.has(key)) {
+        details.open = true;
+      }
+
+      // Track future user toggles so state survives re-renders
+      details.addEventListener("toggle", () => {
+        if (details.open) {
+          openStacks.add(key);
+        } else {
+          openStacks.delete(key);
+        }
+      });
+
+      // Respect collapsed category state on initial render
+      if (isCollapsed) {
+        details.style.display = "none";
+      }
 
       const summary = document.createElement("summary");
-      // tooltip for the stack
+
+      // Tooltip for the stack
       const first = stack.items[0] || {};
       Tooltip.bind(summary, () => {
         const lines = [
@@ -356,7 +415,7 @@ function renderInventory() {
           .join("<br>");
       });
 
-      // Build: <name> <rarity-span> xQty <qRange>
+      // Build: <name> [rarity] xQty [qRange]
       summary.appendChild(document.createTextNode(`${name} `));
       const rarSpan = span(`[${rarity}]`, `rarity ${rarityClass(rarity)}`);
       summary.appendChild(rarSpan);
