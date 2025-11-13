@@ -151,7 +151,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 10px 0 4px;
+  margin: 12px 0 4px;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
@@ -163,9 +163,14 @@ button {
 .inventory-category-header::after {
   content: "";
   flex: 1;
-  height: 1px;
-  background: linear-gradient(to right, transparent, #333);
-}
+  height: 2px;
+  .inventory-category-header::before {
+    background: linear-gradient(to left, transparent, #6b7280);
+  }
+  
+  .inventory-category-header::after {
+    background: linear-gradient(to right, transparent, #6b7280);
+  }
 
 /* Floating tooltip */
 #tooltip {
