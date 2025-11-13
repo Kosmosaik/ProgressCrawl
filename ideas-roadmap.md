@@ -39,3 +39,4 @@ FEATURE: Equipment view
 OTHER:
 @ Quality (F9 -> S1 = Higher Quality = Higher stat multipliers / higher enhancement values in crafting / higher success rates etc).
 @ Gear Score: Score summarized from item stats (Damage, Attack Speed etc)
+@ DPS: Calculate and show DPS on item (based on character stats + item stats)
