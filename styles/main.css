@@ -167,15 +167,11 @@ button {
 }
 
 #tooltip strong {
-  display: block;
+  display: inline;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 4px;
-}
-
-#tooltip span {
-  display: block;
-  opacity: 0.9;
+  margin: 0;
+  padding: 0;
 }
 
 #tooltip .rarity {
