@@ -1,5 +1,5 @@
 // scripts/game.js
-console.log("game.js loaded v0.33 - Improved tooltip spacing");
+console.log("game.js loaded v0.33b - Improved tooltip spacing");
 
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -352,12 +352,11 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
   Tooltip.bind(div, () => {
     const header =
       `<strong>${itemName}</strong><br>` +
-      `<span class="rarity ${rarityClass(rarity)}">${rarity}</span><br>` +
+      `<span class="rarity ${rarityClass(rarity)}" style="display:inline">${rarity}</span><br>` +
       `Quality: ${quality}`;
 
     const desc = rep.description ? `<br><br>${rep.description}` : "";
 
-    // Stats as plain text lines (no spans) to avoid extra spacing
     const statsObj = rep.stats || {};
     const statKeys = Object.keys(statsObj);
     const stats = statKeys.length
