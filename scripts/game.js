@@ -56,22 +56,20 @@ const collapsedCategories = new Set();
 
 // ---- RNG + Quality (global monotonic system)
 const TIER_ORDER = ["F","E","D","C","B","A","S"];
+const EXP_BASE = 0.94;   // steeper curve = smaller number (0.92–0.97)
 
-// Precompute all 63 qualities (F9..F1, E9..E1, ..., S9..S1)
-// with strictly decreasing weights from F9 (most common) to S1 (rarest)
 const QUALITY_BUCKETS = [];
 (function initQualityBuckets() {
-  const totalSlots = TIER_ORDER.length * 9; // 7 * 9 = 63
-  let rank = 0; // 0 = worst (F9), 62 = best (S1)
+  let rank = 0; // 0 = F9 (worst), 62 = S1 (best)
 
   for (const tier of TIER_ORDER) {
     for (let sub = 9; sub >= 1; sub--) {
-      const weight = totalSlots - rank; // F9 gets 63, ..., S1 gets 1
+      const weight = Math.pow(EXP_BASE, rank);
       QUALITY_BUCKETS.push({
         code: `${tier}${sub}`,
+        weight,
         tier,
         sub,
-        weight,
       });
       rank++;
     }
