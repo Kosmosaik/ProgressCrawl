@@ -54,28 +54,42 @@ const openStacks = new Set();
 // Remember which categories are collapsed
 const collapsedCategories = new Set();
 
-// ---- RNG + Quality
+// ---- RNG + Quality (global monotonic system)
 const TIER_ORDER = ["F","E","D","C","B","A","S"];
-const TIER_WEIGHTS = { F: 120, E: 70, D: 40, C: 25, B: 10, A: 5, S: 1 };
 
-function sublevelWeight(n) {
-  return n; // 9 is common, 1 is rare
-}
+// Precompute all 63 qualities (F9..F1, E9..E1, ..., S9..S1)
+// with strictly decreasing weights from F9 (most common) to S1 (rarest)
+const QUALITY_BUCKETS = [];
+(function initQualityBuckets() {
+  const totalSlots = TIER_ORDER.length * 9; // 7 * 9 = 63
+  let rank = 0; // 0 = worst (F9), 62 = best (S1)
 
-function pickWeighted(pairs) {
-  const total = pairs.reduce((s,p)=>s+p.weight,0);
+  for (const tier of TIER_ORDER) {
+    for (let sub = 9; sub >= 1; sub--) {
+      const weight = totalSlots - rank; // F9 gets 63, ..., S1 gets 1
+      QUALITY_BUCKETS.push({
+        code: `${tier}${sub}`,
+        tier,
+        sub,
+        weight,
+      });
+      rank++;
+    }
+  }
+})();
+
+function pickWeighted(list) {
+  const total = list.reduce((s, p) => s + p.weight, 0);
   let r = Math.random() * total;
-  for (const p of pairs) { if ((r -= p.weight) <= 0) return p.item; }
-  return pairs[pairs.length - 1].item;
+  for (const p of list) {
+    if ((r -= p.weight) <= 0) return p;
+  }
+  return list[list.length - 1];
 }
 
 function rollQuality() {
-  const tier = pickWeighted(TIER_ORDER.map(t => ({ item: t, weight: TIER_WEIGHTS[t] })));
-  const sub = pickWeighted(Array.from({length:9}, (_,i) => {
-    const n = 9 - i; // 9..1
-    return { item: n, weight: sublevelWeight(n) };
-  }));
-  return `${tier}${sub}`;
+  const q = pickWeighted(QUALITY_BUCKETS);
+  return q.code; // e.g. "F7", "B3", "S1"
 }
 
 function fmt(v) {
@@ -440,7 +454,7 @@ function renderInventory() {
       }
     });
 
-    // Sort items within category by name
+    // Sort items within category according to current sort
     group.sort((a, b) => compareStacks(a, b));
 
     // ---- Render each stack ----
@@ -583,4 +597,3 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
 
   return div;
 }
-
