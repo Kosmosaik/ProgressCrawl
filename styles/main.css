@@ -304,7 +304,9 @@ button {
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 100vw;
+  right: 0;
+  box-sizing: border-box;
+
   background: #111;
   border-top: 1px solid #333;
   padding: 8px 16px;
@@ -320,17 +322,16 @@ button {
   z-index: 9900;
 }
 
-#game-header .game-version {
-  opacity: 0.75;
-  font-size: 0.85rem;
-  white-space: normal;
-  flex: 0 1 auto;        /* allow shrinking instead of overflowing */
-  text-align: right;
-}
-
 #game-header .game-title {
   font-weight: 700;
   letter-spacing: 0.05em;
-  /* allow it to shrink a bit if needed */
-  flex: 0 1 auto;
+  flex-shrink: 0;           /* don't let the title vanish */
+}
+
+#game-header .game-version {
+  opacity: 0.75;
+  font-size: 0.85rem;
+  text-align: right;
+  white-space: nowrap;      /* keep it on one line */
+  flex-shrink: 0;           /* don't let it be squeezed to nothing */
 }
