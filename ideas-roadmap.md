@@ -18,7 +18,6 @@ This adds a jackpot-like feel to the looting system. Also, this means we will ha
          If item is Exotic, give item to player.
 
 ===== IMPROVEMENTS: =====
-@ Sort items by category (header, lines etc). Add category to hover tooltip. (ONGOING)
 @ Change quality drop weight based on tier letter AND tier number (F9 most common, S1 rarest).
 @ Add patch notes history (button on top-right side, version (bottom right - text)
 
