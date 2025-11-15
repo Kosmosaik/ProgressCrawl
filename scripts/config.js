@@ -15,7 +15,7 @@ const GAME_CONFIG = {
     tiers: ["F", "E", "D", "C", "B", "A", "S"],
 
     // Exponential base for rarity curve (lower = steeper, rarer high-end)
-    expBase: 0.94,
+    expBase: 0.91,
   },
 
   inventory: {
