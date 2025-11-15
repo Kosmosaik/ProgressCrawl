@@ -63,7 +63,7 @@ FEATURE: Player Death
    @ When player health reaches <= 0 , 
    
 OTHER:
-@ Quality (F9 -> S1 = Higher Quality = Higher stat multipliers / higher enhancement values in crafting / higher success rates etc).
+@ Quality (F0 -> S1 = Higher Quality = Higher stat multipliers / higher enhancement values in crafting / higher success rates etc).
    Maybe add a property on items to set different min/max multiplier so all items can have different quality multipliers?
 @ Gear Score: Score summarized from item stats (Damage, Attack Speed etc)
 @ DPS: Calculate and show DPS on item (based on character stats + item stats)
