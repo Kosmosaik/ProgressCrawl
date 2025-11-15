@@ -1,5 +1,5 @@
 ===== FIXES: =====
-@ When trashing an item, the tooltip gets stuck on the item until I hover over a different item.
+
 
 ===== GRAPHICS: =====
 Rarity animation: When the loot slider/progress is finished, if the item is higher than Common (Uncommon, Rare, Exotic etc), animate the slider with a pop up like effect after the first "roll/slider fill",
