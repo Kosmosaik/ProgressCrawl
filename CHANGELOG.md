@@ -29,6 +29,9 @@
   - Inventory button moved into a top menu bar.
   - Supports seamless future additions such as Equipment, Crafting, Skills, etc.
 
+- **Patch Notes Button**
+  - Added a “Patch Notes” button in the header that opens an in-game panel showing the latest version changes.
+
 ---
 
 ## v0.0.40b — Tooltip Behavior Fix
