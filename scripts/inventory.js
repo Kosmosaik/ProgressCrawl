@@ -385,6 +385,7 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
   trashBtn.textContent = "Trash";
   trashBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+    Tooltip.hide(); // <- new line
     removeOneFromGroup(itemName, quality, rep.stats);
   });
   div.appendChild(document.createTextNode(" "));
