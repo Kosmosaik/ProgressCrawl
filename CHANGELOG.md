@@ -1,4 +1,36 @@
+## v0.0.40b — Tooltip Behavior Fix
+### Fixed
+- Tooltip remaining on screen after trashing an item.
+  - Added `Tooltip.hide()` method in `ui.js`.
+  - Trash button in `inventory.js` now calls `Tooltip.hide()` before removing the item.
 
+### Changed
+- Slight improvements to tooltip control and cleanup flow.
+
+---
+
+## v0.0.40 — Refactoring & Code Cleanup
+### Added
+- New modular file structure:
+  - `config.js`
+  - `items.js`
+  - `quality.js`
+  - `ui.js`
+  - `inventory.js`
+  - `game.js`
+- Centralized configuration settings in `config.js`.
+- Separated quality, item generation, UI, and inventory logic into dedicated scripts.
+- Improved project structure to prepare for future systems (equipment, combat, zones).
+
+### Changed
+- Moved all tooltip logic to `ui.js`.
+- Rewrote inventory rendering into `inventory.js` for better clarity.
+- Streamlined loot generation flow in `game.js`.
+- Improved internal quality system readability and organization.
+
+### Fixed
+- Minor layout inconsistencies after script refactoring.
+- Several small issues caused by script load order during the move.
 
 ---
 
