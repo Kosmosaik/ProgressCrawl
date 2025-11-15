@@ -40,6 +40,7 @@ const Tooltip = (() => {
       elm.addEventListener("mouseenter", e => show(getText(), e.clientX, e.clientY));
       elm.addEventListener("mousemove",  e => move(e.clientX, e.clientY));
       elm.addEventListener("mouseleave", hide);
-    }
+    },
+    hide,
   };
 })();
