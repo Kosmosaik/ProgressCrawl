@@ -1,6 +1,17 @@
-## v0.0.52 - Cleanup
-### Fixed
-- Removed duplicate code blocks for patch notes.
+## v0.0.52 (WIP) – Character config groundwork
+
+### Added
+- Added `GAME_CONFIG.character` with tunable values for:
+- Base HP and HP per VIT.
+- Base crit chance and crit per DEX.
+- Loot Find gained per INT.
+- Attack scaling factors for melee and ranged builds.
+- Added `GAME_CONFIG.loot.rarityWeights` and `GAME_CONFIG.loot.lootFindBias` to centralize
+  rarity weights and control how Loot Find subtly biases rarities.
+
+### Changed
+- Updated header text and internal version number from v0.0.51 to v0.0.52 for the
+  character/equipment branch.
 
 ---
 
