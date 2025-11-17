@@ -29,6 +29,48 @@ FEATURE: Equipment view
   @ Add equip/unequip function (move item from inventory to equipment and vice versa. Make slot busy/available)
   @ Add stats from equipment
 
+  Core Combat Stats
+  [ ] : Weapon Damage
+  [ ] : Attack Speed
+  [ ] : DPS (derived)
+  [ ] : Critical Chance
+  [ ] : Critical Damage Multiplier
+  [ ] : Accuracy / Hit Chance
+  [ ] : Elemental Damage (when elements gets added)
+  [ ] : Armor Penetration (ignore % of defense)
+  [ ] : Lifesteal (% of damage heals you)
+
+  Defensive Stats
+  [ ] : Armor / Defense (reduces incoming physical dmg)
+  [ ] : Dodge / Evasion (chance to avoid attacks)
+  [ ] : Block Chance (for shields)
+  [ ] : HP (Max Health)
+  [ ] : HP Regeneration (per second)
+  [ ] : Damage Reduction %
+  [ ] : Resistance (Fire, Cold, Poison, Magic etc - whene elements gets added)
+  [ ] : Tenacity / Status Resist (reduces duration of debuffs)
+
+  Magic / Ability Stats
+  [ ] : Mana (Max)
+  [ ] : Mana Regeneration
+  [ ] : Spell Damage Bonus
+  [ ] : Cooldown Reduction
+  [ ] : Energy / Resource for abilities (if not using mana)
+  [ ] : Aura Power (For passives / Companions)
+  [ ] : Summon Power (if minions gets added)
+
+  Loot & Economy Stats
+  [ ] : Loot Find (increases chance of higher-tier drops)
+  [ ] : Gold Find (if money gets added)
+  [ ] : Luck (general rare event chance modifier, also increases crit chance)
+
+  Progression / Utility Stats
+  [ ] : Carry Weight Limit
+  [ ] : Current Weight
+  [ ] : Encumbrance Penalty (affects speed, dodge and/or attack speed if overweight)
+
+  Action Speed / Gathering Speed (fingerfärdighet som ökar (xp) när man gör actions). Generell skill som reducerar tiden det tar för actions.
+
 FEATURE: Zones (Biomes)
    @ Add world map (grid of zones). Each zone is randomly generated when it comes to:
      Biomes, locations, points of interests, size (time it takes to explore), amount of enemies, difficulty rating.
