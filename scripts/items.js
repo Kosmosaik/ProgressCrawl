@@ -39,7 +39,7 @@ const ItemCatalog = [
     category: "Weapon",
     slot: "weapon",
     attackType: "melee",
-    rarity: "Abundant",
+    rarity: "Unique",
     usage: "Ehehe",
     statRanges: {
     damage: [220, 440],
