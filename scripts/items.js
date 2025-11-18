@@ -34,7 +34,7 @@ const ItemCatalog = [
     }
   },
   {
-    name: "L33T POWER SWORD OF DOOM",
+    name: "Leet Power Sword of Doom",
     description: "Boi you found it!",
     category: "Weapon",
     slot: "weapon",
