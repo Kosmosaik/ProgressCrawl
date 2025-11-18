@@ -1,3 +1,25 @@
+### v0.0.54 (WIP) – Wire character & equipment math
+
+### Added
+- New `characterComputed` state in `game.js` to hold:
+  - Base attributes
+  - Total attributes (including bonuses)
+  - Derived stats (Max HP, Melee/Ranged Attack, Crit Chance, Loot Find, Active Attack).
+- Added `recomputeCharacterComputedState()` helper in `game.js` to:
+  - Pull equipment bonuses via `summarizeEquipmentForCharacter()`.
+  - Build the full computed state via `buildCharacterComputedState(...)` from `character.js`.
+  - Log the result for debugging.
+
+### Changed
+- After creating a new character and starting the game, the character's full
+  computed state is now recalculated once and logged to the console.
+
+### Notes
+- No visible UI changes yet; the game should behave the same, but the console
+  will now show the computed character stats after starting a new character.
+
+---
+
 ## v0.0.53 (WIP) – Equipment core module
 
 ### Added
