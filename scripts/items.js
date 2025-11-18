@@ -2,7 +2,7 @@
 // Keep rarity-weighted random; some items have optional statRanges.
 
 const ItemCatalog = [
-  // ========== WEAPONS ==========
+// ========== WEAPONS ==========
   {
     name: "Rusty Dagger",
     description: "A dull old dagger, but still sharp enough to draw blood.",
@@ -33,7 +33,20 @@ const ItemCatalog = [
     lootFind: [0, 3],
     }
   },
-    // ========== MATERIALS ==========
+// ========== ARMOR / EQUIPMENT ==========
+  {
+    name: "Bark Chest",
+    description: "Layers of bark binded together with twine for rudimentary protection",
+    category: "Armor",
+    slot: "chest",
+    rarity: "Uncommon",
+    usage: "Basic armor.",
+    statRanges: {
+    vit: [1, 4],
+    lootFind: [0, 2],
+    }
+  },
+// ========== MATERIALS ==========
   {
     name: "Slime Core",
     category: "Crafting Component",
@@ -72,11 +85,25 @@ const ItemCatalog = [
   },
   // ========== RESOURCES ==========
   {
-    name: "Birch Wood",
+    name: "Grass Bundle",
     category: "Resource",
-    description: "A wood type used in crafting, carpentry etc",
+    description: "A basic, common plant material. Used for crafting simple items and building basic structures.",
+    rarity: "Abundant",
+    usage: "Ropes, simple baskets, fire tinder",
+  },
+  {
+    name: "Plant Fibre",
+    category: "Resource",
+    description: "Plant fibers gathered from fibrous plants, like hemp, flax, or wild grasses",
     rarity: "Common",
-    usage: "Make planks, carpentry",
+    usage: "Ropes, simple baskets, fire tinder",
+  },
+  {
+    name: "Twig",
+    category: "Resource",
+    description: "A small slender branch fallen from a tree or a bush.",
+    rarity: "Abundant",
+    usage: "Ropes, simple baskets, fire tinder",
   },
   {
     name: "Small Stone",
@@ -93,9 +120,23 @@ const ItemCatalog = [
     usage: "Craft primitive items",
   },
   {
+    name: "Birch Wood",
+    category: "Resource",
+    description: "A wood type used in crafting, carpentry etc",
+    rarity: "Common",
+    usage: "Make planks, carpentry",
+  },
+  {
     name: "Iron Ore",
     category: "Resource",
     description: "A chunk of iron ore ready to be smelted.",
+    rarity: "Common",
+    usage: "Refine into ingots at a forge.",
+  },
+  {
+    name: "Copper Nuggets",
+    category: "Resource",
+    description: "Small pieces of copper, useful in crafting basic metal items and refining.",
     rarity: "Common",
     usage: "Refine into ingots at a forge.",
   }
