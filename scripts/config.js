@@ -28,6 +28,7 @@ const GAME_CONFIG = {
       Uncommon:  0.40,
       Rare:      0.25,
       Exotic:    0.15,
+      Unique:    0.05
     },
   },
 
