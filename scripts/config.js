@@ -11,11 +11,11 @@ const GAME_CONFIG = {
 
     // Base rarity weights (these should match what you currently use in items.js)
     rarityWeights: {
-      Abundant: 1,
-      Common:   1,
-      Uncommon: 1,
-      Rare:      1,
-      Exotic:    1,
+      Abundant: 0.4,
+      Common:   0.4,
+      Uncommon: 0.4,
+      Rare:      0.3,
+      Exotic:    0.2,
       Unique:    0.5,
     },
 
