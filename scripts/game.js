@@ -688,15 +688,25 @@ function randFloat(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-// Roll stats (no clamp; can exceed max if your multiplier pushes it)
 function rollStats(statRanges, mult) {
   const out = {};
+
   for (const [key, range] of Object.entries(statRanges)) {
     const [a, b] = range;
     const base = randFloat(a, b) * mult;
     const intEndpoints = Number.isInteger(a) && Number.isInteger(b);
-    out[key] = intEndpoints ? Math.round(base) : parseFloat(base.toFixed(2));
+
+    const value = intEndpoints
+      ? Math.round(base)
+      : parseFloat(base.toFixed(2));
+
+    // If the rolled stat ends up as exactly 0, we just skip it.
+    // That means it will not appear in tooltips or be counted as a bonus.
+    if (value !== 0) {
+      out[key] = value;
+    }
   }
+
   return out;
 }
 
