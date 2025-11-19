@@ -8,7 +8,7 @@
 <body>
 <div id="game-header">
   <span class="game-header-text">
-    ProgressCrawl — v0.0.56b (WIP) – Equipment saving and core equip flow
+    ProgressCrawl — v0.0.60 (WIP) – Equipment panel & character summary
   </span>
   <button id="patch-notes-btn" type="button">Patch Notes</button>
 </div>
@@ -89,7 +89,7 @@
 
   <div id="menu-bar">
     <button id="inventory-btn" style="display:none;">Inventory</button>
-    <!-- Future feature buttons will be appended here -->
+    <button id="equipment-btn" style="display:none;">Equipment</button>
   </div>
 
     <button id="loot-button">Loot!</button>
@@ -100,6 +100,13 @@
     <div id="inventory-panel">
       <h3>Inventory</h3>
       <div id="inventory-list"></div>
+    </div>
+    
+    <div id="equipment-panel">
+      <h3>Equipment</h3>
+    
+      <div id="equipment-slots"></div>
+      <div id="equipment-summary"></div>
     </div>
   </section>
 
