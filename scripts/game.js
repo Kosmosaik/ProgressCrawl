@@ -328,6 +328,7 @@ function saveCurrentGame() {
     name: currentCharacter.name,
     stats: { ...currentCharacter.stats },
     inventory: getInventorySnapshot(),
+    equipped: getEquippedSnapshot(),
     features: {
       inventoryUnlocked: inventoryUnlocked,
     },
@@ -357,8 +358,15 @@ function loadSave(id) {
   currentSaveId = save.id;
 
   loadInventoryFromSnapshot(save.inventory || {});
+  // NEW: restore equipped items (if present)
+  if (save.equipped) {
+    loadEquippedFromSnapshot(save.equipped);
+  } else {
+    // If there was no equipment in the old save format, clear equipped.
+    loadEquippedFromSnapshot(null);
+  }
+  
   updateCharacterSummary();
-
   recomputeCharacterComputedState();
 
   // Restore feature unlocks
@@ -403,6 +411,8 @@ if (btnNewGame) {
   btnNewGame.addEventListener("click", () => {
     // New character starts with empty inventory and locked features
     loadInventoryFromSnapshot(null);
+    loadEquippedFromSnapshot(null);
+    
     currentCharacter = null;
     currentSaveId = null;
 
