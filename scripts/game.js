@@ -44,7 +44,7 @@ let patchNotesLoaded = false;
 // so UI or other systems can use it.
 let characterComputed = null;
 
-// ----- Equipment UI elements (panels/buttons declared early so helpers can use them) -----
+// ----- Equipment / loot / inventory UI elements -----
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
 const progressContainer = document.getElementById("progress-container");
@@ -554,17 +554,32 @@ function loadSave(id) {
   updateCharacterSummary();
   recomputeCharacterComputedState();
 
-  // Restore feature unlocks
+  // ----- Restore feature unlocks (with backward-compat) -----
   const feats = save.features || {};
-  inventoryUnlocked = !!feats.inventoryUnlocked;
+
+  const hasInventoryItems =
+    save.inventory && Object.keys(save.inventory).length > 0;
+  const hasEquippedItems =
+    save.equipped && Object.values(save.equipped).some(Boolean);
+
+  // If old save (no flags), infer from contents
+  inventoryUnlocked =
+    typeof feats.inventoryUnlocked === "boolean"
+      ? feats.inventoryUnlocked
+      : hasInventoryItems;
+
+  equipmentUnlocked =
+    typeof feats.equipmentUnlocked === "boolean"
+      ? feats.equipmentUnlocked
+      : hasEquippedItems;
 
   if (inventoryButton) {
-    inventoryButton.style.display = "none";
+    inventoryButton.style.display = inventoryUnlocked ? "block" : "none";
   }
   if (equipmentButton) {
-    equipmentButton.style.display = "none";
+    equipmentButton.style.display = equipmentUnlocked ? "block" : "none";
   }
-  if (equipmentPanel) {
+  if (equipmentPanel && !equipmentUnlocked) {
     equipmentPanel.style.display = "none";
   }
 
@@ -607,6 +622,8 @@ if (btnNewGame) {
     updateEquipmentPanel();
 
     inventoryUnlocked = false;
+    equipmentUnlocked = false;
+
     if (inventoryButton) {
       inventoryButton.style.display = "none";
     }
@@ -779,18 +796,18 @@ function startLoot() {
           setTimeout(() => inventoryButton.focus(), 200);
         }
       }
-      
+
       // Unlock equipment only when first equippable item drops
       if (!equipmentUnlocked && instance.slot) {
         equipmentUnlocked = true;
         if (equipmentButton) {
           equipmentButton.style.display = "block";
-          // NEW: same unlock effect (ring/glow) as inventory
+          // same unlock effect (ring/glow) as inventory
           equipmentButton.classList.add("inventory-unlock");
           setTimeout(() => equipmentButton.classList.remove("inventory-unlock"), 3000);
           setTimeout(() => equipmentButton.focus(), 200);
-          }
         }
+      }
 
       // Auto-save after loot (character must exist)
       saveCurrentGame();
