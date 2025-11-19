@@ -175,3 +175,6 @@ OTHER:
    Maybe add a property on items to set different min/max multiplier so all items can have different quality multipliers?
 @ Gear Score: Score summarized from item stats (Damage, Attack Speed etc)
 @ DPS: Calculate and show DPS on item (based on character stats + item stats)
+
+BRAINSTORM:
+@ Enchance/Enchant system. Like: Add a venomous tip on a weapon to make poison damage (chance to trigger: does damage over time effect)
