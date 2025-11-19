@@ -252,14 +252,13 @@ function updateEquipmentPanel() {
 
   // For now, just inspect in dev tools
   console.log("Character computed state:", characterComputed);
-}
 
-// Character summary on game screen
-const charSummaryName = document.getElementById("char-summary-name");
-const charSummaryStats = document.getElementById("char-summary-stats");
-
-// Simple screen state: "start" | "character" | "game"
-let currentScreen = "start";
+  // Character summary on game screen
+  const charSummaryName = document.getElementById("char-summary-name");
+  const charSummaryStats = document.getElementById("char-summary-stats");
+  
+  // Simple screen state: "start" | "character" | "game"
+  let currentScreen = "start";
 
 function setScreen(screen) {
   currentScreen = screen;
