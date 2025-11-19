@@ -550,6 +550,8 @@ function startLoot() {
         usage: template.usage,
         quality,
         stats,
+        slot: template.slot || null,
+        attackType: template.attackType || null,
       };
 
       addToInventory(instance); // from inventory.js
