@@ -136,16 +136,16 @@ function computeDerivedStats(attrTotals, equipmentStats, weaponAttackType) {
     bonusLootFind;
 
   // ---- Active Attack (for the character screen) ----
-  let attackLabel = "Unarmed Attack";
+  let attackLabel = "Attack";
   let attackType = "unarmed";
   let attackValue = 0;
 
   if (weaponAttackType === "melee") {
-    attackLabel = "Attack (Melee)";
+    attackLabel = "Attack";
     attackType = "melee";
     attackValue = meleeAttack;
   } else if (weaponAttackType === "ranged") {
-    attackLabel = "Attack (Ranged)";
+    attackLabel = "Attack";
     attackType = "ranged";
     attackValue = rangedAttack;
   } else {
