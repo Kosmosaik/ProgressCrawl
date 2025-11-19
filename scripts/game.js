@@ -31,6 +31,7 @@ const btnIntPlus = document.getElementById("btn-int-plus");
 const btnVitMinus = document.getElementById("btn-vit-minus");
 const btnVitPlus = document.getElementById("btn-vit-plus");
 
+// Patch notes
 const patchNotesBtn = document.getElementById("patch-notes-btn");
 const patchNotesPanel = document.getElementById("patch-notes-panel");
 const patchNotesClose = document.getElementById("patch-notes-close");
@@ -43,16 +44,34 @@ let patchNotesLoaded = false;
 // so UI or other systems can use it.
 let characterComputed = null;
 
-/**
- * Recompute the character's attributes and derived stats based on:
- * - The current character's base stats (STR, DEX, INT, VIT)
- * - The currently equipped items (summarized by equipment.js)
- *
- * This does NOT touch the UI yet. For now we just log the result so
- * we can see Max HP, crit, loot find, etc., in the console.
- */
+// ----- Equipment UI elements (panels/buttons declared early so helpers can use them) -----
+const lootButton = document.getElementById("loot-button");
+const progressBar = document.getElementById("progress");
+const progressContainer = document.getElementById("progress-container");
+const inventoryPanel = document.getElementById("inventory-panel");
+const inventoryButton = document.getElementById("inventory-btn");
 
+const equipmentPanel = document.getElementById("equipment-panel");
+const equipmentButton = document.getElementById("equipment-btn");
+const equipmentSlotsContainer = document.getElementById("equipment-slots");
+const equipmentSummaryContainer = document.getElementById("equipment-summary");
 
+// ----- Character summary on game screen -----
+const charSummaryName = document.getElementById("char-summary-name");
+const charSummaryStats = document.getElementById("char-summary-stats");
+
+// Simple screen state: "start" | "character" | "game"
+let currentScreen = "start";
+
+function setScreen(screen) {
+  currentScreen = screen;
+
+  if (screenStart) screenStart.hidden = screen !== "start";
+  if (screenCharacter) screenCharacter.hidden = screen !== "character";
+  if (screenGame) screenGame.hidden = screen !== "game";
+}
+
+// ----- Equipment helpers -----
 function unequipSlotToInventory(slotKey) {
   const item = unequipSlot(slotKey); // from equipment.js
   if (!item) return;
@@ -66,6 +85,11 @@ function unequipSlotToInventory(slotKey) {
   }
 }
 
+/**
+ * Recompute the character's attributes and derived stats based on:
+ * - The current character's base stats (STR, DEX, INT, VIT)
+ * - The currently equipped items (summarized by equipment.js)
+ */
 function recomputeCharacterComputedState() {
   if (!currentCharacter) {
     characterComputed = null;
@@ -89,6 +113,9 @@ function recomputeCharacterComputedState() {
   console.log("Character computed state:", characterComputed);
 }
 
+/**
+ * Render the equipment panel: equipped items + character summary.
+ */
 function updateEquipmentPanel() {
   if (!equipmentSlotsContainer || !equipmentSummaryContainer) return;
 
@@ -241,33 +268,7 @@ function updateEquipmentPanel() {
   equipmentSummaryContainer.appendChild(derivedSection);
 }
 
-  // Ask the equipment system to summarize bonuses + weapon type
-  const equipmentSummary = summarizeEquipmentForCharacter();
-
-  // Ask character.js to build the full computed state
-  characterComputed = buildCharacterComputedState(
-    currentCharacter,
-    equipmentSummary
-  );
-
-  // For now, just inspect in dev tools
-  console.log("Character computed state:", characterComputed);
-
-  // Character summary on game screen
-  const charSummaryName = document.getElementById("char-summary-name");
-  const charSummaryStats = document.getElementById("char-summary-stats");
-  
-  // Simple screen state: "start" | "character" | "game"
-  let currentScreen = "start";
-
-function setScreen(screen) {
-  currentScreen = screen;
-
-  if (screenStart) screenStart.hidden = screen !== "start";
-  if (screenCharacter) screenCharacter.hidden = screen !== "character";
-  if (screenGame) screenGame.hidden = screen !== "game";
-}
-
+// ----- Patch notes -----
 async function loadPatchNotesFromChangelog() {
   if (patchNotesLoaded || !patchNotesContent) return;
 
@@ -287,7 +288,7 @@ async function loadPatchNotesFromChangelog() {
     const latest = sections[0];
 
     const firstLineEnd = latest.indexOf("\n");
-    const heading = latest.slice(0, firstLineEnd).trim(); // e.g. "v0.0.50 — Character System & Save Slots"
+    const heading = latest.slice(0, firstLineEnd).trim();
     const body = latest.slice(firstLineEnd).trim();
 
     if (patchNotesTitle) {
@@ -479,6 +480,7 @@ function renderSaveList(saves = loadAllSaves()) {
       loadSave(save.id);
     });
     row.appendChild(loadBtn);
+
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.textContent = "Delete";
@@ -540,21 +542,21 @@ function loadSave(id) {
   currentSaveId = save.id;
 
   loadInventoryFromSnapshot(save.inventory || {});
-  // NEW: restore equipped items (if present)
+  // Restore equipped items (if present)
   if (save.equipped) {
     loadEquippedFromSnapshot(save.equipped);
   } else {
     // If there was no equipment in the old save format, clear equipped.
     loadEquippedFromSnapshot(null);
   }
-  
+
   updateCharacterSummary();
   recomputeCharacterComputedState();
 
   // Restore feature unlocks
   const feats = save.features || {};
   inventoryUnlocked = !!feats.inventoryUnlocked;
-  
+
   if (inventoryButton) {
     inventoryButton.style.display = inventoryUnlocked ? "block" : "none";
   }
@@ -575,12 +577,13 @@ function deleteSave(id) {
     currentCharacter = null;
     currentSaveId = null;
     loadInventoryFromSnapshot(null);
+    loadEquippedFromSnapshot(null);
+    characterComputed = null;
+    updateEquipmentPanel();
   }
 
   renderSaveList();
 }
-
-recomputeCharacterComputedState();
 
 // ----- Initial screen -----
 setScreen("start");
@@ -593,16 +596,18 @@ if (btnNewGame) {
     // New character starts with empty inventory and locked features
     loadInventoryFromSnapshot(null);
     loadEquippedFromSnapshot(null);
-    
+
     currentCharacter = null;
     currentSaveId = null;
+    characterComputed = null;
+    updateEquipmentPanel();
 
     inventoryUnlocked = false;
     if (inventoryButton) {
       inventoryButton.style.display = "none";
     }
     if (equipmentButton) {
-    equipmentButton.style.display = "none";
+      equipmentButton.style.display = "none";
     }
     if (equipmentPanel) {
       equipmentPanel.style.display = "none";
@@ -612,7 +617,6 @@ if (btnNewGame) {
     setScreen("character");
   });
 }
-
 
 if (btnBackToStart) {
   btnBackToStart.addEventListener("click", () => {
@@ -660,6 +664,9 @@ if (btnCreateCharacter) {
       },
     };
 
+    // Compute initial derived stats (unarmed)
+    recomputeCharacterComputedState();
+
     // Fresh save for this character (empty inventory)
     saveCurrentGame();
     updateCharacterSummary();
@@ -667,17 +674,7 @@ if (btnCreateCharacter) {
   });
 }
 
-// ----- Existing game UI elements -----
-const lootButton = document.getElementById("loot-button");
-const progressBar = document.getElementById("progress");
-const progressContainer = document.getElementById("progress-container");
-const inventoryPanel = document.getElementById("inventory-panel");
-const inventoryButton = document.getElementById("inventory-btn");
-
-const equipmentPanel = document.getElementById("equipment-panel");
-const equipmentButton = document.getElementById("equipment-btn");
-const equipmentSlotsContainer = document.getElementById("equipment-slots");
-const equipmentSummaryContainer = document.getElementById("equipment-summary");
+// ----- Inventory / Loot / Equipment logic -----
 
 let inventoryUnlocked = false;
 
@@ -705,6 +702,7 @@ if (lootButton) {
 
 if (inventoryButton) {
   inventoryButton.addEventListener("click", () => {
+    if (!inventoryPanel) return;
     inventoryPanel.style.display =
       (inventoryPanel.style.display === "block") ? "none" : "block";
   });
@@ -719,6 +717,8 @@ if (equipmentButton && equipmentPanel) {
 
 // Loot flow
 function startLoot() {
+  if (!lootButton || !progressContainer || !progressBar) return;
+
   lootButton.disabled = true;
   progressContainer.style.display = "block";
 
