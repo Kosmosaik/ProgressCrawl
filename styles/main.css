@@ -129,7 +129,7 @@ button {
 #equipment-panel {
   position: fixed;
   top: 70px;
-  left: 535px; /* 400px inventory width + 10px left + 20px gap */
+  left: 530px; /* 10px left + 500px inventory width + 20px gap */
   display: none;
   background: #111;
   border: 1px solid #555;
@@ -188,7 +188,7 @@ button {
 }
 
 .equipment-summary-row span:first-child {
-  width: 120px;        /* tweak to taste: 50–70px works nicely */
+  width: 120px;
 }
 
 .equipped-label {
@@ -200,16 +200,15 @@ button {
   cursor: pointer;
 }
 
-.meta {
-  opacity: 0.8;
-  font-size: 0.95rem;
-}
-
 /* Nicer expanders */
 .inventory-stack { margin: 6px 0; }
 .inventory-stack > summary { cursor: pointer; }
 .stack-variants { margin-left: 12px; padding-left: 8px; border-left: 1px solid #555; }
-.meta { opacity: 0.8; font-size: 0.8rem; }
+
+.meta {
+  opacity: 0.8;
+  font-size: 0.8rem;
+}
 
 /* Rarity colors (accessible on dark bg) */
 .rarity { font-weight: 600; }
@@ -289,7 +288,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer; /* keep your old behavior */
+  cursor: pointer;
 }
 
 .inventory-stack > summary .inv-name {
@@ -306,7 +305,7 @@ button {
   opacity: 0.8;
 }
 
-/* Align Trash button to the right in expanded inventory rows */
+/* Expanded inventory rows: left text + right actions */
 .inventory-stack .meta {
   display: flex;
   align-items: center;
@@ -323,19 +322,6 @@ button {
 .inventory-stack .inv-actions {
   display: inline-flex;
   gap: 4px;         /* space between Trash and Equip */
-}
-
-.inventory-stack .meta .trash-btn {
-  margin-left: auto;
-}
-
-/* Optional: make Equip match Trash visually if not already */
-.equip-btn {
-  /* reuse styling from trash-btn if you like */
-  /* example:
-  padding: 2px 6px;
-  font-size: 0.8rem;
-  */
 }
 
 /* Floating tooltip */
@@ -366,7 +352,7 @@ button {
 }
 
 #tooltip .rarity {
-  display: inline;     /* IMPORTANT — prevents block spacing */
+  display: inline;
   margin: 0 !important;
   padding: 0 !important;
   line-height: 1.2;
@@ -395,7 +381,7 @@ button {
 .inventory-unlock::after {
   content: "";
   position: absolute;
-  inset: -6px -10px;               /* a little larger than the text */
+  inset: -6px -10px;
   border: 3px solid rgba(246,244,110,0.8);
   border-radius: 12px;
   pointer-events: none;
@@ -620,7 +606,7 @@ section[hidden] {
   padding: 0.2rem 0.5rem;
   background: #151515;
   border-bottom: 1px solid #2a2a2a;
-  margin-top: 0.2rem; /* Moves the buttons slightly down below the character summary bar */
+  margin-top: 0.2rem;
 }
 
 #menu-bar button {
@@ -653,7 +639,6 @@ section[hidden] {
   font-size: 0.85rem;
   color: #e0e4e8;
 
-  /* NEW - align content */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -701,16 +686,16 @@ section[hidden] {
   padding: 1.0rem 1.25rem;
   max-width: 1000px;
   width: calc(100% - 2rem);
-  max-height: 80vh;          /* keep inside the viewport */
+  max-height: 80vh;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65);
   font-size: 0.9rem;
-  overflow: auto;            /* scroll if content is long */
+  overflow: auto;
 }
 
 .patch-notes-dialog ul {
   margin: 0 0 1rem 1.1rem;
   padding: 0;
-  list-style-position: inside; /* keep bullets inside the box */
+  list-style-position: inside;
 }
 
 .patch-notes-dialog h3 {
