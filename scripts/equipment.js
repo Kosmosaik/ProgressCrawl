@@ -86,6 +86,7 @@ function getEquippedSnapshot() {
  * Load equipped items from a snapshot (e.g. from a save file).
  * Snapshot format should match what getEquippedSnapshot() produces.
  */
+
 function loadEquippedFromSnapshot(snapshot) {
   for (const slot of EQUIP_SLOTS) {
     const it = snapshot && snapshot[slot] ? snapshot[slot] : null;
@@ -123,6 +124,7 @@ function loadEquippedFromSnapshot(snapshot) {
  * - Attribute bonuses (str/dex/int/vit) are 0 for now, but we keep the
  *   structure so we can add items that boost attributes later.
  */
+
 function summarizeEquipmentForCharacter() {
   const attrBonus = { str: 0, dex: 0, int: 0, vit: 0 };
 
@@ -185,3 +187,19 @@ function summarizeEquipmentForCharacter() {
     weaponAttackType,
   };
 }
+
+/**
+ * Read-only view of the current equipped items.
+ * Returns a shallow copy of the equipped slots.
+ */
+function getEquippedState() {
+  const out = {};
+  for (const slot of EQUIP_SLOTS) {
+    const item = equipped[slot];
+    out[slot] = item
+      ? { ...item, stats: { ...(item.stats || {}) } }
+      : null;
+  }
+  return out;
+}
+
