@@ -1,3 +1,27 @@
+## v0.0.56 (WIP) – Equipment saving and core equip flow
+
+### Added
+- Save system now persists equipped items:
+  - `saveCurrentGame()` stores `equipped` using `getEquippedSnapshot()`.
+  - `loadSave()` restores equipment with `loadEquippedFromSnapshot()` if present.
+- New helper in `inventory.js` (conceptually):
+  - `getEquipSlotForItem(item)` – resolves which slot an item belongs to (e.g. weapon).
+  - `equipOneFromInventory(stackKey, itemIndex)` – equips a single instance from
+    a stack, removes it from inventory, and returns previously equipped items
+    back into the inventory.
+
+### Changed
+- Starting a new game now clears equipped items via `loadEquippedFromSnapshot(null)`.
+- After loading a save, character stats are recomputed based on both attributes
+  and equipped items.
+
+### Notes
+- Equip button UI is partially planned: one Equip button per rolled item line
+  next to the Trash button. The actual Equipment panel and Unequip buttons will
+  be added in the next steps.
+
+---
+
 ## v0.0.55 (WIP) – Weapon item extensions
 
 ### Added
