@@ -31,9 +31,12 @@
   - The summary shows this as `Total (bonus)`, for example: `VIT: 12 (2)`.
 
 - **Inventory & equipment layout**
-  - The **Inventory** and **Equipment** panels are now aligned side by side from the top so they feel like one combined character screen.
-  - The **Equip** and **Trash** buttons are grouped together on the **right side** of each item row, making actions more consistent and easier to hit.
-  - The Equipment panel uses a tighter column layout so stat labels and values are closer together and easier to scan.
+  - The **Inventory** and **Equipment** panels are now aligned side by side from the top,
+    so they feel like one combined character screen.
+  - The **Equip** and **Trash** buttons are grouped together on the **right side** of each item row, 
+    making actions more consistent and easier to hit.
+  - The Equipment panel uses a tighter column layout, 
+    so stat labels and values are closer together and easier to scan.
 
 - **Item bonus stat presentation**
   - Item bonus stats (like crit and loot find) are now only shown when they actually roll a value.
