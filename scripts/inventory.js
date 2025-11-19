@@ -54,6 +54,8 @@ const STAT_LABELS = {
   attackSpeed: "Attack Speed",
   block: "Block",
   staminaUse: "Stamina Use",
+  critChance: "Critical Chance",
+  lootFind: "Loot Find",
 };
 
 // Quality helpers (uses global TIER_ORDER from quality.js)
