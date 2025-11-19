@@ -1,3 +1,90 @@
+## v0.0.60 — The Equipment Update
+
+This update introduces the first version of the equipment system, 
+allowing your character to gear up, gain bonuses, and grow stronger based on what you wear. 
+The character sheet has also been expanded with a proper overview of your stats and item effects.
+
+### New: Equipment System
+You can now equip items directly onto your character.
+
+Available equipment slots:
+- Weapon
+- Chest Armor
+- Leg Armor
+- Footwear
+- Trinket
+
+Equipped items:
+- Display in the new Equipment panel
+- Show their rarity, quality, and stats
+- Include a clear tooltip with an “Equipped” indicator
+- Can be unequipped at any time
+
+
+### New: Character Stats Overview
+The Equipment panel includes a full character summary that updates immediately when gear changes.
+
+Attributes:
+- Strength (STR)
+- Dexterity (DEX)
+- Intelligence (INT)
+- Vitality (VIT)
+
+Each attribute shows:
+- Total value
+- Bonus gained from gear (for example: `STR: 12 (2)`)
+
+Derived stats:
+- Maximum Health
+- Attack (Unarmed or Melee depending on your weapon)
+- Critical Chance
+- Loot Find
+
+
+### Inventory Improvements
+Inventory entries for wearable items now include an Equip button.
+
+Features:
+- Equip items directly from inventory
+- Works correctly even when items are stacked
+- Only one copy of an item is equipped or removed from the stack
+- Inventory and Equipment panels can be open simultaneously
+
+
+### Saving and Loading
+Saved characters now remember:
+- All equipped items
+- All inventory contents
+- Character attributes
+- Feature unlocks (such as inventory access)
+
+Loading a saved game restores your character exactly as you left them.
+
+
+### Fixes and General Improvements
+- Fixed equipping items from a stack removing more than one item
+- Fixed incorrect stat calculations when loading or creating characters
+- Improved button visibility logic for new and loaded games
+- Improved tooltip formatting and consistency across both panels
+- Cleaned UI layout to ensure Inventory and Equipment align properly
+
+### Known Errors/Bugs:
+- Attack stat doesn't take item damage into consideration.
+  (This will be fixed in the revised Attack/Damage/Skill system).
+-
+
+### Coming Soon
+Work has begun on a revised Attack and Damage system:
+
+- Weapons will have both “maximum potential damage” and “your actual damage”
+- Skills will determine how effectively you can use different weapon types
+- Attack will represent expected average performance rather than raw stat values
+- Unarmed combat will be treated as its own weapon class
+
+This foundation is now in place for the next major update where we will revise the damage/attack calculations.
+
+---
+
 ## v0.0.57 (WIP) – Equipment panel & character summary
 
 ### Added
