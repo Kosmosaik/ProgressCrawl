@@ -129,7 +129,7 @@ button {
 #equipment-panel {
   position: fixed;
   top: 70px;
-  left: 530px; /* 10px left + 500px inventory width + 20px gap */
+  left: 535px; /* 10px left + 500px inventory width + 20px gap */
   display: none;
   background: #111;
   border: 1px solid #555;
