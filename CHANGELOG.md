@@ -1,6 +1,311 @@
-## v0.0.52 - Cleanup
+## v0.0.61 — Equipment & Stat Polish
+
+### Added
+- **Equip / Unequip flow**
+  - Every equippable item in the inventory now has an **Equip** button in its row.
+  - Equipped items show an **Unequip** button in the Equipment panel that sends them back to the inventory.
+  - Equipping and unequipping immediately updates your character’s stats and is saved automatically.
+
+- **Clear character summary in Equipment panel**
+  - The Equipment screen now shows:
+    - **Attributes:** `STR`, `DEX`, `INT`, `VIT` as `Total (bonus)` so you can see how much is coming from gear.
+    - **Derived stats:** `Max HP`, `Attack` (based on current weapon or unarmed), `Crit Chance`, and `Loot Find`.
+
+- **Equipment unlock flow**
+  - The **Equipment** menu button is now **locked by default**.
+  - It unlocks the first time you loot an equippable item (like a dagger or armor piece).
+  - When it unlocks, it gets the same subtle glow + ring effect as the Inventory button to draw attention.
+
+### Changed
+- **Attack display**
+  - The character summary in the Equipment panel now shows a single **“Attack”** value.
+  - The label automatically reflects what you are using:
+    - Unarmed → `Unarmed Attack`
+    - Weapon equipped → `Attack (using that weapon)`
+  - This keeps the UI cleaner and focused on the attack that actually matters for your current setup.
+
+- **Attribute bonuses from gear**
+  - Items that grant attribute bonuses (for example, **Bark Chest** with bonus VIT) now:
+    - Properly add to the attribute totals (e.g. VIT).
+    - Correctly increase **Max HP** based on the new VIT value.
+  - The summary shows this as `Total (bonus)`, for example: `VIT: 12 (2)`.
+
+- **Inventory & equipment layout**
+  - The **Inventory** and **Equipment** panels are now aligned side by side from the top,
+    so they feel like one combined character screen.
+  - The **Equip** and **Trash** buttons are grouped together on the **right side** of each item row, 
+    making actions more consistent and easier to hit.
+  - The Equipment panel uses a tighter column layout, 
+    so stat labels and values are closer together and easier to scan.
+
+- **Item bonus stat presentation**
+  - Item bonus stats (like crit and loot find) are now only shown when they actually roll a value.
+  - If a stat rolls as `0`, it is **not** displayed on the item at all.
+  - Tooltips and summary rows use nicer names instead of internal ones:
+    - `critChance` → `Crit Chance`
+    - `lootFind` → `Loot Find`
+    - etc., via a shared label mapping.
+
 ### Fixed
-- Removed duplicate code blocks for patch notes.
+- **Equipment bonuses not applying**
+  - Fixed an issue where **VIT bonuses from armor** were not reflected in your character stats or max HP.
+  - Equipped items now properly feed into the character’s computed attributes and derived stats.
+
+- **Inventory / Equipment buttons after loading a save**
+  - Fixed a bug where **Inventory** and **Equipment** menu buttons sometimes disappeared after loading a saved game.
+  - The game now:
+    - Remembers whether Inventory and Equipment were unlocked for that character.
+    - Restores those buttons correctly on load.
+    - For older saves without these flags, it intelligently infers unlocks from whether you have items or equipped gear.
+
+- **Rarity weight safety**
+  - Hardened the loot roll logic so it falls back to default rarity weights if the config is missing or invalid.
+  - This prevents rare cases where item generation could break due to misconfigured rarity settings.
+
+---
+
+## v0.0.60 — The Equipment Update
+
+This update introduces the first version of the equipment system, 
+allowing your character to gear up, gain bonuses, and grow stronger based on what you wear. 
+The character sheet has also been expanded with a proper overview of your stats and item effects.
+
+### New: Equipment System
+You can now equip items directly onto your character.
+
+Available equipment slots:
+- Weapon
+- Chest Armor
+- Leg Armor
+- Footwear
+- Trinket
+
+Equipped items:
+- Display in the new Equipment panel
+- Show their rarity, quality, and stats
+- Include a clear tooltip with an “Equipped” indicator
+- Can be unequipped at any time
+
+
+### New: Character Stats Overview
+The Equipment panel includes a full character summary that updates immediately when gear changes.
+
+Attributes:
+- Strength (STR)
+- Dexterity (DEX)
+- Intelligence (INT)
+- Vitality (VIT)
+
+Each attribute shows:
+- Total value
+- Bonus gained from gear (for example: `STR: 12 (2)`)
+
+Derived stats:
+- Maximum Health
+- Attack (Unarmed or Melee depending on your weapon)
+- Critical Chance
+- Loot Find
+
+
+### Inventory Improvements
+Inventory entries for wearable items now include an Equip button.
+
+Features:
+- Equip items directly from inventory
+- Works correctly even when items are stacked
+- Only one copy of an item is equipped or removed from the stack
+- Inventory and Equipment panels can be open simultaneously
+
+
+### Saving and Loading
+Saved characters now remember:
+- All equipped items
+- All inventory contents
+- Character attributes
+- Feature unlocks (such as inventory access)
+
+Loading a saved game restores your character exactly as you left them.
+
+
+### Fixes and General Improvements
+- Fixed equipping items from a stack removing more than one item
+- Fixed incorrect stat calculations when loading or creating characters
+- Improved button visibility logic for new and loaded games
+- Improved tooltip formatting and consistency across both panels
+- Cleaned UI layout to ensure Inventory and Equipment align properly
+- Equipping armor now adds and calculate bonus VIT / HP correctly.
+- Equip button moved to the right side right besides the Trash-button
+  (make sure you press the right button since Trash doesn't have any confirm-system yet).
+
+### Known Errors/Bugs:
+- Attack stat doesn't take item damage into consideration.
+  (This will be fixed in the revised Attack/Damage/Skill system).
+-
+
+### Coming Soon
+Work has begun on a revised Attack and Damage system:
+
+- Weapons will have both “maximum potential damage” and “your actual damage”
+- Skills will determine how effectively you can use different weapon types
+- Attack will represent expected average performance rather than raw stat values
+- Unarmed combat will be treated as its own weapon class
+
+This foundation is now in place for the next major update where we will revise the damage/attack calculations.
+
+---
+
+## v0.0.57 (WIP) – Equipment panel & character summary
+
+### Added
+- New Equipment menu button next to the Inventory button on the game screen.
+- New Equipment panel displaying:
+  - Equipped slots: Weapon, Chest, Legs, Feet, Trinket.
+  - Per-slot item names with quality and rarity coloring.
+  - `[Unequip]` button per slot which returns items to the inventory.
+- Character summary in the Equipment panel:
+  - Attributes shown as `TOTAL (bonus)` for STR, DEX, INT, VIT.
+  - Derived stats:
+    - Max HP
+    - Active Attack (Melee/Ranged/Unarmed)
+    - Crit Chance (%)
+    - Loot Find (%)
+
+### Changed
+- Equip buttons now share styling with Trash buttons for visual consistency.
+- Inventory unlock now also reveals the Equipment button and allows both panels
+  to be open at the same time.
+
+### Notes
+- Tooltips for equipped items match inventory tooltips but include an
+  additional “Equipped” label under the Quality line.
+
+---
+
+## v0.0.56 (WIP) – Equipment saving and core equip flow
+
+### Added
+- Save system now persists equipped items:
+  - `saveCurrentGame()` stores `equipped` using `getEquippedSnapshot()`.
+  - `loadSave()` restores equipment with `loadEquippedFromSnapshot()` if present.
+- New helper in `inventory.js` (conceptually):
+  - `getEquipSlotForItem(item)` – resolves which slot an item belongs to (e.g. weapon).
+  - `equipOneFromInventory(stackKey, itemIndex)` – equips a single instance from
+    a stack, removes it from inventory, and returns previously equipped items
+    back into the inventory.
+
+### Changed
+- Starting a new game now clears equipped items via `loadEquippedFromSnapshot(null)`.
+- After loading a save, character stats are recomputed based on both attributes
+  and equipped items.
+
+### Notes
+- Equip button UI is partially planned: one Equip button per rolled item line
+  next to the Trash button. The actual Equipment panel and Unequip buttons will
+  be added in the next steps.
+
+---
+
+## v0.0.55 (WIP) – Weapon item extensions
+
+### Added
+- Added `slot: "weapon"` and `attackType: "melee"` to Rusty Dagger and Simple Dagger.
+- Added randomized weapon stats for both daggers:
+  - `critChance` (in %)
+  - `lootFind` (in %)
+- These stats scale automatically with item quality tiers.
+
+### Notes
+- Damage and attackSpeed remain as before.
+- Only weapons have these new properties; non-weapons remain unchanged.
+
+---
+
+## v0.0.54 (WIP) – Wire character & equipment math
+
+### Added
+- New `characterComputed` state in `game.js` to hold:
+  - Base attributes
+  - Total attributes (including bonuses)
+  - Derived stats (Max HP, Melee/Ranged Attack, Crit Chance, Loot Find, Active Attack).
+- Added `recomputeCharacterComputedState()` helper in `game.js` to:
+  - Pull equipment bonuses via `summarizeEquipmentForCharacter()`.
+  - Build the full computed state via `buildCharacterComputedState(...)` from `character.js`.
+  - Log the result for debugging.
+
+### Changed
+- After creating a new character and starting the game, the character's full
+  computed state is now recalculated once and logged to the console.
+
+### Notes
+- No visible UI changes yet; the game should behave the same, but the console
+  will now show the computed character stats after starting a new character.
+
+---
+
+## v0.0.53 (WIP) – Equipment core module
+
+### Added
+- New `equipment.js` module to manage equipped items and their bonuses.
+- Defined equipment slots for v0.1:
+  - `weapon`, `chest`, `legs`, `feet`, `trinket`.
+- Added helpers:
+  - `equipItemToSlot(slot, item)` – equips a (copied) item into a slot and returns the previously equipped item.
+  - `unequipSlot(slot)` – clears a slot and returns the unequipped item.
+  - `getEquippedSnapshot()` / `loadEquippedFromSnapshot(snapshot)` – serialize and restore equipped items for saving/loading.
+  - `summarizeEquipmentForCharacter()` – aggregates attribute and stat bonuses
+    and detects the weapon's attack type for the character calculations.
+
+### Notes
+- Attribute bonuses (STR/DEX/INT/VIT), HP bonuses, and direct melee/ranged attack
+  bonuses are supported in the data model but currently default to 0 until we
+  add items that provide these stats.
+- Crit chance and Loot Find bonuses will be drawn from item `stats` values
+  (e.g. `stats.critChance`, `stats.lootFind`) when we extend weapon items.
+
+
+## v0.0.52b (WIP) – Character math module
+
+### Added
+- New `character.js` module to centralize all character calculations:
+  - Extracts base attributes from the current character.
+  - Combines base attributes with bonus attributes from equipment/buffs.
+  - Computes derived stats:
+    - Max HP
+    - Melee Attack and Ranged Attack
+    - Crit Chance (%)
+    - Loot Find (%)
+    - Active Attack, which switches between:
+      - `Attack (Melee)` when wielding a melee weapon
+      - `Attack (Ranged)` when wielding a ranged weapon
+      - `Unarmed Attack` when no weapon is equipped
+- Added `buildCharacterComputedState(character, equipmentSummary)` as the
+  main helper to get:
+  - Base attributes
+  - Attribute totals + bonuses
+  - All derived stats in one object.
+
+### Notes
+- All values remain full-precision floats; rounding/formatting to two decimals
+  will be handled in the UI layer later.
+- Equipment bonuses are wired via a generic `equipmentSummary` object, which
+  will be implemented in the upcoming `equipment.js` module.
+
+---
+
+## v0.0.52 (WIP) – Character config groundwork
+
+### Added
+- Added `GAME_CONFIG.character` with tunable values for:
+- Base HP and HP per VIT.
+- Base crit chance and crit per DEX.
+- Loot Find gained per INT.
+- Attack scaling factors for melee and ranged builds.
+- Added `GAME_CONFIG.loot.rarityWeights` and `GAME_CONFIG.loot.lootFindBias` to centralize
+  rarity weights and control how Loot Find subtly biases rarities.
+
+### Changed
+- Updated header text and internal version number from v0.0.51 to v0.0.52 for the
+  character/equipment branch.
 
 ---
 

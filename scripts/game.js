@@ -31,6 +31,7 @@ const btnIntPlus = document.getElementById("btn-int-plus");
 const btnVitMinus = document.getElementById("btn-vit-minus");
 const btnVitPlus = document.getElementById("btn-vit-plus");
 
+// Patch notes
 const patchNotesBtn = document.getElementById("patch-notes-btn");
 const patchNotesPanel = document.getElementById("patch-notes-panel");
 const patchNotesClose = document.getElementById("patch-notes-close");
@@ -39,8 +40,23 @@ const patchNotesContent = document.getElementById("patch-notes-content");
 
 let patchNotesLoaded = false;
 
+// Holds the fully computed character state (attributes + derived stats)
+// so UI or other systems can use it.
+let characterComputed = null;
 
-// Character summary on game screen
+// ----- Equipment / loot / inventory UI elements -----
+const lootButton = document.getElementById("loot-button");
+const progressBar = document.getElementById("progress");
+const progressContainer = document.getElementById("progress-container");
+const inventoryPanel = document.getElementById("inventory-panel");
+const inventoryButton = document.getElementById("inventory-btn");
+
+const equipmentPanel = document.getElementById("equipment-panel");
+const equipmentButton = document.getElementById("equipment-btn");
+const equipmentSlotsContainer = document.getElementById("equipment-slots");
+const equipmentSummaryContainer = document.getElementById("equipment-summary");
+
+// ----- Character summary on game screen -----
 const charSummaryName = document.getElementById("char-summary-name");
 const charSummaryStats = document.getElementById("char-summary-stats");
 
@@ -55,6 +71,204 @@ function setScreen(screen) {
   if (screenGame) screenGame.hidden = screen !== "game";
 }
 
+// ----- Equipment helpers -----
+function unequipSlotToInventory(slotKey) {
+  const item = unequipSlot(slotKey); // from equipment.js
+  if (!item) return;
+
+  addToInventory(item);
+  if (typeof recomputeCharacterComputedState === "function") {
+    recomputeCharacterComputedState();
+  }
+  if (typeof saveCurrentGame === "function") {
+    saveCurrentGame();
+  }
+}
+
+/**
+ * Recompute the character's attributes and derived stats based on:
+ * - The current character's base stats (STR, DEX, INT, VIT)
+ * - The currently equipped items (summarized by equipment.js)
+ */
+function recomputeCharacterComputedState() {
+  if (!currentCharacter) {
+    characterComputed = null;
+    updateEquipmentPanel();
+    console.warn("recomputeCharacterComputedState: no currentCharacter yet");
+    return;
+  }
+
+  // Ask the equipment system to summarize bonuses + weapon type
+  const equipmentSummary = summarizeEquipmentForCharacter();
+
+  // Ask character.js to build the full computed state
+  characterComputed = buildCharacterComputedState(
+    currentCharacter,
+    equipmentSummary
+  );
+
+  updateEquipmentPanel();
+
+  // For debugging:
+  console.log("Character computed state:", characterComputed);
+}
+
+/**
+ * Render the equipment panel: equipped items + character summary.
+ */
+function updateEquipmentPanel() {
+  if (!equipmentSlotsContainer || !equipmentSummaryContainer) return;
+
+  // Clear existing UI
+  equipmentSlotsContainer.innerHTML = "";
+  equipmentSummaryContainer.innerHTML = "";
+
+  // No character? show nothing but early exit
+  if (!currentCharacter || !characterComputed) {
+    return;
+  }
+
+  const equippedState = getEquippedState(); // from equipment.js
+  const attrs = characterComputed.attributeTotals;
+  const derived = characterComputed.derivedStats;
+
+  const slotDefs = [
+    { key: "weapon",  label: "Weapon" },
+    { key: "chest",   label: "Chest" },
+    { key: "legs",    label: "Legs" },
+    { key: "feet",    label: "Feet" },
+    { key: "trinket", label: "Trinket" },
+  ];
+
+  // ---- Slot rows ----
+  slotDefs.forEach(def => {
+    const row = document.createElement("div");
+    row.className = "equipment-slot-row";
+
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "equipment-slot-label";
+    labelSpan.textContent = def.label + ":";
+    row.appendChild(labelSpan);
+
+    const item = equippedState[def.key];
+
+    if (item) {
+      const itemSpan = document.createElement("span");
+      itemSpan.className = `equipment-slot-item rarity ${rarityClass(item.rarity)}`;
+      itemSpan.textContent = `${item.name} [${item.quality}]`;
+
+      // Tooltip: same basic info as inventory, plus "Equipped"
+      Tooltip.bind(itemSpan, () => {
+        const rarityCls = rarityClass(item.rarity);
+        const header =
+          `<strong>${item.name}</strong><br>` +
+          `<span class="rarity ${rarityCls}" style="display:inline">${item.rarity}</span><br>` +
+          `Quality: ${item.quality}<br>` +
+          `<span class="equipped-label">Equipped</span>`;
+
+        const desc = item.description ? `<br><br>${item.description}` : "";
+        const statsObj = item.stats || {};
+        const statKeys = Object.keys(statsObj);
+        const stats = statKeys.length
+          ? `<br><br>${statKeys
+              .map(k => `${STAT_LABELS[k] ?? k}: ${fmt(statsObj[k])}`)
+              .join("<br>")}`
+          : "";
+
+        return header + desc + stats;
+      });
+
+      row.appendChild(itemSpan);
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "trash-btn"; // same style as other small buttons
+      btn.textContent = "Unequip";
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        Tooltip.hide();
+        unequipSlotToInventory(def.key);
+      });
+      row.appendChild(btn);
+    } else {
+      const emptySpan = document.createElement("span");
+      emptySpan.className = "equipment-slot-empty";
+      emptySpan.textContent = "(empty)";
+      row.appendChild(emptySpan);
+    }
+
+    equipmentSlotsContainer.appendChild(row);
+  });
+
+  // ---- Summary: attributes ----
+  const attrsSection = document.createElement("div");
+  attrsSection.className = "equipment-summary-section";
+
+  const attrsTitle = document.createElement("div");
+  attrsTitle.className = "equipment-summary-title";
+  attrsTitle.textContent = "Attributes";
+  attrsSection.appendChild(attrsTitle);
+
+  const total = attrs.total;
+  const bonus = attrs.bonus;
+
+  function makeAttrRow(label, key) {
+    const row = document.createElement("div");
+    row.className = "equipment-summary-row";
+    const left = document.createElement("span");
+    left.textContent = label;
+    const right = document.createElement("span");
+    const t = total[key];
+    const b = bonus[key];
+    right.textContent = `${fmt(t)} (${fmt(b)})`;
+    row.appendChild(left);
+    row.appendChild(right);
+    return row;
+  }
+
+  attrsSection.appendChild(makeAttrRow("STR:", "str"));
+  attrsSection.appendChild(makeAttrRow("DEX:", "dex"));
+  attrsSection.appendChild(makeAttrRow("INT:", "int"));
+  attrsSection.appendChild(makeAttrRow("VIT:", "vit"));
+
+  equipmentSummaryContainer.appendChild(attrsSection);
+
+  // ---- Summary: derived stats ----
+  const derivedSection = document.createElement("div");
+  derivedSection.className = "equipment-summary-section";
+
+  const derivedTitle = document.createElement("div");
+  derivedTitle.className = "equipment-summary-title";
+  derivedTitle.textContent = "Derived Stats";
+  derivedSection.appendChild(derivedTitle);
+
+  function makeDerivedRow(label, value, suffix = "") {
+    const row = document.createElement("div");
+    row.className = "equipment-summary-row";
+    const left = document.createElement("span");
+    left.textContent = label;
+    const right = document.createElement("span");
+    right.textContent = `${fmt(value)}${suffix}`;
+    row.appendChild(left);
+    row.appendChild(right);
+    return row;
+  }
+
+  derivedSection.appendChild(makeDerivedRow("Max HP:", derived.maxHP));
+  derivedSection.appendChild(
+    makeDerivedRow(`${derived.activeAttack.label}:`, derived.activeAttack.value)
+  );
+  derivedSection.appendChild(
+    makeDerivedRow("Crit Chance:", derived.critChance, "%")
+  );
+  derivedSection.appendChild(
+    makeDerivedRow("Loot Find:", derived.lootFind, "%")
+  );
+
+  equipmentSummaryContainer.appendChild(derivedSection);
+}
+
+// ----- Patch notes -----
 async function loadPatchNotesFromChangelog() {
   if (patchNotesLoaded || !patchNotesContent) return;
 
@@ -74,7 +288,7 @@ async function loadPatchNotesFromChangelog() {
     const latest = sections[0];
 
     const firstLineEnd = latest.indexOf("\n");
-    const heading = latest.slice(0, firstLineEnd).trim(); // e.g. "v0.0.50 — Character System & Save Slots"
+    const heading = latest.slice(0, firstLineEnd).trim();
     const body = latest.slice(firstLineEnd).trim();
 
     if (patchNotesTitle) {
@@ -266,6 +480,7 @@ function renderSaveList(saves = loadAllSaves()) {
       loadSave(save.id);
     });
     row.appendChild(loadBtn);
+
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.textContent = "Delete";
@@ -297,8 +512,10 @@ function saveCurrentGame() {
     name: currentCharacter.name,
     stats: { ...currentCharacter.stats },
     inventory: getInventorySnapshot(),
+    equipped: getEquippedSnapshot(),
     features: {
       inventoryUnlocked: inventoryUnlocked,
+      equipmentUnlocked: equipmentUnlocked,
     },
   };
 
@@ -326,18 +543,44 @@ function loadSave(id) {
   currentSaveId = save.id;
 
   loadInventoryFromSnapshot(save.inventory || {});
-  updateCharacterSummary();
+  // Restore equipped items (if present)
+  if (save.equipped) {
+    loadEquippedFromSnapshot(save.equipped);
+  } else {
+    // If there was no equipment in the old save format, clear equipped.
+    loadEquippedFromSnapshot(null);
+  }
 
-  // Restore feature unlocks
+  updateCharacterSummary();
+  recomputeCharacterComputedState();
+
+  // ----- Restore feature unlocks (with backward-compat) -----
   const feats = save.features || {};
-  inventoryUnlocked = !!feats.inventoryUnlocked;
+
+  const hasInventoryItems =
+    save.inventory && Object.keys(save.inventory).length > 0;
+  const hasEquippedItems =
+    save.equipped && Object.values(save.equipped).some(Boolean);
+
+  // If old save (no flags), infer from contents
+  inventoryUnlocked =
+    typeof feats.inventoryUnlocked === "boolean"
+      ? feats.inventoryUnlocked
+      : hasInventoryItems;
+
+  equipmentUnlocked =
+    typeof feats.equipmentUnlocked === "boolean"
+      ? feats.equipmentUnlocked
+      : hasEquippedItems;
 
   if (inventoryButton) {
-    if (inventoryUnlocked) {
-      inventoryButton.style.display = "block";
-    } else {
-      inventoryButton.style.display = "none";
-    }
+    inventoryButton.style.display = inventoryUnlocked ? "block" : "none";
+  }
+  if (equipmentButton) {
+    equipmentButton.style.display = equipmentUnlocked ? "block" : "none";
+  }
+  if (equipmentPanel && !equipmentUnlocked) {
+    equipmentPanel.style.display = "none";
   }
 
   setScreen("game");
@@ -353,12 +596,13 @@ function deleteSave(id) {
     currentCharacter = null;
     currentSaveId = null;
     loadInventoryFromSnapshot(null);
+    loadEquippedFromSnapshot(null);
+    characterComputed = null;
+    updateEquipmentPanel();
   }
 
   renderSaveList();
 }
-
-
 
 // ----- Initial screen -----
 setScreen("start");
@@ -370,19 +614,30 @@ if (btnNewGame) {
   btnNewGame.addEventListener("click", () => {
     // New character starts with empty inventory and locked features
     loadInventoryFromSnapshot(null);
+    loadEquippedFromSnapshot(null);
+
     currentCharacter = null;
     currentSaveId = null;
+    characterComputed = null;
+    updateEquipmentPanel();
 
     inventoryUnlocked = false;
+    equipmentUnlocked = false;
+
     if (inventoryButton) {
       inventoryButton.style.display = "none";
+    }
+    if (equipmentButton) {
+      equipmentButton.style.display = "none";
+    }
+    if (equipmentPanel) {
+      equipmentPanel.style.display = "none";
     }
 
     resetCharacterCreation();
     setScreen("character");
   });
 }
-
 
 if (btnBackToStart) {
   btnBackToStart.addEventListener("click", () => {
@@ -430,6 +685,9 @@ if (btnCreateCharacter) {
       },
     };
 
+    // Compute initial derived stats (unarmed)
+    recomputeCharacterComputedState();
+
     // Fresh save for this character (empty inventory)
     saveCurrentGame();
     updateCharacterSummary();
@@ -437,29 +695,35 @@ if (btnCreateCharacter) {
   });
 }
 
-// ----- Existing game UI elements -----
-const lootButton = document.getElementById("loot-button");
-const progressBar = document.getElementById("progress");
-const progressContainer = document.getElementById("progress-container");
-const inventoryPanel = document.getElementById("inventory-panel");
-const inventoryButton = document.getElementById("inventory-btn");
+// ----- Inventory / Loot / Equipment logic -----
 
 let inventoryUnlocked = false;
+let equipmentUnlocked = false;
 
 // Simple RNG helper for stats
 function randFloat(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-// Roll stats (no clamp; can exceed max if your multiplier pushes it)
 function rollStats(statRanges, mult) {
   const out = {};
+
   for (const [key, range] of Object.entries(statRanges)) {
     const [a, b] = range;
     const base = randFloat(a, b) * mult;
     const intEndpoints = Number.isInteger(a) && Number.isInteger(b);
-    out[key] = intEndpoints ? Math.round(base) : parseFloat(base.toFixed(2));
+
+    const value = intEndpoints
+      ? Math.round(base)
+      : parseFloat(base.toFixed(2));
+
+    // If the rolled stat ends up as exactly 0, we just skip it.
+    // That means it will not appear in tooltips or be counted as a bonus.
+    if (value !== 0) {
+      out[key] = value;
+    }
   }
+
   return out;
 }
 
@@ -470,13 +734,23 @@ if (lootButton) {
 
 if (inventoryButton) {
   inventoryButton.addEventListener("click", () => {
+    if (!inventoryPanel) return;
     inventoryPanel.style.display =
       (inventoryPanel.style.display === "block") ? "none" : "block";
   });
 }
 
+if (equipmentButton && equipmentPanel) {
+  equipmentButton.addEventListener("click", () => {
+    equipmentPanel.style.display =
+      (equipmentPanel.style.display === "block") ? "none" : "block";
+  });
+}
+
 // Loot flow
 function startLoot() {
+  if (!lootButton || !progressContainer || !progressBar) return;
+
   lootButton.disabled = true;
   progressContainer.style.display = "block";
 
@@ -507,17 +781,32 @@ function startLoot() {
         usage: template.usage,
         quality,
         stats,
+        slot: template.slot || null,
+        attackType: template.attackType || null,
       };
 
       addToInventory(instance); // from inventory.js
 
       if (!inventoryUnlocked) {
         inventoryUnlocked = true;
-        inventoryButton.style.display = "block";
+        if (inventoryButton) {
+          inventoryButton.style.display = "block";
+          inventoryButton.classList.add("inventory-unlock");
+          setTimeout(() => inventoryButton.classList.remove("inventory-unlock"), 3000);
+          setTimeout(() => inventoryButton.focus(), 200);
+        }
+      }
 
-        inventoryButton.classList.add("inventory-unlock");
-        setTimeout(() => inventoryButton.classList.remove("inventory-unlock"), 3000);
-        setTimeout(() => inventoryButton.focus(), 200);
+      // Unlock equipment only when first equippable item drops
+      if (!equipmentUnlocked && instance.slot) {
+        equipmentUnlocked = true;
+        if (equipmentButton) {
+          equipmentButton.style.display = "block";
+          // same unlock effect (ring/glow) as inventory
+          equipmentButton.classList.add("inventory-unlock");
+          setTimeout(() => equipmentButton.classList.remove("inventory-unlock"), 3000);
+          setTimeout(() => equipmentButton.focus(), 200);
+        }
       }
 
       // Auto-save after loot (character must exist)
@@ -525,3 +814,8 @@ function startLoot() {
     }
   }, tick * 1000);
 }
+
+window.debugCharacterComputed = () => {
+  console.log("Character computed state:", characterComputed);
+  return characterComputed;
+};

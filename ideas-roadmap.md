@@ -7,6 +7,7 @@
 ===== IMPROVEMENTS: =====
 @ Add debug mode (type in like a password in console to activate).
   Add statistics, loot rate help, timers, speed up time/progress stuff.
+@ Add a "compare" system between hovered item in inventory and equipped item of same type.
 
 ===== TOOLS =====
 @ Item creator (Tool that makes it easy adding items that automcatically adds it to the items.js file
@@ -24,10 +25,10 @@ FEATURE: Character & Classes
   @ LATER: Add skill distribution??
   
 FEATURE: Equipment view
-  @ Add Equipment menu
-  @ Add more equipment related items (chest, head, weapon etc)
-  @ Add equip/unequip function (move item from inventory to equipment and vice versa. Make slot busy/available)
-  @ Add stats from equipment
+  @ Add Equipment menu (FINISHED)
+  @ Add more equipment related items (chest, head, weapon etc) (ONGOING)
+  @ Add equip/unequip function (move item from inventory to equipment and vice versa. Make slot busy/available) (FINISHED)
+  @ Add stats from equipment (ONGOING)
 
   Core Combat Stats
   [X] : Weapon Damage
@@ -44,7 +45,7 @@ FEATURE: Equipment view
   [ ] : Armor / Defense (reduces incoming physical dmg)
   [ ] : Dodge / Evasion (chance to avoid attacks)
   [ ] : Block Chance (for shields)
-  [ ] : HP (Max Health)
+  [X] : HP (Max Health)
   [ ] : HP Regeneration (per second)
   [ ] : Damage Reduction %
   [ ] : Resistance (Fire, Cold, Poison, Magic etc - whene elements gets added)
@@ -156,6 +157,8 @@ FEATURE: Enemies
    @ Add enemies to zones. Add all to starting zone in the beginning to test fighting, balancing, player death etc.
    @ Make some enemies appear in the exploration list (same as locations and pois), but also make some enemies trigger "forced combat".
    @ Add enemy loot pools: Different loot for different enemies.
+   @ Even though enenmies will have their own loot pool /drop table, there will be a chance for an enemy to drop from a "generic" loot pool that is much bigger, 
+   	 to randomize it more and give that element of surprise/freshness and jackpot feel.
 
 FEATURE: Combat
    @ Add simple combat system (timer based attacks with a simple log updating when player/enemy attacks, showing damage done etc).
@@ -167,6 +170,7 @@ FEATURE: Player Death
    @ When player health reaches <= 0 , 
    
 OTHER:
+@ Show weight drop table after lootBonus stat added in debug mode, to figure out balancing the attribute.
 @ Quality (F0 -> S1 = Higher Quality = Higher stat multipliers / higher enhancement values in crafting / higher success rates etc).
    Maybe add a property on items to set different min/max multiplier so all items can have different quality multipliers?
 @ Gear Score: Score summarized from item stats (Damage, Attack Speed etc)

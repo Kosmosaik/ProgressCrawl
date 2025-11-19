@@ -31,6 +31,7 @@ function rarityClass(rarity = "") {
     case "uncommon": return "r-uncommon";
     case "rare":     return "r-rare";
     case "exotic":   return "r-exotic";
+    case "unique":   return "r-unique";
     default:         return "r-common";
   }
 }
@@ -53,6 +54,8 @@ const STAT_LABELS = {
   attackSpeed: "Attack Speed",
   block: "Block",
   staminaUse: "Stamina Use",
+  critChance: "Critical Chance",
+  lootFind: "Loot Find",
 };
 
 // Quality helpers (uses global TIER_ORDER from quality.js)
@@ -155,6 +158,55 @@ function removeOneFromGroup(itemName, quality, stats) {
     }
     renderInventory();
   }
+}
+
+function equipOneFromGroup(itemName, quality, stats) {
+  const stack = inventory[itemName];
+  if (!stack) return;
+
+  // Find the specific instance that matches this quality + stats
+  const idx = stack.items.findIndex(
+    it => it.quality === quality && statsEqual(it.stats, stats)
+  );
+  if (idx === -1) return;
+
+  const item = stack.items[idx];
+
+  // Determine which slot this item should go into (weapon, chest, etc.)
+  const slot = getEquipSlotForItem(item);
+  if (!slot) {
+    console.warn("Item is not equippable:", item);
+    return;
+  }
+
+  // Equip this item, and get back whatever was previously in that slot
+  const previousEquipped = equipItemToSlot(slot, item);
+
+  // Remove ONE instance from the inventory stack
+  removeOneFromGroup(itemName, quality, stats);
+  // (removeOneFromGroup already decreases qty and re-renders)
+
+  // If a previous item was equipped, return it to the inventory
+  if (previousEquipped) {
+    addToInventory(previousEquipped);
+  }
+
+  // Recompute character stats (HP / attack / crit / loot find)
+  if (typeof recomputeCharacterComputedState === "function") {
+    recomputeCharacterComputedState();
+  }
+
+  // Auto-save after changing equipment
+  if (typeof saveCurrentGame === "function") {
+    saveCurrentGame();
+  }
+}
+
+function getEquipSlotForItem(item) {
+  // For now we just trust item.slot ("weapon", "chest", etc.)
+  if (!item || !item.slot) return null;
+  // Optional: validate slot name later
+  return item.slot;
 }
 
 // Category helpers
@@ -345,17 +397,20 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
   const rep = group.items[0];
   const quality = group.quality;
 
+  // Left side: text (name, quality, qty, stats)
+  const left = document.createElement("span");
+  left.className = "meta-left";
+
   // Name (colored by rarity)
   const nameSpan = span(itemName, `rarity ${rarityClass(rarity)}`);
-  div.appendChild(nameSpan);
+  left.appendChild(nameSpan);
 
   // Quality in brackets: [F8]
-  const qualitySpan = document.createTextNode(` [${quality}]`);
-  div.appendChild(qualitySpan);
+  left.appendChild(document.createTextNode(` [${quality}]`));
 
   // Quantity xN (optional)
   if (count > 1) {
-    div.appendChild(document.createTextNode(` x${count}`));
+    left.appendChild(document.createTextNode(` x${count}`));
   }
 
   // Stats: DMG: X | AS: Y
@@ -366,13 +421,14 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
   ) {
     const dmg = fmt(statsObj.damage);
     const as = fmt(statsObj.attackSpeed);
-    const statsText = document.createTextNode(
-      `   DMG: ${dmg} | AS: ${as}`
+    left.appendChild(
+      document.createTextNode(`   DMG: ${dmg} | AS: ${as}`)
     );
-    div.appendChild(statsText);
   }
 
-  // Tooltip stays the same
+  div.appendChild(left);
+
+  // Tooltip stays the same (bind to entire row)
   Tooltip.bind(div, () => {
     const header =
       `<strong>${itemName}</strong><br>` +
@@ -391,7 +447,11 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
     return header + desc + stats;
   });
 
-  // Trash button
+  // Right side: actions (Trash, then Equip)
+  const btnWrap = document.createElement("span");
+  btnWrap.className = "inv-actions";
+
+  // Trash button FIRST
   const trashBtn = document.createElement("button");
   trashBtn.className = "trash-btn";
   trashBtn.textContent = "Trash";
@@ -400,8 +460,22 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
     Tooltip.hide();
     removeOneFromGroup(itemName, quality, rep.stats);
   });
-  div.appendChild(document.createTextNode(" "));
-  div.appendChild(trashBtn);
+  btnWrap.appendChild(trashBtn);
+
+  // Equip button (only if item is equippable)
+  if (rep.slot) {
+    const equipBtn = document.createElement("button");
+    equipBtn.className = "equip-btn";
+    equipBtn.textContent = "Equip";
+    equipBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      Tooltip.hide();
+      equipOneFromGroup(itemName, quality, rep.stats);
+    });
+    btnWrap.appendChild(equipBtn);
+  }
+
+  div.appendChild(btnWrap);
 
   return div;
 }

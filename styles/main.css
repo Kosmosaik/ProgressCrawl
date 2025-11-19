@@ -65,7 +65,8 @@ button {
   border-color: #3b82f6;
 }
 
-.trash-btn {
+.trash-btn,
+.equip-btn {
   background: transparent;
   color: #a8b3c2;
   border: 1px solid #2a2f3a;
@@ -76,12 +77,16 @@ button {
   cursor: pointer;
   transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
-.trash-btn:hover {
+
+.trash-btn:hover,
+.equip-btn:hover {
   background: #1b2230;
   color: #e0e4e8;
   border-color: #3a4150;
 }
-.trash-btn:active {
+
+.trash-btn:active,
+.equip-btn:active {
   background: #202a36;
 }
 
@@ -106,11 +111,25 @@ button {
   transition: width 0.1s linear;
 }
 
-/* Inventory panel sits lower so it doesn't collide with the buttons */
 #inventory-panel {
   position: fixed;
   top: 70px;   /* <-- pushed down */
   left: 10px;
+  display: none;
+  background: #111;
+  border: 1px solid #555;
+  padding: 10px;
+  border-radius: 8px;
+  width: 500px;
+  max-height: 70vh;
+  overflow: auto;
+}
+
+/* Equipment panel sits to the right of the inventory panel */
+#equipment-panel {
+  position: fixed;
+  top: 70px;
+  left: 535px; /* 10px left + 500px inventory width + 20px gap */
   display: none;
   background: #111;
   border: 1px solid #555;
@@ -121,20 +140,75 @@ button {
   overflow: auto;
 }
 
-.inventory-stack summary {
-  cursor: pointer;
+#equipment-panel h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
 }
 
-.meta {
-  opacity: 0.8;
-  font-size: 0.95rem;
+.equipment-slot-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+
+.equipment-slot-label {
+  width: 80px;
+  font-weight: bold;
+  color: #cbd5f5;
+}
+
+.equipment-slot-item {
+  flex: 1;
+}
+
+.equipment-slot-empty {
+  flex: 1;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.equipment-summary-section {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #333;
+  font-size: 0.85rem;
+}
+
+.equipment-summary-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #d1d5db;
+}
+
+.equipment-summary-row {
+  display: flex;
+  justify-content: flex-start;
+  column-gap: 16px;   /* space between label and values */
+}
+
+.equipment-summary-row span:first-child {
+  width: 120px;
+}
+
+.equipped-label {
+  color: #4ade80;
+  font-size: 0.75rem;
+}
+
+.inventory-stack summary {
+  cursor: pointer;
 }
 
 /* Nicer expanders */
 .inventory-stack { margin: 6px 0; }
 .inventory-stack > summary { cursor: pointer; }
 .stack-variants { margin-left: 12px; padding-left: 8px; border-left: 1px solid #555; }
-.meta { opacity: 0.8; font-size: 0.8rem; }
+
+.meta {
+  opacity: 0.8;
+  font-size: 0.8rem;
+}
 
 /* Rarity colors (accessible on dark bg) */
 .rarity { font-weight: 600; }
@@ -143,6 +217,7 @@ button {
 .r-uncommon { color: #22c55e; }   /* green */
 .r-rare     { color: #3b82f6; }   /* blue */
 .r-exotic   { color: #a855f7; }   /* purple */
+.r-unique   { color: #FFDF00; }   /* yellow */
 
 /* Optional: subtle hover hint (keeps text-only style) */
 .inventory-stack > summary:hover { text-decoration: underline; }
@@ -213,7 +288,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer; /* keep your old behavior */
+  cursor: pointer;
 }
 
 .inventory-stack > summary .inv-name {
@@ -230,15 +305,23 @@ button {
   opacity: 0.8;
 }
 
-/* Align Trash button to the right in expanded inventory rows */
+/* Expanded inventory rows: left text + right actions */
 .inventory-stack .meta {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 4px;
 }
 
-.inventory-stack .meta .trash-btn {
-  margin-left: auto;
+/* Left side text */
+.inventory-stack .meta-left {
+  display: inline-block;
+}
+
+/* Right side buttons */
+.inventory-stack .inv-actions {
+  display: inline-flex;
+  gap: 4px;         /* space between Trash and Equip */
 }
 
 /* Floating tooltip */
@@ -269,7 +352,7 @@ button {
 }
 
 #tooltip .rarity {
-  display: inline;     /* IMPORTANT — prevents block spacing */
+  display: inline;
   margin: 0 !important;
   padding: 0 !important;
   line-height: 1.2;
@@ -298,7 +381,7 @@ button {
 .inventory-unlock::after {
   content: "";
   position: absolute;
-  inset: -6px -10px;               /* a little larger than the text */
+  inset: -6px -10px;
   border: 3px solid rgba(246,244,110,0.8);
   border-radius: 12px;
   pointer-events: none;
@@ -523,7 +606,7 @@ section[hidden] {
   padding: 0.2rem 0.5rem;
   background: #151515;
   border-bottom: 1px solid #2a2a2a;
-  margin-top: 0.2rem; /* Moves the buttons slightly down below the character summary bar */
+  margin-top: 0.2rem;
 }
 
 #menu-bar button {
@@ -556,7 +639,6 @@ section[hidden] {
   font-size: 0.85rem;
   color: #e0e4e8;
 
-  /* NEW - align content */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -602,18 +684,18 @@ section[hidden] {
   border: 1px solid #2a2a2a;
   border-radius: 8px;
   padding: 1.0rem 1.25rem;
-  max-width: 520px;
+  max-width: 1000px;
   width: calc(100% - 2rem);
-  max-height: 80vh;          /* keep inside the viewport */
+  max-height: 80vh;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65);
   font-size: 0.9rem;
-  overflow: auto;            /* scroll if content is long */
+  overflow: auto;
 }
 
 .patch-notes-dialog ul {
   margin: 0 0 1rem 1.1rem;
   padding: 0;
-  list-style-position: inside; /* keep bullets inside the box */
+  list-style-position: inside;
 }
 
 .patch-notes-dialog h3 {
