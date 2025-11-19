@@ -397,17 +397,20 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
   const rep = group.items[0];
   const quality = group.quality;
 
+  // Left side: text (name, quality, qty, stats)
+  const left = document.createElement("span");
+  left.className = "meta-left";
+
   // Name (colored by rarity)
   const nameSpan = span(itemName, `rarity ${rarityClass(rarity)}`);
-  div.appendChild(nameSpan);
+  left.appendChild(nameSpan);
 
   // Quality in brackets: [F8]
-  const qualitySpan = document.createTextNode(` [${quality}]`);
-  div.appendChild(qualitySpan);
+  left.appendChild(document.createTextNode(` [${quality}]`));
 
   // Quantity xN (optional)
   if (count > 1) {
-    div.appendChild(document.createTextNode(` x${count}`));
+    left.appendChild(document.createTextNode(` x${count}`));
   }
 
   // Stats: DMG: X | AS: Y
@@ -418,13 +421,14 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
   ) {
     const dmg = fmt(statsObj.damage);
     const as = fmt(statsObj.attackSpeed);
-    const statsText = document.createTextNode(
-      `   DMG: ${dmg} | AS: ${as}`
+    left.appendChild(
+      document.createTextNode(`   DMG: ${dmg} | AS: ${as}`)
     );
-    div.appendChild(statsText);
   }
 
-  // Tooltip stays the same
+  div.appendChild(left);
+
+  // Tooltip stays the same (bind to entire row)
   Tooltip.bind(div, () => {
     const header =
       `<strong>${itemName}</strong><br>` +
@@ -443,10 +447,20 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
     return header + desc + stats;
   });
 
-  // --- Buttons container: Equip (if equippable) + Trash together ---
+  // Right side: actions (Trash, then Equip)
   const btnWrap = document.createElement("span");
   btnWrap.className = "inv-actions";
-  btnWrap.style.marginLeft = "8px";
+
+  // Trash button FIRST
+  const trashBtn = document.createElement("button");
+  trashBtn.className = "trash-btn";
+  trashBtn.textContent = "Trash";
+  trashBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    Tooltip.hide();
+    removeOneFromGroup(itemName, quality, rep.stats);
+  });
+  btnWrap.appendChild(trashBtn);
 
   // Equip button (only if item is equippable)
   if (rep.slot) {
@@ -460,17 +474,6 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
     });
     btnWrap.appendChild(equipBtn);
   }
-
-  // Trash button
-  const trashBtn = document.createElement("button");
-  trashBtn.className = "trash-btn";
-  trashBtn.textContent = "Trash";
-  trashBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    Tooltip.hide();
-    removeOneFromGroup(itemName, quality, rep.stats);
-  });
-  btnWrap.appendChild(trashBtn);
 
   div.appendChild(btnWrap);
 
