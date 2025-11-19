@@ -178,3 +178,8 @@ OTHER:
 
 BRAINSTORM:
 @ Enchance/Enchant system. Like: Add a venomous tip on a weapon to make poison damage (chance to trigger: does damage over time effect)
+
+@ Unlock new crafting recipes by:
+ - Buying books from merchants
+ - Figure out correct ingredient combinations.
+ - Random Events
