@@ -7,6 +7,7 @@
 ===== IMPROVEMENTS: =====
 @ Add debug mode (type in like a password in console to activate).
   Add statistics, loot rate help, timers, speed up time/progress stuff.
+@ Add a "compare" system between hovered item in inventory and equipped item of same type.
 
 ===== TOOLS =====
 @ Item creator (Tool that makes it easy adding items that automcatically adds it to the items.js file
@@ -24,16 +25,16 @@ FEATURE: Character & Classes
   @ LATER: Add skill distribution??
   
 FEATURE: Equipment view
-  @ Add Equipment menu
-  @ Add more equipment related items (chest, head, weapon etc)
-  @ Add equip/unequip function (move item from inventory to equipment and vice versa. Make slot busy/available)
-  @ Add stats from equipment
+  @ Add Equipment menu (FINISHED)
+  @ Add more equipment related items (chest, head, weapon etc) (ONGOING)
+  @ Add equip/unequip function (move item from inventory to equipment and vice versa. Make slot busy/available) (FINISHED)
+  @ Add stats from equipment (ONGOING)
 
   Core Combat Stats
   [X] : Weapon Damage
   [X] : Attack Speed
   [ ] : DPS (derived)
-  [ ] : Critical Chance
+  [X] : Critical Chance
   [ ] : Critical Damage Multiplier
   [ ] : Accuracy / Hit Chance
   [ ] : Elemental Damage (when elements gets added)
@@ -44,7 +45,7 @@ FEATURE: Equipment view
   [ ] : Armor / Defense (reduces incoming physical dmg)
   [ ] : Dodge / Evasion (chance to avoid attacks)
   [ ] : Block Chance (for shields)
-  [ ] : HP (Max Health)
+  [X] : HP (Max Health)
   [ ] : HP Regeneration (per second)
   [ ] : Damage Reduction %
   [ ] : Resistance (Fire, Cold, Poison, Magic etc - whene elements gets added)
@@ -60,7 +61,7 @@ FEATURE: Equipment view
   [ ] : Summon Power (if minions gets added)
 
   Loot & Economy Stats
-  [ ] : Loot Find (increases chance of higher-tier drops)
+  [X] : Loot Find (increases chance of higher-tier drops)
   [ ] : Gold Find (if money gets added)
   [ ] : Luck (general rare event chance modifier, also increases crit chance)
 
