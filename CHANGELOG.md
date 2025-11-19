@@ -1,3 +1,66 @@
+## v0.0.61 — Equipment & Stat Polish
+
+### Added
+- **Equip / Unequip flow**
+  - Every equippable item in the inventory now has an **Equip** button in its row.
+  - Equipped items show an **Unequip** button in the Equipment panel that sends them back to the inventory.
+  - Equipping and unequipping immediately updates your character’s stats and is saved automatically.
+
+- **Clear character summary in Equipment panel**
+  - The Equipment screen now shows:
+    - **Attributes:** `STR`, `DEX`, `INT`, `VIT` as `Total (bonus)` so you can see how much is coming from gear.
+    - **Derived stats:** `Max HP`, `Attack` (based on current weapon or unarmed), `Crit Chance`, and `Loot Find`.
+
+- **Equipment unlock flow**
+  - The **Equipment** menu button is now **locked by default**.
+  - It unlocks the first time you loot an equippable item (like a dagger or armor piece).
+  - When it unlocks, it gets the same subtle glow + ring effect as the Inventory button to draw attention.
+
+### Changed
+- **Attack display**
+  - The character summary in the Equipment panel now shows a single **“Attack”** value.
+  - The label automatically reflects what you are using:
+    - Unarmed → `Unarmed Attack`
+    - Weapon equipped → `Attack (using that weapon)`
+  - This keeps the UI cleaner and focused on the attack that actually matters for your current setup.
+
+- **Attribute bonuses from gear**
+  - Items that grant attribute bonuses (for example, **Bark Chest** with bonus VIT) now:
+    - Properly add to the attribute totals (e.g. VIT).
+    - Correctly increase **Max HP** based on the new VIT value.
+  - The summary shows this as `Total (bonus)`, for example: `VIT: 12 (2)`.
+
+- **Inventory & equipment layout**
+  - The **Inventory** and **Equipment** panels are now aligned side by side from the top so they feel like one combined character screen.
+  - The **Equip** and **Trash** buttons are grouped together on the **right side** of each item row, making actions more consistent and easier to hit.
+  - The Equipment panel uses a tighter column layout so stat labels and values are closer together and easier to scan.
+
+- **Item bonus stat presentation**
+  - Item bonus stats (like crit and loot find) are now only shown when they actually roll a value.
+  - If a stat rolls as `0`, it is **not** displayed on the item at all.
+  - Tooltips and summary rows use nicer names instead of internal ones:
+    - `critChance` → `Crit Chance`
+    - `lootFind` → `Loot Find`
+    - etc., via a shared label mapping.
+
+### Fixed
+- **Equipment bonuses not applying**
+  - Fixed an issue where **VIT bonuses from armor** were not reflected in your character stats or max HP.
+  - Equipped items now properly feed into the character’s computed attributes and derived stats.
+
+- **Inventory / Equipment buttons after loading a save**
+  - Fixed a bug where **Inventory** and **Equipment** menu buttons sometimes disappeared after loading a saved game.
+  - The game now:
+    - Remembers whether Inventory and Equipment were unlocked for that character.
+    - Restores those buttons correctly on load.
+    - For older saves without these flags, it intelligently infers unlocks from whether you have items or equipped gear.
+
+- **Rarity weight safety**
+  - Hardened the loot roll logic so it falls back to default rarity weights if the config is missing or invalid.
+  - This prevents rare cases where item generation could break due to misconfigured rarity settings.
+
+---
+
 ## v0.0.60 — The Equipment Update
 
 This update introduces the first version of the equipment system, 
