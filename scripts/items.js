@@ -159,12 +159,12 @@ const ItemCatalog = [
 
 // Rarity weights (use only buckets that actually exist)
 const RARITY_WEIGHTS = {
-    Abundant: 1000,
-    Common:   250,
+    Abundant: 250,
+    Common:   100,
     Uncommon: 50,
-    Rare:      10,
-    Exotic:    1,
-    Unique:    0.1,
+    Rare:      25,
+    Exotic:    4,
+    Unique:    0.5,
 };
 
 function getRandomItem() {
