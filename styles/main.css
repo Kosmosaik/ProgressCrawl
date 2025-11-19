@@ -310,11 +310,32 @@ button {
 .inventory-stack .meta {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 4px;
+}
+
+/* Left side text */
+.inventory-stack .meta-left {
+  display: inline-block;
+}
+
+/* Right side buttons */
+.inventory-stack .inv-actions {
+  display: inline-flex;
+  gap: 4px;         /* space between Trash and Equip */
 }
 
 .inventory-stack .meta .trash-btn {
   margin-left: auto;
+}
+
+/* Optional: make Equip match Trash visually if not already */
+.equip-btn {
+  /* reuse styling from trash-btn if you like */
+  /* example:
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  */
 }
 
 /* Floating tooltip */
