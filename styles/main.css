@@ -120,7 +120,7 @@ button {
   border: 1px solid #555;
   padding: 10px;
   border-radius: 8px;
-  width: 400px;
+  width: 500px;
   max-height: 70vh;
   overflow: auto;
 }
@@ -129,7 +129,7 @@ button {
 #equipment-panel {
   position: fixed;
   top: 70px;
-  left: 430px; /* 400px inventory width + 10px left + 20px gap */
+  left: 530px; /* 400px inventory width + 10px left + 20px gap */
   display: none;
   background: #111;
   border: 1px solid #555;
@@ -183,7 +183,12 @@ button {
 
 .equipment-summary-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  column-gap: 16px;   /* space between label and values */
+}
+
+.equipment-summary-row span:first-child {
+  width: 50px;        /* tweak to taste: 50–70px works nicely */
 }
 
 .equipped-label {
