@@ -1,6 +1,6 @@
 // Central place for tweakable settings.
 const GAME_CONFIG = {
-  version: "0.0.56b",
+  version: "0.0.62",
 
   loot: {
     // Progress bar behavior
@@ -76,3 +76,31 @@ const GAME_CONFIG = {
 
   raritySortOrder: ["Abundant", "Common", "Uncommon", "Rare", "Exotic", "Unique"],
 };
+
+GAME_CONFIG.weaponProfiles = {
+  dagger: {
+    attrWeights: { STR: 0.4, DEX: 0.6 },
+    attrPerPower: 1.8,   // tuned for DPS-based power
+  },
+
+  sword: {
+    attrWeights: { STR: 0.6, DEX: 0.4 },
+    attrPerPower: 2.0,
+  },
+
+  axe: {
+    attrWeights: { STR: 0.8, DEX: 0.2 },
+    attrPerPower: 2.2,   // axes feel heavier / more demanding
+  },
+
+  bow: {
+    attrWeights: { STR: 0.2, DEX: 0.8 },
+    attrPerPower: 2.0,
+  },
+
+  unarmed: {
+    attrWeights: { STR: 0.5, DEX: 0.3, VIT: 0.2 },
+    attrPerPower: 1.5,   // fists are weaker overall
+  }
+};
+
