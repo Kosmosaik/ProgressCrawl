@@ -72,11 +72,11 @@ const GAME_CONFIG = {
       },
       // Starting values for a fresh character
       defaultLevels: {
-        dagger: 50,
+        dagger: 0,
         sword: 0,
         axe: 0,
         bow: 0,
-        unarmed: 50,
+        unarmed: 0,
       },
       minLevel: 0,
       maxLevel: 200,
