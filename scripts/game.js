@@ -85,6 +85,32 @@ function unequipSlotToInventory(slotKey) {
   }
 }
 
+function changeWeaponSkill(key, delta) {
+  if (!currentCharacter) return;
+  const cfg = (GAME_CONFIG.skills && GAME_CONFIG.skills.weapon) || {};
+  const min = cfg.minLevel ?? 0;
+  const max = cfg.maxLevel ?? 200;
+
+  if (!currentCharacter.skills) {
+    currentCharacter.skills = createDefaultSkills();
+  }
+
+  const oldVal = currentCharacter.skills[key] ?? 0;
+  let next = oldVal + delta;
+
+  if (next < min) next = min;
+  if (next > max) next = max;
+  if (next === oldVal) return;
+
+  currentCharacter.skills[key] = next;
+
+  // Recompute + autosave
+  recomputeCharacterComputedState();
+  if (typeof saveCurrentGame === "function") {
+    saveCurrentGame();
+  }
+}
+
 /**
  * Recompute the character's attributes and derived stats based on:
  * - The current character's base stats (STR, DEX, INT, VIT)
@@ -266,6 +292,65 @@ function updateEquipmentPanel() {
   );
 
   equipmentSummaryContainer.appendChild(derivedSection);
+    // ---- Weapon Skills ----
+  const skillsCfg = GAME_CONFIG.skills && GAME_CONFIG.skills.weapon;
+  const skills = currentCharacter && currentCharacter.skills;
+
+  if (skillsCfg && skills) {
+    const skillsSection = document.createElement("div");
+    skillsSection.className = "equipment-summary-section";
+
+    const skillsTitle = document.createElement("div");
+    skillsTitle.className = "equipment-summary-title";
+    skillsTitle.textContent = "Weapon Skills (dev)";
+    skillsSection.appendChild(skillsTitle);
+
+    const labels = skillsCfg.labels || {};
+    const skillKeys = Object.keys(labels);
+
+    skillKeys.forEach((key) => {
+      const row = document.createElement("div");
+      row.className = "equipment-summary-row";
+
+      const left = document.createElement("span");
+      left.textContent = labels[key] + ":";
+      row.appendChild(left);
+
+      const mid = document.createElement("span");
+      mid.textContent = skills[key] ?? 0;
+      row.appendChild(mid);
+
+      // Right side: [-] [+] dev controls
+      const right = document.createElement("span");
+
+      const minusBtn = document.createElement("button");
+      minusBtn.type = "button";
+      minusBtn.className = "trash-btn"; // reuse small button style
+      minusBtn.textContent = "-";
+      minusBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        changeWeaponSkill(key, -1);
+      });
+
+      const plusBtn = document.createElement("button");
+      plusBtn.type = "button";
+      plusBtn.className = "equip-btn"; // visually different
+      plusBtn.textContent = "+";
+      plusBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        changeWeaponSkill(key, +1);
+      });
+
+      right.appendChild(minusBtn);
+      right.appendChild(plusBtn);
+      row.appendChild(right);
+
+      skillsSection.appendChild(row);
+    });
+
+    equipmentSummaryContainer.appendChild(skillsSection);
+  }
+
 }
 
 // ----- Patch notes -----
@@ -511,6 +596,7 @@ function saveCurrentGame() {
     id: currentSaveId || generateId(),
     name: currentCharacter.name,
     stats: { ...currentCharacter.stats },
+    skills: cloneSkills(currentCharacter.skills),   // NEW
     inventory: getInventorySnapshot(),
     equipped: getEquippedSnapshot(),
     features: {
@@ -535,10 +621,13 @@ function loadSave(id) {
   const saves = loadAllSaves();
   const save = saves.find(s => s.id === id);
   if (!save) return;
-
+  
   currentCharacter = {
     name: save.name,
     stats: { ...save.stats },
+    skills: save.skills
+      ? cloneSkills(save.skills)
+      : createDefaultSkills(), // fallback for old saves
   };
   currentSaveId = save.id;
 
@@ -683,6 +772,8 @@ if (btnCreateCharacter) {
         int: creationStats.int,
         vit: creationStats.vit,
       },
+      // New: weapon skills
+      skills: createDefaultSkills(),
     };
 
     // Compute initial derived stats (unarmed)
