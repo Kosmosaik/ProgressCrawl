@@ -505,8 +505,8 @@ function updateCharacterSummary() {
     charSummaryName.textContent = currentCharacter.name;
   }
   if (charSummaryStats) {
-    charSummaryStats.textContent =
-      `STR ${s.str} | DEX ${s.dex} | INT ${s.int} | VIT ${s.vit}`;
+    // We no longer show attributes here; keep it empty for now.
+    charSummaryStats.textContent = "";
   }
 }
 
