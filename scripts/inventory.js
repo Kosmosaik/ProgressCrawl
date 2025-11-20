@@ -448,19 +448,9 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
   });
 
   // Right side: actions (Trash, then Equip)
+  // Right side: actions (Equip, then Trash)
   const btnWrap = document.createElement("span");
   btnWrap.className = "inv-actions";
-
-  // Trash button FIRST
-  const trashBtn = document.createElement("button");
-  trashBtn.className = "trash-btn";
-  trashBtn.textContent = "Trash";
-  trashBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    Tooltip.hide();
-    removeOneFromGroup(itemName, quality, rep.stats);
-  });
-  btnWrap.appendChild(trashBtn);
 
   // Equip button (only if item is equippable)
   if (rep.slot) {
@@ -474,6 +464,17 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
     });
     btnWrap.appendChild(equipBtn);
   }
+
+  // Trash button (always present)
+  const trashBtn = document.createElement("button");
+  trashBtn.className = "trash-btn";
+  trashBtn.textContent = "Trash";
+  trashBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    Tooltip.hide();
+    removeOneFromGroup(itemName, quality, rep.stats);
+  });
+  btnWrap.appendChild(trashBtn);
 
   div.appendChild(btnWrap);
 
