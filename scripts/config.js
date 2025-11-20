@@ -1,6 +1,6 @@
 // Central place for tweakable settings.
 const GAME_CONFIG = {
-  version: "0.0.62",
+  version: "0.0.65-dev",
 
   loot: {
     // Progress bar behavior
@@ -40,7 +40,7 @@ const GAME_CONFIG = {
     expBase: 0.91,
   },
 
-    character: {
+  character: {
     // HP
     baseHP: 20,        // HP with 0 VIT, no gear
     hpPerVit: 5,       // +5 HP per VIT point
@@ -59,6 +59,58 @@ const GAME_CONFIG = {
     rangedMainScale: 2.0,  // DEX contribution to ranged
     rangedOffScale:  0.2,  // STR contribution to ranged,
   },
+  
+  skills: {
+    weapon: {
+      // What we call each skill in the UI
+      labels: {
+        dagger: "Daggers",
+        sword: "Swords",
+        axe: "Axes",
+        bow: "Bows",
+        unarmed: "Unarmed",
+      },
+      // Starting values for a fresh character
+      defaultLevels: {
+        dagger: 50,
+        sword: 0,
+        axe: 0,
+        bow: 0,
+        unarmed: 50,
+      },
+      minLevel: 0,
+      maxLevel: 200,
+    },
+  },
+
+  // Weapon type → which stats matter + how much recommended stats scale with power
+  weaponProfiles: {
+    dagger: {
+      attrWeights: { STR: 0.4, DEX: 0.6 },
+      attrPerPower: 1.8,
+    },
+    sword: {
+      attrWeights: { STR: 0.6, DEX: 0.4 },
+      attrPerPower: 2.0,
+    },
+    axe: {
+      attrWeights: { STR: 0.8, DEX: 0.2 },
+      attrPerPower: 2.2,
+    },
+    bow: {
+      attrWeights: { STR: 0.2, DEX: 0.8 },
+      attrPerPower: 2.0,
+    },
+    unarmed: {
+      attrWeights: { STR: 0.5, DEX: 0.3, VIT: 0.2 },
+      attrPerPower: 1.5,
+    },
+  },
+
+  // Small combat constants
+  combat: {
+    attackAverageFactor: 0.85,  // used later: AttackShown = EDMax * 0.85
+  },
 
   inventory: {
     defaultSortKey: "name",   // "name" | "rarity" | "qty"
@@ -75,32 +127,5 @@ const GAME_CONFIG = {
   },
 
   raritySortOrder: ["Abundant", "Common", "Uncommon", "Rare", "Exotic", "Unique"],
-};
-
-GAME_CONFIG.weaponProfiles = {
-  dagger: {
-    attrWeights: { STR: 0.4, DEX: 0.6 },
-    attrPerPower: 1.8,   // tuned for DPS-based power
-  },
-
-  sword: {
-    attrWeights: { STR: 0.6, DEX: 0.4 },
-    attrPerPower: 2.0,
-  },
-
-  axe: {
-    attrWeights: { STR: 0.8, DEX: 0.2 },
-    attrPerPower: 2.2,   // axes feel heavier / more demanding
-  },
-
-  bow: {
-    attrWeights: { STR: 0.2, DEX: 0.8 },
-    attrPerPower: 2.0,
-  },
-
-  unarmed: {
-    attrWeights: { STR: 0.5, DEX: 0.3, VIT: 0.2 },
-    attrPerPower: 1.5,   // fists are weaker overall
-  }
 };
 
