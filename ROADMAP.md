@@ -19,7 +19,7 @@ Small but important improvements following the Equipment Update.
 
 ---
 
-## v0.0.70 — Damage, Attack & Weapon Skill Overhaul (Phase 1)
+## v0.0.65 — Damage, Attack & Weapon Skill Overhaul (Phase 1)
 This is a major systems update that restructures how combat-related values are calculated.
 
 ### Goals:
@@ -46,7 +46,7 @@ It only establishes the mathematical systems needed for them.
 
 ---
 
-## v0.0.80 — Weapon Skill Progression (Phase 2)
+## v0.0.70 — Weapon Skill Progression (Phase 2)
 Builds on the previous update. Skills now matter and evolve during gameplay.
 
 ### Planned:
@@ -66,7 +66,7 @@ Builds on the previous update. Skills now matter and evolve during gameplay.
 
 ---
 
-## v0.0.90 — Zones & Exploration (Phase 1)
+## v0.0.80 — Zones & Exploration (Phase 1)
 Unlocks real gameplay beyond clicking “Loot”.
 
 ### Planned:
@@ -85,7 +85,7 @@ Unlocks real gameplay beyond clicking “Loot”.
 
 ---
 
-## v0.1.00 — Combat Encounters (Phase 1)
+## v0.0.90 — Combat Encounters (Phase 1)
 The first real combat mechanics appear.
 
 ### Planned:
@@ -103,7 +103,7 @@ The first real combat mechanics appear.
 
 ---
 
-## v0.1.10 — Crafting & Resources (Phase 1)
+## v0.1.0 — Crafting & Resources (Phase 1)
 Introduces resource gathering and item creation.
 
 ### Planned:
@@ -115,7 +115,7 @@ Introduces resource gathering and item creation.
 
 ---
 
-## v0.1.20 — Gathering Professions (Mining, Herbalism, Woodcutting)
+## v0.1.10 — Gathering Professions (Mining, Herbalism, Woodcutting)
 Profession system tied to resources and crafting.
 
 ### Planned:
@@ -125,7 +125,7 @@ Profession system tied to resources and crafting.
 
 ---
 
-## v0.1.30 — Equipment Expansion
+## v0.1.20 — Equipment Expansion
 Builds on the first Equipment Update with deeper gear systems.
 
 ### Planned:
@@ -137,7 +137,7 @@ Builds on the first Equipment Update with deeper gear systems.
 
 ---
 
-## v0.1.40 — Character Development
+## v0.1.30 — Character Development
 Adds more RPG depth.
 
 ### Planned:
@@ -148,7 +148,7 @@ Adds more RPG depth.
 
 ---
 
-## v0.1.50 — Marketplace & Economy (optional milestone)
+## v0.1.40 — Marketplace & Economy (optional milestone)
 If the game grows into trading/online features.
 
 ### Planned:
