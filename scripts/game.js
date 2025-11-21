@@ -200,7 +200,7 @@ function updateEquipmentPanel() {
   ];
 
   // ---- Slot rows ----
-  slotDefs.forEach(def => {
+  slotDefs.forEach((def) => {
     const row = document.createElement("div");
     row.className = "equipment-slot-row";
 
@@ -216,26 +216,12 @@ function updateEquipmentPanel() {
       itemSpan.className = `equipment-slot-item rarity ${rarityClass(item.rarity)}`;
       itemSpan.textContent = `${item.name} [${item.quality}]`;
 
-      // Tooltip: same basic info as inventory, plus "Equipped"
-      Tooltip.bind(itemSpan, () => {
-        const rarityCls = rarityClass(item.rarity);
-        const header =
-          `<strong>${item.name}</strong><br>` +
-          `<span class="rarity ${rarityCls}" style="display:inline">${item.rarity}</span><br>` +
-          `Quality: ${item.quality}<br>` +
-          `<span class="equipped-label">Equipped</span>`;
-
-        const desc = item.description ? `<br><br>${item.description}` : "";
-        const statsObj = item.stats || {};
-        const statKeys = Object.keys(statsObj);
-        const stats = statKeys.length
-          ? `<br><br>${statKeys
-              .map(k => `${STAT_LABELS[k] ?? k}: ${fmt(statsObj[k])}`)
-              .join("<br>")}`
-          : "";
-
-        return header + desc + stats;
-      });
+      // Tooltip: same structure as inventory tooltip, but without +/- comparisons
+      if (typeof buildEquipmentItemTooltip === "function") {
+        Tooltip.bind(itemSpan, () =>
+          buildEquipmentItemTooltip(item, def.key)
+        );
+      }
 
       row.appendChild(itemSpan);
 
@@ -335,7 +321,8 @@ function updateEquipmentPanel() {
   );
 
   equipmentSummaryContainer.appendChild(derivedSection);
-    // ---- Weapon Skills ----
+
+  // ---- Weapon Skills ----
   const skillsCfg = GAME_CONFIG.skills && GAME_CONFIG.skills.weapon;
   const skills = currentCharacter && currentCharacter.skills;
 
@@ -363,12 +350,11 @@ function updateEquipmentPanel() {
       mid.textContent = skills[key] ?? 0;
       row.appendChild(mid);
 
-      // Right side: [-] [+] dev controls
       const right = document.createElement("span");
 
       const minusBtn = document.createElement("button");
       minusBtn.type = "button";
-      minusBtn.className = "trash-btn"; // reuse small button style
+      minusBtn.className = "trash-btn";
       minusBtn.textContent = "-";
       minusBtn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -377,7 +363,7 @@ function updateEquipmentPanel() {
 
       const plusBtn = document.createElement("button");
       plusBtn.type = "button";
-      plusBtn.className = "equip-btn"; // visually different
+      plusBtn.className = "equip-btn";
       plusBtn.textContent = "+";
       plusBtn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -393,7 +379,6 @@ function updateEquipmentPanel() {
 
     equipmentSummaryContainer.appendChild(skillsSection);
   }
-
 }
 
 // ----- Patch notes -----
