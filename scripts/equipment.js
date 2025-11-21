@@ -159,24 +159,21 @@ function summarizeEquipmentForCharacter() {
         typeof stats.attackSpeed === "number" ? stats.attackSpeed : 1;
 
       const weaponType = inferWeaponType(item);
-      const profiles = GAME_CONFIG.weaponProfiles || {};
-      const prof = profiles[weaponType] || profiles["sword"] || {};
-      const attrPerPower = prof.attrPerPower || 2.0;
 
       const power = damage * attackSpeed;
 
-      const skillsCfg = (GAME_CONFIG.skills && GAME_CONFIG.skills.weapon) || {};
-      const reqCfg = skillsCfg.requiredFromPower || {};
-      const baseReq = reqCfg.base ?? 20;
-      const perPower = reqCfg.perPower ?? 5;
-      const minReq = reqCfg.min ?? 0;
-      const maxReq = reqCfg.max ?? (skillsCfg.maxLevel ?? 200);
-
-      let requiredSkill = Math.round(baseReq + power * perPower);
-      if (requiredSkill < minReq) requiredSkill = minReq;
-      if (requiredSkill > maxReq) requiredSkill = maxReq;
+      const combatCfg = GAME_CONFIG.combat || {};
+      const attrPerPower =
+        typeof item.attrPerPower === "number"
+          ? item.attrPerPower
+          : (combatCfg.defaultAttrPerPower || 1.8);
 
       const recommendedAttrScore = power * attrPerPower;
+
+      const requiredSkill =
+        typeof item.skillReq === "number"
+          ? item.skillReq
+          : 0; // fallback if not defined on item
 
       mainWeapon = {
         weaponType,
@@ -231,20 +228,19 @@ function summarizeEquipmentForCharacter() {
 
 function inferWeaponType(item) {
   if (!item) return "unarmed";
-  const name = (item.name || "").toLowerCase();
 
-  // If we ever add explicit weaponType on items, prefer that.
   if (item.weaponType) return item.weaponType;
 
   if (item.attackType === "ranged") {
     return "bow";
   }
 
+  // Very old items without weaponType – last resort heuristics
+  const name = (item.name || "").toLowerCase();
   if (name.includes("dagger")) return "dagger";
   if (name.includes("sword")) return "sword";
   if (name.includes("axe") || name.includes("hatchet")) return "axe";
 
-  // Generic fallback
   return "sword";
 }
 
