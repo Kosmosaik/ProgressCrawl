@@ -31,6 +31,12 @@ const btnIntPlus = document.getElementById("btn-int-plus");
 const btnVitMinus = document.getElementById("btn-vit-minus");
 const btnVitPlus = document.getElementById("btn-vit-plus");
 
+const hpBarContainer = document.getElementById("hp-bar-container");
+const hpBarFill = document.getElementById("hp-bar-fill");
+const hpBarLabel = document.getElementById("hp-bar-label");
+
+let currentHP = 0;
+
 // Patch notes
 const patchNotesBtn = document.getElementById("patch-notes-btn");
 const patchNotesPanel = document.getElementById("patch-notes-panel");
@@ -55,6 +61,11 @@ const equipmentPanel = document.getElementById("equipment-panel");
 const equipmentButton = document.getElementById("equipment-btn");
 const equipmentSlotsContainer = document.getElementById("equipment-slots");
 const equipmentSummaryContainer = document.getElementById("equipment-summary");
+
+// NEW: skills UI
+const skillsPanel = document.getElementById("skills-panel");
+const skillsButton = document.getElementById("skills-btn");
+const skillsListContainer = document.getElementById("skills-list");
 
 // ----- Character summary on game screen -----
 const charSummaryName = document.getElementById("char-summary-name");
@@ -85,6 +96,77 @@ function unequipSlotToInventory(slotKey) {
   }
 }
 
+function changeWeaponSkill(key, delta) {
+  if (!currentCharacter) return;
+  const cfg = (GAME_CONFIG.skills && GAME_CONFIG.skills.weapon) || {};
+  const min = cfg.minLevel ?? 0;
+  const max = cfg.maxLevel ?? 200;
+
+  if (!currentCharacter.skills) {
+    currentCharacter.skills = createDefaultSkills();
+  }
+
+  const oldVal = currentCharacter.skills[key] ?? 0;
+  let next = oldVal + delta;
+
+  if (next < min) next = min;
+  if (next > max) next = max;
+  if (next === oldVal) return;
+
+  currentCharacter.skills[key] = next;
+
+  // Recompute + autosave
+  recomputeCharacterComputedState();
+  if (typeof saveCurrentGame === "function") {
+    saveCurrentGame();
+  }
+}
+
+// NEW: dev helper to tweak base attributes directly from equipment panel
+function changeAttribute(key, delta) {
+  if (!currentCharacter || !currentCharacter.stats) return;
+
+  const stats = currentCharacter.stats;
+  if (typeof stats[key] !== "number") {
+    stats[key] = 0;
+  }
+
+  const next = stats[key] + delta;
+  if (next < 1) return; // avoid 0 or negative for now
+
+  stats[key] = next;
+
+  recomputeCharacterComputedState();
+  if (typeof saveCurrentGame === "function") {
+    saveCurrentGame();
+  }
+}
+
+function updateHPBar() {
+  if (!hpBarContainer || !hpBarFill || !hpBarLabel) return;
+
+  if (!characterComputed || !characterComputed.derivedStats) {
+    hpBarContainer.style.display = "none";
+    return;
+  }
+
+  const max = characterComputed.derivedStats.maxHP || 0;
+  if (max <= 0) {
+    hpBarContainer.style.display = "none";
+    return;
+  }
+
+  // For now, always full HP (no damage system yet)
+  if (!currentHP || currentHP > max) {
+    currentHP = max;
+  }
+
+  const pct = Math.max(0, Math.min(100, (currentHP / max) * 100));
+  hpBarFill.style.width = `${pct}%`;
+  hpBarLabel.textContent = `HP ${Math.round(currentHP)}/${Math.round(max)}`;
+  hpBarContainer.style.display = "block";
+}
+
 /**
  * Recompute the character's attributes and derived stats based on:
  * - The current character's base stats (STR, DEX, INT, VIT)
@@ -108,6 +190,9 @@ function recomputeCharacterComputedState() {
   );
 
   updateEquipmentPanel();
+  updateCharacterSummary();
+  updateHPBar();
+  updateSkillsPanel(); // NEW
 
   // For debugging:
   console.log("Character computed state:", characterComputed);
@@ -115,6 +200,7 @@ function recomputeCharacterComputedState() {
 
 /**
  * Render the equipment panel: equipped items + character summary.
+ * (Equipment view is the "character sheet" now.)
  */
 function updateEquipmentPanel() {
   if (!equipmentSlotsContainer || !equipmentSummaryContainer) return;
@@ -141,7 +227,7 @@ function updateEquipmentPanel() {
   ];
 
   // ---- Slot rows ----
-  slotDefs.forEach(def => {
+  slotDefs.forEach((def) => {
     const row = document.createElement("div");
     row.className = "equipment-slot-row";
 
@@ -157,26 +243,12 @@ function updateEquipmentPanel() {
       itemSpan.className = `equipment-slot-item rarity ${rarityClass(item.rarity)}`;
       itemSpan.textContent = `${item.name} [${item.quality}]`;
 
-      // Tooltip: same basic info as inventory, plus "Equipped"
-      Tooltip.bind(itemSpan, () => {
-        const rarityCls = rarityClass(item.rarity);
-        const header =
-          `<strong>${item.name}</strong><br>` +
-          `<span class="rarity ${rarityCls}" style="display:inline">${item.rarity}</span><br>` +
-          `Quality: ${item.quality}<br>` +
-          `<span class="equipped-label">Equipped</span>`;
-
-        const desc = item.description ? `<br><br>${item.description}` : "";
-        const statsObj = item.stats || {};
-        const statKeys = Object.keys(statsObj);
-        const stats = statKeys.length
-          ? `<br><br>${statKeys
-              .map(k => `${STAT_LABELS[k] ?? k}: ${fmt(statsObj[k])}`)
-              .join("<br>")}`
-          : "";
-
-        return header + desc + stats;
-      });
+      // Tooltip: same structure as inventory tooltip, but without +/- comparisons
+      if (typeof buildEquipmentItemTooltip === "function") {
+        Tooltip.bind(itemSpan, () =>
+          buildEquipmentItemTooltip(item, def.key)
+        );
+      }
 
       row.appendChild(itemSpan);
 
@@ -215,14 +287,42 @@ function updateEquipmentPanel() {
   function makeAttrRow(label, key) {
     const row = document.createElement("div");
     row.className = "equipment-summary-row";
+
     const left = document.createElement("span");
     left.textContent = label;
-    const right = document.createElement("span");
+    row.appendChild(left);
+
+    const mid = document.createElement("span");
     const t = total[key];
     const b = bonus[key];
-    right.textContent = `${fmt(t)} (${fmt(b)})`;
-    row.appendChild(left);
+    mid.textContent = `${fmt(t)} (${fmt(b)})`;
+    row.appendChild(mid);
+
+    // Right: dev +/- buttons for testing attributes
+    const right = document.createElement("span");
+
+    const minusBtn = document.createElement("button");
+    minusBtn.type = "button";
+    minusBtn.className = "trash-btn";
+    minusBtn.textContent = "-";
+    minusBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      changeAttribute(key, -1);
+    });
+
+    const plusBtn = document.createElement("button");
+    plusBtn.type = "button";
+    plusBtn.className = "equip-btn";
+    plusBtn.textContent = "+";
+    plusBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      changeAttribute(key, +1);
+    });
+
+    right.appendChild(minusBtn);
+    right.appendChild(plusBtn);
     row.appendChild(right);
+
     return row;
   }
 
@@ -255,9 +355,19 @@ function updateEquipmentPanel() {
   }
 
   derivedSection.appendChild(makeDerivedRow("Max HP:", derived.maxHP));
-  derivedSection.appendChild(
-    makeDerivedRow(`${derived.activeAttack.label}:`, derived.activeAttack.value)
-  );
+
+  if (derived.attack) {
+    derivedSection.appendChild(
+      makeDerivedRow(`${derived.attack.label}:`, derived.attack.value)
+    );
+    derivedSection.appendChild(
+      makeDerivedRow("Attack Speed:", derived.attackSpeed)
+    );
+    derivedSection.appendChild(
+      makeDerivedRow("DPS:", derived.dps)
+    );
+  }
+
   derivedSection.appendChild(
     makeDerivedRow("Crit Chance:", derived.critChance, "%")
   );
@@ -266,6 +376,74 @@ function updateEquipmentPanel() {
   );
 
   equipmentSummaryContainer.appendChild(derivedSection);
+}
+
+/**
+ * Render the Skills panel: weapon skills with dev +/- controls.
+ */
+function updateSkillsPanel() {
+  if (!skillsPanel || !skillsListContainer) return;
+
+  skillsListContainer.innerHTML = "";
+
+  if (!currentCharacter) return;
+
+  const skillsCfg = GAME_CONFIG.skills && GAME_CONFIG.skills.weapon;
+  const skills = currentCharacter.skills;
+
+  if (!skillsCfg || !skills) {
+    skillsListContainer.textContent = "No skills available.";
+    return;
+  }
+
+  const labels = skillsCfg.labels || {};
+  const skillKeys = Object.keys(labels);
+
+  const title = document.createElement("div");
+  title.className = "equipment-summary-title";
+  title.textContent = "Weapon Skills";
+  skillsListContainer.appendChild(title);
+
+  skillKeys.forEach((key) => {
+    const row = document.createElement("div");
+    row.className = "equipment-summary-row";
+
+    const left = document.createElement("span");
+    left.textContent = labels[key] + ":";
+    row.appendChild(left);
+
+    const mid = document.createElement("span");
+    mid.textContent = skills[key] ?? 0;
+    row.appendChild(mid);
+
+    const right = document.createElement("span");
+
+    const minusBtn = document.createElement("button");
+    minusBtn.type = "button";
+    minusBtn.className = "trash-btn";
+    minusBtn.textContent = "-";
+    minusBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      changeWeaponSkill(key, -1);
+      updateSkillsPanel();
+    });
+
+    const plusBtn = document.createElement("button");
+    plusBtn.type = "button";
+    plusBtn.className = "equip-btn";
+    plusBtn.textContent = "+";
+    plusBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      changeWeaponSkill(key, +1);
+      updateSkillsPanel();
+    });
+
+    right.appendChild(minusBtn);
+    right.appendChild(plusBtn);
+    row.appendChild(right);
+
+    skillsListContainer.appendChild(row);
+  });
 }
 
 // ----- Patch notes -----
@@ -409,19 +587,19 @@ function randomizeStats() {
 }
 
 function updateCharacterSummary() {
+  // Only show the character name in the header; all stats are in the equipment view.
   if (!currentCharacter) {
     if (charSummaryName) charSummaryName.textContent = "";
     if (charSummaryStats) charSummaryStats.textContent = "";
     return;
   }
 
-  const s = currentCharacter.stats;
   if (charSummaryName) {
     charSummaryName.textContent = currentCharacter.name;
   }
+
   if (charSummaryStats) {
-    charSummaryStats.textContent =
-      `STR ${s.str} | DEX ${s.dex} | INT ${s.int} | VIT ${s.vit}`;
+    charSummaryStats.textContent = "";
   }
 }
 
@@ -511,6 +689,7 @@ function saveCurrentGame() {
     id: currentSaveId || generateId(),
     name: currentCharacter.name,
     stats: { ...currentCharacter.stats },
+    skills: cloneSkills(currentCharacter.skills),
     inventory: getInventorySnapshot(),
     equipped: getEquippedSnapshot(),
     features: {
@@ -535,10 +714,13 @@ function loadSave(id) {
   const saves = loadAllSaves();
   const save = saves.find(s => s.id === id);
   if (!save) return;
-
+  
   currentCharacter = {
     name: save.name,
     stats: { ...save.stats },
+    skills: save.skills
+      ? cloneSkills(save.skills)
+      : createDefaultSkills(), // fallback for old saves
   };
   currentSaveId = save.id;
 
@@ -683,6 +865,8 @@ if (btnCreateCharacter) {
         int: creationStats.int,
         vit: creationStats.vit,
       },
+      // New: weapon skills
+      skills: createDefaultSkills(),
     };
 
     // Compute initial derived stats (unarmed)
@@ -747,6 +931,13 @@ if (equipmentButton && equipmentPanel) {
   });
 }
 
+if (skillsButton && skillsPanel) {
+  skillsButton.addEventListener("click", () => {
+    const visible = skillsPanel.style.display === "block";
+    skillsPanel.style.display = visible ? "none" : "block";
+  });
+}
+
 // Loot flow
 function startLoot() {
   if (!lootButton || !progressContainer || !progressBar) return;
@@ -778,11 +969,16 @@ function startLoot() {
         category: template.category,
         description: template.description,
         rarity: template.rarity,
-        usage: template.usage,
         quality,
         stats,
         slot: template.slot || null,
-        attackType: template.attackType || null,
+
+        // Pass through combat metadata from items.js
+        weaponType: template.weaponType || null,
+        skillReq: typeof template.skillReq === "number" ? template.skillReq : null,
+        attrPerPower: typeof template.attrPerPower === "number"
+          ? template.attrPerPower
+          : null,
       };
 
       addToInventory(instance); // from inventory.js

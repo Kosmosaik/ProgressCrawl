@@ -1,6 +1,6 @@
 // Central place for tweakable settings.
 const GAME_CONFIG = {
-  version: "0.0.56b",
+  version: "0.0.65-dev",
 
   loot: {
     // Progress bar behavior
@@ -11,12 +11,12 @@ const GAME_CONFIG = {
 
     // Base rarity weights (these should match what you currently use in items.js)
     rarityWeights: {
-      Abundant: 250,
+      Abundant: 200,
       Common:   100,
       Uncommon: 50,
       Rare:      25,
-      Exotic:    4,
-      Unique:    0.5,
+      Exotic:    12,
+      Unique:    6,
     },
 
     // How Loot Find % biases those weights.
@@ -40,17 +40,17 @@ const GAME_CONFIG = {
     expBase: 0.91,
   },
 
-    character: {
+  character: {
     // HP
     baseHP: 20,        // HP with 0 VIT, no gear
     hpPerVit: 5,       // +5 HP per VIT point
 
     // Crit chance
-    baseCritChance: 5, // % base crit chance
-    critPerDex: 0.5,   // % crit chance per 1 DEX
+    baseCritChance: 2, // % base crit chance
+    critPerDex: 0.25,   // % crit chance per 1 DEX
 
     // Loot find
-    lootFindPerInt: 0.5, // % loot find per 1 INT
+    lootFindPerInt: 0.25, // % loot find per 1 INT
 
     // Attack scaling (we'll use these in character.js)
     meleeMainScale: 2.0,   // STR contribution to melee
@@ -58,6 +58,74 @@ const GAME_CONFIG = {
 
     rangedMainScale: 2.0,  // DEX contribution to ranged
     rangedOffScale:  0.2,  // STR contribution to ranged,
+
+    baseAttack: 1.0,
+  },
+  
+  skills: {
+    weapon: {
+      // What we call each skill in the UI
+      labels: {
+        dagger: "Dagger",
+        sword: "Sword",
+        axe: "Axe",
+        bow: "Bow",
+        unarmed: "Unarmed",
+      },
+      // Starting values for a fresh character
+      defaultLevels: {
+        dagger: 0,
+        sword: 0,
+        axe: 0,
+        bow: 0,
+        unarmed: 0,
+      },
+      minLevel: 0,
+      maxLevel: 200,
+
+      requiredFromPower: {
+        base: 20,    // requirement even for very weak weapons
+        perPower: 5, // +5 required skill per 1 "power"
+        min: 0,
+        max: 200,
+      },
+    },
+  },
+
+  // Weapon type → which stats matter + how much recommended stats scale with power
+  weaponProfiles: {
+    dagger: {
+      attrWeights: { STR: 0.3, DEX: 0.7 },
+      attrPerPower: 2.0,
+    },
+    sword: {
+      attrWeights: { STR: 0.7, DEX: 0.3 },
+      attrPerPower: 2.0,
+    },
+    axe: {
+      attrWeights: { STR: 0.9, DEX: 0.1 },
+      attrPerPower: 2.0,
+    },
+    bow: {
+      attrWeights: { STR: 0.1, DEX: 0.9 },
+      attrPerPower: 2.0,
+    },
+    unarmed: {
+      attrWeights: { STR: 0.5, DEX: 0.3, VIT: 0.2 },
+      attrPerPower: 2.0,
+    },
+  },
+
+  // Small combat constants
+  combat: {
+    attackAverageFactor: 0.85,  // used later: AttackShown = EDMax * 0.85
+
+    // Unarmed behaviour
+    unarmedBaseDamage: 4,
+    unarmedDamagePerStr: 0.4,
+    unarmedAttackSpeed: 1.2,
+
+    defaultAttrPerPower: 2.0,
   },
 
   inventory: {
@@ -74,5 +142,6 @@ const GAME_CONFIG = {
     ],
   },
 
-  raritySortOrder: ["Abundant", "Common", "Uncommon", "Rare", "Exotic", "Unique"],
+  raritySortOrder: ["Unique", "Exotic", "Rare", "Uncommon", "Common", "Abundant"],
 };
+

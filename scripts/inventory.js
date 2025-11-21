@@ -58,13 +58,41 @@ const STAT_LABELS = {
   lootFind: "Loot Find",
 };
 
+// --- Tooltip helpers ---
+function formatDelta(candidate, current) {
+  const delta = candidate - current;
+  if (!delta || Math.abs(delta) < 0.0001) return "";
+  const sign = delta > 0 ? "+" : "";
+  return ` <span class="meta">(${sign}${fmt(delta)})</span>`;
+}
+
+function inferWeaponTypeFromItem(item) {
+  if (!item) return "unarmed";
+  if (item.weaponType) return item.weaponType;
+
+  const name = (item.name || "").toLowerCase();
+  const atkType = (item.attackType || "").toLowerCase();
+
+  if (atkType === "ranged") return "bow";
+  if (name.includes("dagger")) return "dagger";
+  if (name.includes("sword")) return "sword";
+  if (name.includes("axe") || name.includes("hatchet")) return "axe";
+
+  return "sword";
+}
+
 // Quality helpers (uses global TIER_ORDER from quality.js)
 function qualityStep(q) {
-  const tier = q[0];
-  const sub = parseInt(q.slice(1), 10);
-  const tierIdx = TIER_ORDER.indexOf(tier);
-  const stepsPerTier = (typeof SUBLEVELS_PER_TIER === "number") ? SUBLEVELS_PER_TIER : 10;
-  return tierIdx * stepsPerTier + sub; // 0..69 (F0..S9)
+  const tier = q[0];                         // "F", "E", "D", ..., "S"
+  const sub = parseInt(q.slice(1), 10);      // 0..9
+  const tierIdx = TIER_ORDER.indexOf(tier);  // 0..6, from quality.js
+  const stepsPerTier =
+    (typeof SUBLEVELS_PER_TIER === "number")
+      ? SUBLEVELS_PER_TIER
+      : 10;
+
+  // Turn e.g. "F0".."F9","E0".. into a single linear scale
+  return tierIdx * stepsPerTier + sub;       // e.g. 0..69 for F0..S9
 }
 
 function summarizeQualityRange(items = []) {
@@ -102,7 +130,7 @@ function groupByIdentical(items = []) {
   }
   const arr = Array.from(map.values());
   arr.sort((A, B) => {
-    const q = qualityStep(A.quality) - qualityStep(B.quality);
+    const q = qualityStep(B.quality) - qualityStep(A.quality);
     if (q !== 0) return q;
     return B.items.length - A.items.length;
   });
@@ -333,28 +361,12 @@ function renderInventory() {
       });
 
       if (isCollapsed) {
-        details.style.display = "none";
+        details.style.display =
+          collapsed ? "none" : "";
+        node = node.nextElementSibling;
       }
 
       const summary = document.createElement("summary");
-
-      // Tooltip for the stack
-      const first = stack.items[0] || {};
-      Tooltip.bind(summary, () => {
-        const lines = [
-          `<strong>${name}</strong>`,
-          `<span class="rarity ${rarityClass(rarity)}">${rarity}</span>`,
-        ];
-        const qRange = summarizeQualityRange(stack.items);
-        if (qRange) lines.push(`Quality Range: ${qRange}`);
-        if (first.description) {
-          lines.push("");
-          lines.push(first.description);
-        }
-        return lines
-          .filter(v => v !== undefined && v !== null)
-          .join("<br>");
-      });
 
       // Column-ish layout: Name (colored by rarity) | Qty | Quality range
       const nameSpan = span(name, `rarity ${rarityClass(rarity)}`);
@@ -413,7 +425,7 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
     left.appendChild(document.createTextNode(` x${count}`));
   }
 
-  // Stats: DMG: X | AS: Y
+  // Simple inline quick info for weapons: DMG / AS
   const statsObj = rep.stats || {};
   if (
     typeof statsObj.damage === "number" &&
@@ -428,39 +440,138 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
 
   div.appendChild(left);
 
-  // Tooltip stays the same (bind to entire row)
+  // Tooltip with comparison vs currently equipped item (same slot)
   Tooltip.bind(div, () => {
-    const header =
-      `<strong>${itemName}</strong><br>` +
-      `<span class="rarity ${rarityClass(rarity)}" style="display:inline">${rarity}</span><br>` +
-      `Quality: ${quality}`;
+    const slot = rep.slot || null;
 
-    const desc = rep.description ? `<br><br>${rep.description}` : "";
-    const statsObj = rep.stats || {};
-    const statKeys = Object.keys(statsObj);
-    const stats = statKeys.length
-      ? `<br><br>${statKeys
-          .map(k => `${STAT_LABELS[k] ?? k}: ${fmt(statsObj[k])}`)
-          .join("<br>")}`
-      : "";
+    // Currently equipped item in the same slot
+    let equippedItem = null;
+    let equippedStats = {};
+    if (slot && typeof getEquippedState === "function") {
+      const eq = getEquippedState();
+      if (eq && eq[slot]) {
+        equippedItem = eq[slot];
+        equippedStats = eq[slot].stats || {};
+      }
+    }
 
-    return header + desc + stats;
+    const lines = [];
+
+    // --- Header ---
+    lines.push(`<strong>${itemName}</strong>`);
+    lines.push(
+      `<span class="rarity ${rarityClass(rarity)}">${rarity}</span>`
+    );
+    lines.push(`Quality: ${quality}`);
+
+    const stats = rep.stats || {};
+
+    // --- Weapon block: Damage / AS / Raw DPS / Required skill ---
+    if (slot === "weapon" && typeof stats.damage === "number") {
+      const dmg = stats.damage;
+      const as =
+        typeof stats.attackSpeed === "number" ? stats.attackSpeed : 1;
+      const rawDps = dmg * as;
+
+      let eqDmg = 0;
+      let eqAs = 0;
+      let eqDps = 0;
+      if (equippedItem && equippedStats) {
+        if (typeof equippedStats.damage === "number") {
+          eqDmg = equippedStats.damage;
+        }
+        if (typeof equippedStats.attackSpeed === "number") {
+          eqAs = equippedStats.attackSpeed;
+        }
+        eqDps = eqDmg * (eqAs || 1);
+      }
+
+      lines.push("");
+      lines.push("<strong>Weapon</strong>");
+
+      // Damage
+      let dmgLine = `Damage: ${fmt(dmg)}`;
+      if (equippedItem) {
+        dmgLine += formatDelta(dmg, eqDmg);
+      }
+      lines.push(dmgLine);
+
+      // Attack Speed
+      let asLine = `Attack Speed: ${fmt(as)}`;
+      if (equippedItem) {
+        asLine += formatDelta(as, eqAs);
+      }
+      lines.push(asLine);
+
+      // Raw DPS
+      let dpsLine = `Raw DPS: ${fmt(rawDps)}`;
+      if (equippedItem) {
+        dpsLine += formatDelta(rawDps, eqDps);
+      }
+      lines.push(dpsLine);
+
+      // Required skill vs your skill
+      const skillsCfg =
+        (GAME_CONFIG.skills && GAME_CONFIG.skills.weapon) || {};
+      const labels = skillsCfg.labels || {};
+      const weaponType = inferWeaponTypeFromItem(rep);
+      const label = labels[weaponType] || weaponType;
+
+      const required =
+        typeof rep.skillReq === "number" ? rep.skillReq : 0;
+
+      const playerSkill =
+        (currentCharacter &&
+          currentCharacter.skills &&
+          currentCharacter.skills[weaponType]) ||
+        0;
+
+      if (required > 0) {
+        lines.push(
+          `${label}: ${required} (${fmt(playerSkill)})`
+        );
+      }
+    }
+
+    // --- Generic stats block (all other stats) ---
+    const allStatKeys = Array.from(
+      new Set([
+        ...Object.keys(stats),
+        ...Object.keys(equippedStats),
+      ])
+    ).filter((k) => k !== "damage" && k !== "attackSpeed"); // handled above
+
+    if (allStatKeys.length) {
+      lines.push("");
+      lines.push("<strong>Stats</strong>");
+
+      allStatKeys.forEach((k) => {
+        const label = STAT_LABELS[k] ?? k;
+        const val = stats[k] ?? 0;
+        const eqVal = equippedStats[k] ?? 0;
+
+        if (!val && !eqVal) return;
+
+        let line = `${label}: ${fmt(val)}`;
+        if (equippedItem) {
+          line += formatDelta(val, eqVal);
+        }
+        lines.push(line);
+      });
+    }
+
+    // --- Description at the bottom ---
+    if (rep.description) {
+      lines.push("");
+      lines.push(rep.description);
+    }
+
+    return lines.join("<br>");
   });
 
-  // Right side: actions (Trash, then Equip)
+  // Right side: actions (Equip, then Trash)
   const btnWrap = document.createElement("span");
   btnWrap.className = "inv-actions";
-
-  // Trash button FIRST
-  const trashBtn = document.createElement("button");
-  trashBtn.className = "trash-btn";
-  trashBtn.textContent = "Trash";
-  trashBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    Tooltip.hide();
-    removeOneFromGroup(itemName, quality, rep.stats);
-  });
-  btnWrap.appendChild(trashBtn);
 
   // Equip button (only if item is equippable)
   if (rep.slot) {
@@ -474,6 +585,17 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
     });
     btnWrap.appendChild(equipBtn);
   }
+
+  // Trash button (always present)
+  const trashBtn = document.createElement("button");
+  trashBtn.className = "trash-btn";
+  trashBtn.textContent = "Trash";
+  trashBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    Tooltip.hide();
+    removeOneFromGroup(itemName, quality, rep.stats);
+  });
+  btnWrap.appendChild(trashBtn);
 
   div.appendChild(btnWrap);
 

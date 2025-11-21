@@ -8,7 +8,7 @@
 <body>
 <div id="game-header">
   <span class="game-header-text">
-    ProgressCrawl — v0.0.61 — The Equipment Update - Cleanup
+    ProgressCrawl — v0.0.65-stable - Character & Combat Revamp
   </span>
   <button id="patch-notes-btn" type="button">Patch Notes</button>
 </div>
@@ -90,11 +90,19 @@
   <div id="menu-bar">
     <button id="inventory-btn" style="display:none;">Inventory</button>
     <button id="equipment-btn" style="display:none;">Equipment</button>
+    <button id="skills-btn" class="menu-btn">Skills</button>
   </div>
 
     <button id="loot-button">Loot!</button>
     <div id="progress-container">
       <div id="progress"></div>
+    </div>
+
+    <div id="hp-bar-container">
+      <div id="hp-bar-label">HP</div>
+      <div id="hp-bar">
+        <div id="hp-bar-fill"></div>
+      </div>
     </div>
 
     <div id="inventory-panel">
@@ -107,6 +115,11 @@
     
       <div id="equipment-slots"></div>
       <div id="equipment-summary"></div>
+    </div>
+
+    <div id="skills-panel" class="panel" style="display:none">
+      <h2>Skills</h2>
+      <div id="skills-list"></div>
     </div>
   </section>
 

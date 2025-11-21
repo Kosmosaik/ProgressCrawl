@@ -1,3 +1,101 @@
+## v0.0.65 - Character & Combat Revamp
+
+## New Features
+
+### New Combat Calculation System (No combat gameplay though)
+Combat has been fully rebuilt. Your character’s Attack, DPS, Crit Chance, Loot Find, and Max HP now scale from:
+- Your weapon
+- Your attributes (STR / DEX / INT / VIT)
+- Your weapon skill levels (new)
+- Bonuses from equipped gear
+
+Progression is smoother, weapon upgrades feel impactful, and characters grow in a more meaningful way.
+
+---
+
+### Weapon Skill Levels
+Each weapon type now has its own skill:
+- Daggers  
+- Swords  
+- Axes  
+- Bows  
+- Unarmed  
+
+Higher skill → higher damage with that weapon type.  
+Tooltips now show the exact skill requirement for each weapon (however, you can equip any weapon no matter your skills).
+
+---
+
+### Skills Menu Added
+A new **Skills** button is now available in the main UI.  
+You can view (and for now manually adjust) your weapon skill levels.  
+In future updates, skills will increase naturally through gameplay.
+
+---
+
+### Character Sheet Overhaul
+The Equipment screen now functions as the full **Character Sheet**.  
+It displays:
+- Total attributes  
+- Max HP  
+- Attack  
+- Attack Speed  
+- DPS  
+- Crit Chance  
+- Loot Find  
+
+These update instantly when equipping or unequipping items.
+
+---
+
+### HP Bar
+A new HP bar has been added below the loot button.  
+It shows your current and maximum HP at all times.
+
+---
+
+## Improvements
+
+### Enhanced Weapon Tooltips
+Weapon tooltips now include:
+- Damage  
+- Attack Speed  
+- Raw DPS  
+- Required skill and your current skill  
+- All rolled stats  
+- + / – comparison against equipped weapon  
+
+Inventory and equipment tooltips now match in style and information.
+
+---
+
+### Cleaner Inventory Experience
+- **Equip** is now on the left; **Trash** on the right.
+- Stack headers (e.g., *“Simple Dagger x4”*) no longer show tooltips.
+- Only individual items inside the stack show detailed info.
+- Sorting updated so **highest-grade items appear first**.
+
+---
+
+## Fixes
+- Fixed crashes related to tooltips and item quality ranges.
+- Fixed issues loading older save files.
+- Fixed panels overlapping; the Skills menu now displays correctly.
+- Various minor UI cleanup and consistency fixes.
+
+---
+
+## Balance Updates
+- Unarmed and early weapons now scale more smoothly.
+- A small base Attack value has been added so very early damage never feels too low.
+- Starter weapons now feel more distinct and more rewarding than fighting unarmed.
+
+---
+
+Enjoy the update!
+
+---
+
 ## v0.0.61 — Equipment & Stat Polish
 
 ### Added
