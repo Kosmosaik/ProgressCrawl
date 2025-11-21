@@ -78,7 +78,7 @@ function inferWeaponTypeFromItem(item) {
   if (name.includes("sword")) return "sword";
   if (name.includes("axe") || name.includes("hatchet")) return "axe";
 
-  return "sword"; // fallback
+  return "sword";
 }
 
 // Quality helpers (uses global TIER_ORDER from quality.js)
