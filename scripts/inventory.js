@@ -58,6 +58,15 @@ const STAT_LABELS = {
   lootFind: "Loot Find",
 };
 
+// --- Tooltip helpers ---
+function formatDelta(candidate, current) {
+  const delta = candidate - current;
+  if (!delta || Math.abs(delta) < 0.0001) return "";
+  const sign = delta > 0 ? "+" : "";
+  // meta class already exists and is styled smaller/softer
+  return ` <span class="meta">(${sign}${fmt(delta)})</span>`;
+}
+
 // Quality helpers (uses global TIER_ORDER from quality.js)
 function qualityStep(q) {
   const tier = q[0];
@@ -65,6 +74,42 @@ function qualityStep(q) {
   const tierIdx = TIER_ORDER.indexOf(tier);
   const stepsPerTier = (typeof SUBLEVELS_PER_TIER === "number") ? SUBLEVELS_PER_TIER : 10;
   return tierIdx * stepsPerTier + sub; // 0..69 (F0..S9)
+}
+
+function inferWeaponTypeFromItem(item) {
+  if (!item) return "unarmed";
+  if (item.weaponType) return item.weaponType;
+
+  const name = (item.name || "").toLowerCase();
+  const atkType = (item.attackType || "").toLowerCase();
+
+  if (atkType === "ranged") return "bow";
+  if (name.includes("dagger")) return "dagger";
+  if (name.includes("sword")) return "sword";
+  if (name.includes("axe") || name.includes("hatchet")) return "axe";
+
+  // Fallback
+  return "sword";
+}
+
+function computeRequiredSkillForWeapon(damage, attackSpeed, weaponType) {
+  if (!damage || !attackSpeed) return null;
+
+  const skillsCfg =
+    (GAME_CONFIG.skills && GAME_CONFIG.skills.weapon) || {};
+  const reqCfg = skillsCfg.requiredFromPower || {};
+
+  const baseReq = reqCfg.base ?? 20;
+  const perPower = reqCfg.perPower ?? 5;
+  const minReq = reqCfg.min ?? 0;
+  const maxReq = reqCfg.max ?? (skillsCfg.maxLevel ?? 200);
+
+  const power = damage * attackSpeed;
+  let required = Math.round(baseReq + power * perPower);
+  if (required < minReq) required = minReq;
+  if (required > maxReq) required = maxReq;
+
+  return { required, power };
 }
 
 function summarizeQualityRange(items = []) {
@@ -428,58 +473,142 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
 
   div.appendChild(left);
 
-  // Tooltip stays the same (bind to entire row)
+  // Tooltip with comparison vs currently equipped item (same slot)
   Tooltip.bind(div, () => {
-    const header =
-      `<strong>${itemName}</strong><br>` +
-      `<span class="rarity ${rarityClass(rarity)}" style="display:inline">${rarity}</span><br>` +
-      `Quality: ${quality}`;
-
-    const desc = rep.description ? `<br><br>${rep.description}` : "";
     const statsObj = rep.stats || {};
-    const statKeys = Object.keys(statsObj);
-    const stats = statKeys.length
-      ? `<br><br>${statKeys
-          .map(k => `${STAT_LABELS[k] ?? k}: ${fmt(statsObj[k])}`)
-          .join("<br>")}`
-      : "";
+    const slot = rep.slot || null;
 
-    return header + desc + stats;
+    // Currently equipped item in the same slot
+    let equippedItem = null;
+    let equippedStats = {};
+    if (slot && typeof getEquippedState === "function") {
+      const eq = getEquippedState();
+      if (eq && eq[slot]) {
+        equippedItem = eq[slot];
+        equippedStats = eq[slot].stats || {};
+      }
+    }
+
+    const lines = [];
+
+    // --- Header ---
+    lines.push(`<strong>${itemName}</strong>`);
+    lines.push(
+      `<span class="rarity ${rarityClass(rarity)}">${rarity}</span>`
+    );
+    lines.push(`Quality: ${quality}`);
+
+    // --- Weapon-specific summary (Damage / AS / raw DPS / Required skill) ---
+    if (slot === "weapon" && typeof statsObj.damage === "number") {
+      const dmg = statsObj.damage;
+      const as =
+        typeof statsObj.attackSpeed === "number"
+          ? statsObj.attackSpeed
+          : 1;
+      const rawDps = dmg * as;
+
+      let eqDmg = 0;
+      let eqAs = 0;
+      let eqDps = 0;
+      if (equippedItem && equippedStats) {
+        if (typeof equippedStats.damage === "number") {
+          eqDmg = equippedStats.damage;
+        }
+        if (typeof equippedStats.attackSpeed === "number") {
+          eqAs = equippedStats.attackSpeed;
+        }
+        eqDps = eqDmg * (eqAs || 1);
+      }
+
+      lines.push("");
+      lines.push("<strong>Weapon</strong>");
+
+      // Damage
+      let dmgLine = `Damage: ${fmt(dmg)}`;
+      if (equippedItem) {
+        dmgLine += formatDelta(dmg, eqDmg);
+      }
+      lines.push(dmgLine);
+
+      // Attack Speed
+      let asLine = `Attack Speed: ${fmt(as)}`;
+      if (equippedItem) {
+        asLine += formatDelta(as, eqAs);
+      }
+      lines.push(asLine);
+
+      // Raw DPS
+      let dpsLine = `Raw DPS: ${fmt(rawDps)}`;
+      if (equippedItem) {
+        dpsLine += formatDelta(rawDps, eqDps);
+      }
+      lines.push(dpsLine);
+
+      // Required skill vs your skill
+      const skillsCfg =
+        (GAME_CONFIG.skills && GAME_CONFIG.skills.weapon) || {};
+      const labels = skillsCfg.labels || {};
+      const weaponType = inferWeaponTypeFromItem(rep);
+      const label = labels[weaponType] || weaponType;
+      const reqInfo = computeRequiredSkillForWeapon(
+        dmg,
+        as,
+        weaponType
+      );
+
+      const playerSkill =
+        (currentCharacter &&
+          currentCharacter.skills &&
+          currentCharacter.skills[weaponType]) ||
+        0;
+
+      if (reqInfo) {
+        lines.push(
+          `Requires: ${label} ${reqInfo.required} (You: ${fmt(
+            playerSkill
+          )})`
+        );
+      }
+    }
+
+    // --- Generic stats block (all other stats) ---
+    // Merge stats from this item and equipped one, so we can show -values too
+    const allStatKeys = Array.from(
+      new Set([
+        ...Object.keys(statsObj),
+        ...Object.keys(equippedStats),
+      ])
+    ).filter((k) => k !== "damage" && k !== "attackSpeed"); // those handled above
+
+    if (allStatKeys.length) {
+      lines.push("");
+      lines.push("<strong>Stats</strong>");
+
+      allStatKeys.forEach((k) => {
+        const label = STAT_LABELS[k] ?? k;
+        const val = statsObj[k] ?? 0;
+        const eqVal = equippedStats[k] ?? 0;
+
+        // Only show line if item actually has a non-zero stat OR
+        // the equipped item has it (so we can show a loss)
+        if (!val && !eqVal) return;
+
+        let line = `${label}: ${fmt(val)}`;
+        if (equippedItem) {
+          line += formatDelta(val, eqVal);
+        }
+        lines.push(line);
+      });
+    }
+
+    // --- Description ---
+    if (rep.description) {
+      lines.push("");
+      lines.push(rep.description);
+    }
+
+    return lines.join("<br>");
   });
-
-  // Right side: actions (Trash, then Equip)
-  // Right side: actions (Equip, then Trash)
-  const btnWrap = document.createElement("span");
-  btnWrap.className = "inv-actions";
-
-  // Equip button (only if item is equippable)
-  if (rep.slot) {
-    const equipBtn = document.createElement("button");
-    equipBtn.className = "equip-btn";
-    equipBtn.textContent = "Equip";
-    equipBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      Tooltip.hide();
-      equipOneFromGroup(itemName, quality, rep.stats);
-    });
-    btnWrap.appendChild(equipBtn);
-  }
-
-  // Trash button (always present)
-  const trashBtn = document.createElement("button");
-  trashBtn.className = "trash-btn";
-  trashBtn.textContent = "Trash";
-  trashBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    Tooltip.hide();
-    removeOneFromGroup(itemName, quality, rep.stats);
-  });
-  btnWrap.appendChild(trashBtn);
-
-  div.appendChild(btnWrap);
-
-  return div;
-}
 
 // ----- Inventory save/load helpers -----
 
