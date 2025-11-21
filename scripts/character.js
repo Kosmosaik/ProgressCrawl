@@ -234,7 +234,11 @@ function computeDerivedStats(
   // 4) Final effective damage, Attack, DPS
   const avgFactor = cfgCombat.attackAverageFactor ?? 0.85;
   const effectiveMax = trueDamage * skillEff * attrEff;
-  const attackValue = effectiveMax * avgFactor;
+  
+  // Add a baseline attack so numbers don't feel tiny at low power
+  const baseAttack = cfgChar.baseAttack || 0;
+  const attackValue = effectiveMax * avgFactor + baseAttack;
+  
   const dps = attackValue * attackSpeed;
 
   const attackLabel = "Attack";
