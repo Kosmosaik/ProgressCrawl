@@ -31,7 +31,6 @@ const ItemCatalog = [
     damage: [5, 11],
     attackSpeed: [1.0, 1.35],
     critChance: [1, 3],
-    lootFind: [0, 3],
     }
   },
   {
