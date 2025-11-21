@@ -150,7 +150,7 @@ function groupByIdentical(items = []) {
   }
   const arr = Array.from(map.values());
   arr.sort((A, B) => {
-    const q = qualityStep(A.quality) - qualityStep(B.quality);
+    const q = qualityStep(B.quality) - qualityStep(A.quality);
     if (q !== 0) return q;
     return B.items.length - A.items.length;
   });
