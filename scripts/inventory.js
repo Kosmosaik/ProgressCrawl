@@ -63,17 +63,7 @@ function formatDelta(candidate, current) {
   const delta = candidate - current;
   if (!delta || Math.abs(delta) < 0.0001) return "";
   const sign = delta > 0 ? "+" : "";
-  // meta class already exists and is styled smaller/softer
   return ` <span class="meta">(${sign}${fmt(delta)})</span>`;
-}
-
-// Quality helpers (uses global TIER_ORDER from quality.js)
-function qualityStep(q) {
-  const tier = q[0];
-  const sub = parseInt(q.slice(1), 10);
-  const tierIdx = TIER_ORDER.indexOf(tier);
-  const stepsPerTier = (typeof SUBLEVELS_PER_TIER === "number") ? SUBLEVELS_PER_TIER : 10;
-  return tierIdx * stepsPerTier + sub; // 0..69 (F0..S9)
 }
 
 function inferWeaponTypeFromItem(item) {
@@ -88,8 +78,7 @@ function inferWeaponTypeFromItem(item) {
   if (name.includes("sword")) return "sword";
   if (name.includes("axe") || name.includes("hatchet")) return "axe";
 
-  // Fallback
-  return "sword";
+  return "sword"; // fallback
 }
 
 function computeRequiredSkillForWeapon(damage, attackSpeed, weaponType) {
@@ -458,7 +447,7 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
     left.appendChild(document.createTextNode(` x${count}`));
   }
 
-  // Stats: DMG: X | AS: Y
+  // Simple inline quick info for weapons: DMG / AS
   const statsObj = rep.stats || {};
   if (
     typeof statsObj.damage === "number" &&
@@ -475,7 +464,6 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
 
   // Tooltip with comparison vs currently equipped item (same slot)
   Tooltip.bind(div, () => {
-    const statsObj = rep.stats || {};
     const slot = rep.slot || null;
 
     // Currently equipped item in the same slot
@@ -498,13 +486,13 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
     );
     lines.push(`Quality: ${quality}`);
 
-    // --- Weapon-specific summary (Damage / AS / raw DPS / Required skill) ---
-    if (slot === "weapon" && typeof statsObj.damage === "number") {
-      const dmg = statsObj.damage;
+    const stats = rep.stats || {};
+
+    // --- Weapon block: Damage / AS / Raw DPS / Required skill ---
+    if (slot === "weapon" && typeof stats.damage === "number") {
+      const dmg = stats.damage;
       const as =
-        typeof statsObj.attackSpeed === "number"
-          ? statsObj.attackSpeed
-          : 1;
+        typeof stats.attackSpeed === "number" ? stats.attackSpeed : 1;
       const rawDps = dmg * as;
 
       let eqDmg = 0;
@@ -550,11 +538,7 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
       const labels = skillsCfg.labels || {};
       const weaponType = inferWeaponTypeFromItem(rep);
       const label = labels[weaponType] || weaponType;
-      const reqInfo = computeRequiredSkillForWeapon(
-        dmg,
-        as,
-        weaponType
-      );
+      const reqInfo = computeRequiredSkillForWeapon(dmg, as, weaponType);
 
       const playerSkill =
         (currentCharacter &&
@@ -572,13 +556,12 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
     }
 
     // --- Generic stats block (all other stats) ---
-    // Merge stats from this item and equipped one, so we can show -values too
     const allStatKeys = Array.from(
       new Set([
-        ...Object.keys(statsObj),
+        ...Object.keys(stats),
         ...Object.keys(equippedStats),
       ])
-    ).filter((k) => k !== "damage" && k !== "attackSpeed"); // those handled above
+    ).filter((k) => k !== "damage" && k !== "attackSpeed"); // handled above
 
     if (allStatKeys.length) {
       lines.push("");
@@ -586,11 +569,9 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
 
       allStatKeys.forEach((k) => {
         const label = STAT_LABELS[k] ?? k;
-        const val = statsObj[k] ?? 0;
+        const val = stats[k] ?? 0;
         const eqVal = equippedStats[k] ?? 0;
 
-        // Only show line if item actually has a non-zero stat OR
-        // the equipped item has it (so we can show a loss)
         if (!val && !eqVal) return;
 
         let line = `${label}: ${fmt(val)}`;
@@ -601,7 +582,7 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
       });
     }
 
-    // --- Description ---
+    // --- Description at the bottom ---
     if (rep.description) {
       lines.push("");
       lines.push(rep.description);
@@ -609,6 +590,39 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
 
     return lines.join("<br>");
   });
+
+  // Right side: actions (Equip, then Trash)
+  const btnWrap = document.createElement("span");
+  btnWrap.className = "inv-actions";
+
+  // Equip button (only if item is equippable)
+  if (rep.slot) {
+    const equipBtn = document.createElement("button");
+    equipBtn.className = "equip-btn";
+    equipBtn.textContent = "Equip";
+    equipBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      Tooltip.hide();
+      equipOneFromGroup(itemName, quality, rep.stats);
+    });
+    btnWrap.appendChild(equipBtn);
+  }
+
+  // Trash button (always present)
+  const trashBtn = document.createElement("button");
+  trashBtn.className = "trash-btn";
+  trashBtn.textContent = "Trash";
+  trashBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    Tooltip.hide();
+    removeOneFromGroup(itemName, quality, rep.stats);
+  });
+  btnWrap.appendChild(trashBtn);
+
+  div.appendChild(btnWrap);
+
+  return div;
+}
 
 // ----- Inventory save/load helpers -----
 
