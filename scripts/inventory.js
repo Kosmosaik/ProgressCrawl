@@ -81,26 +81,6 @@ function inferWeaponTypeFromItem(item) {
   return "sword"; // fallback
 }
 
-function computeRequiredSkillForWeapon(damage, attackSpeed, weaponType) {
-  if (!damage || !attackSpeed) return null;
-
-  const skillsCfg =
-    (GAME_CONFIG.skills && GAME_CONFIG.skills.weapon) || {};
-  const reqCfg = skillsCfg.requiredFromPower || {};
-
-  const baseReq = reqCfg.base ?? 20;
-  const perPower = reqCfg.perPower ?? 5;
-  const minReq = reqCfg.min ?? 0;
-  const maxReq = reqCfg.max ?? (skillsCfg.maxLevel ?? 200);
-
-  const power = damage * attackSpeed;
-  let required = Math.round(baseReq + power * perPower);
-  if (required < minReq) required = minReq;
-  if (required > maxReq) required = maxReq;
-
-  return { required, power };
-}
-
 // Quality helpers (uses global TIER_ORDER from quality.js)
 function qualityStep(q) {
   const tier = q[0];                         // "F", "E", "D", ..., "S"
@@ -552,7 +532,9 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
       const labels = skillsCfg.labels || {};
       const weaponType = inferWeaponTypeFromItem(rep);
       const label = labels[weaponType] || weaponType;
-      const reqInfo = computeRequiredSkillForWeapon(dmg, as, weaponType);
+
+      const required =
+        typeof rep.skillReq === "number" ? rep.skillReq : 0;
 
       const playerSkill =
         (currentCharacter &&
@@ -560,9 +542,9 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
           currentCharacter.skills[weaponType]) ||
         0;
 
-      if (reqInfo) {
+      if (required > 0) {
         lines.push(
-          `${label}: ${reqInfo.required} (${fmt(playerSkill)})`
+          `${label}: ${required} (${fmt(playerSkill)})`
         );
       }
     }
