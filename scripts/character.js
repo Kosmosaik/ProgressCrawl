@@ -198,7 +198,7 @@ function computeDerivedStats(
   if (requiredSkill > 0) {
     const ratio = playerSkill / requiredSkill;
     if (ratio <= 1) {
-      skillEff = Math.max(0.1, Math.pow(ratio || 0.0001, 0.7));
+      skillEff = Math.max(0.1, Math.pow(ratio || 0.0001, 0.6));
     } else {
       const over = ratio - 1;
       const bonus = over * 0.25;
