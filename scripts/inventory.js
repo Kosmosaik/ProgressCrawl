@@ -101,6 +101,20 @@ function computeRequiredSkillForWeapon(damage, attackSpeed, weaponType) {
   return { required, power };
 }
 
+// Quality helpers (uses global TIER_ORDER from quality.js)
+function qualityStep(q) {
+  const tier = q[0];                         // "F", "E", "D", ..., "S"
+  const sub = parseInt(q.slice(1), 10);      // 0..9
+  const tierIdx = TIER_ORDER.indexOf(tier);  // 0..6, from quality.js
+  const stepsPerTier =
+    (typeof SUBLEVELS_PER_TIER === "number")
+      ? SUBLEVELS_PER_TIER
+      : 10;
+
+  // Turn e.g. "F0".."F9","E0".. into a single linear scale
+  return tierIdx * stepsPerTier + sub;       // e.g. 0..69 for F0..S9
+}
+
 function summarizeQualityRange(items = []) {
   if (!items.length) return "";
   let minQ = items[0].quality, maxQ = items[0].quality;
