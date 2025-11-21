@@ -562,9 +562,7 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
 
       if (reqInfo) {
         lines.push(
-          `Requires: ${label} ${reqInfo.required} (You: ${fmt(
-            playerSkill
-          )})`
+          `${label}: ${reqInfo.required} (${fmt(playerSkill)})`
         );
       }
     }
