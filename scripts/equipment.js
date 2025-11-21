@@ -298,6 +298,12 @@ function buildEquipmentItemTooltip(item, slot) {
     lines.push(`Raw DPS: ${fmt(rawDps)}`);
 
     // Required skill vs your skill (same format as inventory)
+    const skillsCfg =
+      (GAME_CONFIG.skills && GAME_CONFIG.skills.weapon) || {};
+    const labels = skillsCfg.labels || {};
+    const weaponType = inferWeaponType(item);
+    const label = labels[weaponType] || weaponType;
+
     const required =
       typeof item.skillReq === "number" ? item.skillReq : 0;
 
@@ -324,11 +330,11 @@ function buildEquipmentItemTooltip(item, slot) {
     lines.push("<strong>Stats</strong>");
 
     allStatKeys.forEach((k) => {
-      const label =
+      const statLabel =
         (typeof STAT_LABELS !== "undefined" && STAT_LABELS[k]) || k;
       const val = stats[k] ?? 0;
       if (!val) return;
-      lines.push(`${label}: ${fmt(val)}`);
+      lines.push(`${statLabel}: ${fmt(val)}`);
     });
   }
 
