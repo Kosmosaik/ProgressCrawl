@@ -58,6 +58,8 @@ const GAME_CONFIG = {
 
     rangedMainScale: 2.0,  // DEX contribution to ranged
     rangedOffScale:  0.2,  // STR contribution to ranged,
+
+    baseAttack: 1.0,
   },
   
   skills: {
