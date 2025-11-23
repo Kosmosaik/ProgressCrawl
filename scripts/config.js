@@ -1,6 +1,6 @@
 // Central place for tweakable settings.
 const GAME_CONFIG = {
-  version: "0.0.65-dev",
+  version: "0.0.65-stable",
 
   loot: {
     // Progress bar behavior
