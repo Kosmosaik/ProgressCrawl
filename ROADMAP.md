@@ -103,7 +103,7 @@ Introduces resource gathering
 
 ---
 
-## v0.0.90 — Weight, Encumbrance & Storage system
+## v0.0.91 — Weight, Encumbrance & Storage system
 
 - Item weight & encumbrance system
 - Backpacks
