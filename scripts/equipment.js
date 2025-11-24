@@ -238,6 +238,7 @@ function inferWeaponType(item) {
   // Very old items without weaponType – last resort heuristics
   const name = (item.name || "").toLowerCase();
   if (name.includes("dagger")) return "dagger";
+  if (name.includes("club")) return "club";
   if (name.includes("sword")) return "sword";
   if (name.includes("axe") || name.includes("hatchet")) return "axe";
 
