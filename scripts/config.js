@@ -47,10 +47,10 @@ const GAME_CONFIG = {
 
     // Crit chance
     baseCritChance: 2, // % base crit chance
-    critPerDex: 0.25,   // % crit chance per 1 DEX
+    critPerDex: 0.2,   // % crit chance per 1 DEX
 
     // Loot find
-    lootFindPerInt: 0.25, // % loot find per 1 INT
+    lootFindPerInt: 0.2, // % loot find per 1 INT
 
     // Attack scaling (we'll use these in character.js)
     meleeMainScale: 2.0,   // STR contribution to melee
@@ -59,7 +59,7 @@ const GAME_CONFIG = {
     rangedMainScale: 2.0,  // DEX contribution to ranged
     rangedOffScale:  0.2,  // STR contribution to ranged,
 
-    baseAttack: 1.0,
+    baseAttack: 4.0,
   },
   
   skills: {
