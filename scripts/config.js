@@ -69,6 +69,7 @@ const GAME_CONFIG = {
         dagger: "Dagger",
         sword: "Sword",
         axe: "Axe",
+        club: "Club",
         bow: "Bow",
         unarmed: "Unarmed",
       },
@@ -77,6 +78,7 @@ const GAME_CONFIG = {
         dagger: 0,
         sword: 0,
         axe: 0,
+        club: 0,
         bow: 0,
         unarmed: 0,
       },
@@ -104,6 +106,10 @@ const GAME_CONFIG = {
     },
     axe: {
       attrWeights: { STR: 0.9, DEX: 0.1 },
+      attrPerPower: 2.0,
+    },
+    club: {
+      attrWeights: { STR: 0.8, DEX: 0.2 },
       attrPerPower: 2.0,
     },
     bow: {
