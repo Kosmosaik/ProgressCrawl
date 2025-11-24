@@ -1,1 +1,1 @@
-https://kosmosaik.github.io/ClickToGetLoot/
+https://kosmosaik.github.io/ProgressCrawl/
