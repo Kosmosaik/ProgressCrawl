@@ -93,7 +93,7 @@ button {
 /* Progress bar under the loot button */
 #progress-container {
   position: fixed;
-  top: calc(50% + 50px);
+  top: calc(70% + 50px);
   left: 50%;
   transform: translateX(-50%);
   width: 240px;
