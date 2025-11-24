@@ -324,19 +324,15 @@ function renderInventory() {
     inventoryList.appendChild(header);
 
     header.addEventListener("click", () => {
-      const nowCollapsed = !collapsedCategories.has(cat);
-      if (nowCollapsed) {
-        collapsedCategories.add(cat);
-      } else {
+      // Toggle collapsed state for this category
+      if (collapsedCategories.has(cat)) {
         collapsedCategories.delete(cat);
+      } else {
+        collapsedCategories.add(cat);
       }
-      header.textContent = `${nowCollapsed ? "▶" : "▼"} ${categoryHeaderLabel(cat)}`;
 
-      let node = header.nextElementSibling;
-      while (node && !node.classList.contains("inventory-category-header")) {
-        node.style.display = nowCollapsed ? "none" : "";
-        node = node.nextElementSibling;
-      }
+      // Re-render the whole inventory based on updated state
+      renderInventory();
     });
 
     // Sort items within category according to current sort
