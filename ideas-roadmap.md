@@ -17,22 +17,14 @@
 
 
 ===== FEATURES =====
-
-FEATURE: Character & Classes
-  @ Classes - You don't choose class, you will be placed in a class depending on highest skill/skills (combinations) and base don that gain unique buffs.
-  @ Add Class/Stats calculations. Different stat distribution from different classes (still a bit random but weighted toward class related stats).
-  @ LATER: Add skill distribution??
   
 FEATURE: Equipment view
-  @ Add Equipment menu (FINISHED)
-  @ Add more equipment related items (chest, head, weapon etc) (ONGOING)
-  @ Add equip/unequip function (move item from inventory to equipment and vice versa. Make slot busy/available) (FINISHED)
-  @ Add stats from equipment (ONGOING)
+  @ Add more equipment related items (chest, head, weapons, rings, legs etc)
 
   Core Combat Stats
   [X] : Weapon Damage
   [X] : Attack Speed
-  [ ] : DPS (derived)
+  [X] : DPS (derived)
   [X] : Critical Chance
   [ ] : Critical Damage Multiplier
   [ ] : Accuracy / Hit Chance
@@ -84,9 +76,9 @@ FEATURE: Equipment view
 
 Character:
 
-1. Name (We already have this implemented, but later on I'd like to expand the random name system to hold more names, and maybe even build a generator combining different character combinations (vowels and consonants in certain ways).
+1. NAME: (We already have this implemented, but later on I'd like to expand the random name system to hold more names, and maybe even build a generator combining different character combinations (vowels and consonants in certain ways).
 
-2. Class (this will be empty templates with class names for now. Later we will flesh it out with stats distribution, maybe unique skills/buffs etc), but it's good to start with a template to build upon later.
+2. CLASS: You don't choose class, you will be placed in a class depending on highest skill/skills (combinations) and base don that gain unique buffs.
 
 3. STR /Strength): This stat affects the "melee" physical power of the character, allowing it to deal damage even if no weapons are equipped if a sufficient amount of STR is invested. The STR value is also multiplied to the Weapon ATK value for even more damage increase.
 +1 to BaseATK (BaseATK is derived from the player's Base Level, Str, Dex, and Luk. We will discuss the formula further down).
