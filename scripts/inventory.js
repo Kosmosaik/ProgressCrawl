@@ -247,6 +247,7 @@ function categoryHeaderLabel(category = "Other") {
     "Weapon": "WEAPONS",
     "Tool": "TOOLS",
     "Wood": "WOOD",
+    "Food": "FOOD",
   };
   return map[category] || (category || "OTHER").toUpperCase();
 }
