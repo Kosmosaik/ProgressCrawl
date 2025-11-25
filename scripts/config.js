@@ -142,6 +142,7 @@ const GAME_CONFIG = {
       "Material",
       "Crafting Component",
       "Resource",
+      "Food",
       "Weapon",
       "Tool",
       "Other",
