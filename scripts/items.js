@@ -246,6 +246,14 @@ const ItemCatalog = [
     description: "Small pieces of copper, useful in crafting basic metal items and refining.",
     rarity: "Common",
     usage: "Refine into ingots at a forge.",
+  },
+// ========== FOOD ==========
+  {
+    name: "Raw Squirrel Meat",
+    category: "Food",
+    description: "Poor thing.",
+    rarity: "Common",
+    usage: "Eh",
   }
 ];
 
