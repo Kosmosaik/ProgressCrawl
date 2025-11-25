@@ -162,7 +162,28 @@ const ItemCatalog = [
     rarity: "Rare",
     usage: "Digging",
   },
+  {
+    name: "Cage Trap",
+    category: "Tool",
+    description: "To catch small animals.",
+    rarity: "Rare",
+    usage: "Digging",
+  },
   // ========== RESOURCES ==========
+  {
+    name: "Contaminated Water",
+    category: "Resource",
+    description: "Untreated water. Drinking is not recommended.",
+    rarity: "Common",
+    usage: "Ropes, simple baskets, fire tinder",
+  },
+  {
+    name: "Purified Water",
+    category: "Resource",
+    description: "Treated water. Drinkable and can be used in cooking.",
+    rarity: "Uncommon",
+    usage: "Ropes, simple baskets, fire tinder",
+  },
   {
     name: "Grass Bundle",
     category: "Resource",
