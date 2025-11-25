@@ -7,20 +7,19 @@
 ===== IMPROVEMENTS: =====
 @ Add debug mode (type in like a password in console to activate).
   Add statistics, loot rate help, timers, speed up time/progress stuff.
-@ Add a "compare" system between hovered item in inventory and equipped item of same type.
 
 ===== TOOLS =====
 @ Item creator (Tool that makes it easy adding items that automcatically adds it to the items.js file
 @ Biome / Location / POI creator: Tool to add new biomes, locations, pois and loot pools
 
 ===== STATISTICS =====
-@ Total items looted
+@ Total items looted (to prepare for leaderboard system later)
 
 
 ===== FEATURES =====
 
 FEATURE: Character & Classes
-  @ Add Classes (templates for stat distr).
+  @ Classes - You don't choose class, you will be placed in a class depending on highest skill/skills (combinations) and base don that gain unique buffs.
   @ Add Class/Stats calculations. Different stat distribution from different classes (still a bit random but weighted toward class related stats).
   @ LATER: Add skill distribution??
   
