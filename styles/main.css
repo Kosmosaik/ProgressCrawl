@@ -154,10 +154,16 @@ button {
   border: 1px solid #555;
   padding: 10px;
   border-radius: 8px;
+
+  /* Resizable width */
   width: 500px;
+  min-width: 360px;
+  max-width: 60vw;
   max-height: 70vh;
   overflow: auto;
+  resize: horizontal; /* user can drag the right edge */
 }
+
 
 /* Equipment panel sits to the right of the inventory panel */
 #equipment-panel {
