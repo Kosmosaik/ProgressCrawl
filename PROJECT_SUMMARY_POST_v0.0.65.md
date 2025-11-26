@@ -184,7 +184,7 @@ Old saves work via fallback logic.
 
 ---
 
-# # 🗺️ Roadmap — Updated (0.0.66 / 0.0.67)
+# # 🗺️ Roadmap — Updated (0.0.66)
 
 This roadmap reflects the *actual planned next steps*.
 It's only planned so it doesn't mean I want to do all this.
@@ -192,7 +192,7 @@ But there's ideas for most of the parts on the roadmap.
 
 ---
 
-# ## v0.0.66 — Polish & Stability Update  
+# ## v0.0.66 — Polish & Stability Update & Inventory Improvements Update
 ### *A PC-focused consistency and architecture update.*
 
 ### Goals
@@ -229,13 +229,6 @@ Move game tuning variables into config:
 - Extract helpers and utilities  
 - Clean naming conventions  
 - Remove unused code  
-
----
-
-# ## v0.0.67 — Inventory Improvements Update  
-### *Quality-of-life update improving clarity and control.*
-
-### Features
 
 #### ✔ Collapse / Expand All
 One button to toggle every category.
