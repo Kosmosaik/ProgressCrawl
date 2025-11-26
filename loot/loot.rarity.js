@@ -1,0 +1,1 @@
+// loot.rarity.js
