@@ -137,6 +137,7 @@ const GAME_CONFIG = {
   inventory: {
     defaultSortKey: "name",   // "name" | "rarity" | "qty"
     defaultSortDir: "asc",    // "asc" | "desc"
+    defaultView: "category",  // "category" | "all"
 
     categoryOrder: [
       "Material",
