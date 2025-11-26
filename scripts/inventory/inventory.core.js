@@ -8,6 +8,11 @@ function addToInventory(inst) {
   inventory[inst.name].qty += 1;
   inventory[inst.name].items.push(inst);
   renderInventory();
+
+  // Auto-save after loot/change
+  if (typeof saveCurrentGame === "function") {
+    saveCurrentGame();
+  }
 }
 
 function removeOneFromGroup(itemName, quality, stats) {
@@ -27,6 +32,11 @@ function removeOneFromGroup(itemName, quality, stats) {
     }
 
     renderInventory();
+
+    // Auto-save after trashing / removing
+    if (typeof saveCurrentGame === "function") {
+      saveCurrentGame();
+    }
   }
 }
 
