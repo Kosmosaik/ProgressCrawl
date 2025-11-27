@@ -40,6 +40,13 @@ function removeOneFromGroup(itemName, quality, stats) {
   }
 }
 
+function getEquipSlotForItem(item) {
+  // For now we just trust item.slot ("weapon", "chest", etc.)
+  if (!item || !item.slot) return null;
+  // Optional: validate slot name later
+  return item.slot;
+}
+
 function equipOneFromGroup(itemName, quality, stats) {
   const stack = inventory[itemName];
   if (!stack) return;
