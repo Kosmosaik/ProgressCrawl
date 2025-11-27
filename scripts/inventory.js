@@ -6,13 +6,6 @@ const inventoryList = document.getElementById("inventory-list");
 // Inventory data
 const inventory = Object.create(null);
 
-function getEquipSlotForItem(item) {
-  // For now we just trust item.slot ("weapon", "chest", etc.)
-  if (!item || !item.slot) return null;
-  // Optional: validate slot name later
-  return item.slot;
-}
-
 // Category helpers
 function categoryHeaderLabel(category = "Other") {
   const map = {
