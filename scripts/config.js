@@ -1,6 +1,7 @@
+// scripts/config.js
 // Central place for tweakable settings.
 const GAME_CONFIG = {
-  version: "0.0.66-dev",
+  version: "0.0.66-stable",
 
   loot: {
     // Progress bar behavior
@@ -59,7 +60,7 @@ const GAME_CONFIG = {
     rangedMainScale: 2.0,  // DEX contribution to ranged
     rangedOffScale:  0.2,  // STR contribution to ranged,
 
-    baseAttack: 4.0,
+    baseAttack: 3.0,
   },
   
   skills: {
@@ -75,12 +76,12 @@ const GAME_CONFIG = {
       },
       // Starting values for a fresh character
       defaultLevels: {
-        dagger: 0,
-        sword: 0,
-        axe: 0,
-        club: 0,
-        bow: 0,
-        unarmed: 0,
+        dagger: 1,
+        sword: 1,
+        axe: 1,
+        club: 1,
+        bow: 1,
+        unarmed: 1,
       },
       minLevel: 0,
       maxLevel: 200,
@@ -127,7 +128,7 @@ const GAME_CONFIG = {
     attackAverageFactor: 0.85,  // used later: AttackShown = EDMax * 0.85
 
     // Unarmed behaviour
-    unarmedBaseDamage: 2,
+    unarmedBaseDamage: 0.5,
     unarmedDamagePerStr: 0.4,
     unarmedAttackSpeed: 1.2,
 
