@@ -59,7 +59,7 @@ const GAME_CONFIG = {
     rangedMainScale: 2.0,  // DEX contribution to ranged
     rangedOffScale:  0.2,  // STR contribution to ranged,
 
-    baseAttack: 4.0,
+    baseAttack: 3.0,
   },
   
   skills: {
@@ -127,7 +127,7 @@ const GAME_CONFIG = {
     attackAverageFactor: 0.85,  // used later: AttackShown = EDMax * 0.85
 
     // Unarmed behaviour
-    unarmedBaseDamage: 1,
+    unarmedBaseDamage: 0.5,
     unarmedDamagePerStr: 0.4,
     unarmedAttackSpeed: 1.2,
 
