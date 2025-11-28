@@ -398,6 +398,7 @@
 }
 
 .inventory-flat-header .flat-header-cell {
+  position: relative;
   background: none;
   border: none;
   padding: 0;
@@ -409,6 +410,32 @@
 
 .inventory-flat-header .flat-header-cell.active {
   text-decoration: underline;
+}
+
+/* Small drag zone on the right edge of header cells */
+.inventory-flat-header .col-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -3px; /* tiny overlap so it's easy to grab */
+  width: 6px;
+  cursor: col-resize;
+}
+
+/* Flat rows are also grids; JS sets their grid-template-columns */
+.inventory-stack-flat > summary {
+  display: grid;
+  column-gap: 8px;
+  align-items: baseline;
+}
+
+.inventory-stack-flat > summary span {
+  text-align: left;
+}
+
+/* Allow horizontal scrolling if it gets wide */
+#inventory-panel {
+  overflow-x: auto;
 }
 
 /* Make the flat view rows line up with the header */
