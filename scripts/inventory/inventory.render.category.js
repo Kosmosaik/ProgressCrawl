@@ -362,50 +362,57 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
 }
 
 // === All Items flat view ===
-// Shows a flat list of all stacks, sortable by Name / Category / Rarity / Quantity.
+// Shows a flat list of all stacks, sortable by column headers.
 function renderInventoryAllItemsView() {
   inventoryList.innerHTML = "";
   const names = Object.keys(inventory);
   if (!names.length) return;
 
-  // ---- Sort bar (includes Category) ----
-  const sortBar = document.createElement("div");
-  sortBar.className = "inventory-sort-bar";
+  // ---- Header row with clickable columns ----
+  const header = document.createElement("div");
+  header.className = "inventory-flat-header";
 
-  const sortLabel = document.createElement("span");
-  sortLabel.textContent = "Sort by:";
-  sortBar.appendChild(sortLabel);
-
-  function makeSortButton(key, label) {
+  function makeHeaderCell(key, label) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "sort-btn";
+    btn.className = "flat-header-cell";
+
     if (inventorySort.key === key) {
       btn.classList.add("active");
-      btn.textContent = `${label} ${inventorySort.dir === "asc" ? "▲" : "▼"}`;
+      const arrow = inventorySort.dir === "asc" ? "▲" : "▼";
+      btn.textContent = `${label} ${arrow}`;
     } else {
       btn.textContent = label;
     }
+
     btn.addEventListener("click", () => {
       if (inventorySort.key === key) {
+        // Same column: toggle direction
         inventorySort.dir = inventorySort.dir === "asc" ? "desc" : "asc";
       } else {
+        // New column: choose a sensible default direction
         inventorySort.key = key;
-        // Quantities default to descending; others to ascending
-        inventorySort.dir = key === "qty" ? "desc" : "asc";
+        if (key === "qty" || key === "quality") {
+          // Show biggest stacks / best grades first
+          inventorySort.dir = "desc";
+        } else {
+          inventorySort.dir = "asc";
+        }
       }
       renderInventory();
     });
+
     return btn;
   }
 
-  sortBar.appendChild(makeSortButton("name", "Name"));
-  sortBar.appendChild(makeSortButton("category", "Category"));
-  sortBar.appendChild(makeSortButton("rarity", "Rarity"));
-  sortBar.appendChild(makeSortButton("qty", "Quantity"));
-  inventoryList.appendChild(sortBar);
+  header.appendChild(makeHeaderCell("name", "Item Name"));
+  header.appendChild(makeHeaderCell("category", "Category"));
+  header.appendChild(makeHeaderCell("rarity", "Rarity"));
+  header.appendChild(makeHeaderCell("qty", "Qty"));
+  header.appendChild(makeHeaderCell("quality", "Grades"));
+  inventoryList.appendChild(header);
 
-  // ---- Build a flat list of stacks and sort them ----
+  // ---- Build & sort the flat stack list ----
   const stacks = names.map((name) => ({
     name,
     stack: inventory[name],
@@ -426,7 +433,7 @@ function renderInventoryAllItemsView() {
     details.dataset.category = category;
     details.dataset.name = name;
 
-    // Reuse open/closed state (same key pattern as category view)
+    // Persist open/closed state like in category view
     const key = `${category}::${name}`;
     if (openStacks.has(key)) {
       details.open = true;
@@ -447,11 +454,17 @@ function renderInventoryAllItemsView() {
     nameSpan.classList.add("inv-name");
     summary.appendChild(nameSpan);
 
-    // Category tag [Weapons], [Resources], etc.
+    // Category text (e.g. Weapons, Resources)
     const catSpan = document.createElement("span");
     catSpan.className = "inv-category-tag";
-    catSpan.textContent = `[${category}]`;
+    catSpan.textContent = category;
     summary.appendChild(catSpan);
+
+    // Rarity text column (e.g. Rare, Exotic)
+    const raritySpan = document.createElement("span");
+    raritySpan.className = "inv-rarity";
+    raritySpan.textContent = rarity || "";
+    summary.appendChild(raritySpan);
 
     // Quantity xN
     const qtySpan = document.createElement("span");
@@ -461,16 +474,14 @@ function renderInventoryAllItemsView() {
 
     // Quality range (e.g. F0–E3)
     const qRange = summarizeQualityRange(stack.items);
-    if (qRange) {
-      const qSpan = document.createElement("span");
-      qSpan.className = "inv-qrange";
-      qSpan.textContent = qRange;
-      summary.appendChild(qSpan);
-    }
+    const qSpan = document.createElement("span");
+    qSpan.className = "inv-qrange";
+    qSpan.textContent = qRange || "";
+    summary.appendChild(qSpan);
 
     details.appendChild(summary);
 
-    // Variants (identical groups) with tooltips + buttons
+    // Expanded: identical groups with buttons & tooltips
     const variantsWrap = document.createElement("div");
     variantsWrap.className = "stack-variants";
     const groups = groupByIdentical(stack.items);
@@ -482,5 +493,3 @@ function renderInventoryAllItemsView() {
     inventoryList.appendChild(details);
   });
 }
-
-
