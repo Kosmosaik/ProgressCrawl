@@ -53,3 +53,67 @@ if (inventoryViewToggleBtn) {
   });
 }
 
+// ----- Column resizing for All Items flat view -----
+function setupInventoryFlatColumnResizing(headerEl) {
+  const MIN_WIDTH = 80;
+
+  // Remove any old handles (in case we re-rendered)
+  headerEl.querySelectorAll(".col-resize-handle").forEach((h) => h.remove());
+
+  const headerCells = headerEl.querySelectorAll(".flat-header-cell");
+  if (!headerCells.length) return;
+
+  let isResizing = false;
+  let startX = 0;
+  let startWidths = [];
+  let colIndex = -1;
+
+  function onMouseMove(e) {
+    if (!isResizing) return;
+    const dx = e.clientX - startX;
+
+    const current = getInventoryFlatColumnWidths();
+    const newWidths = startWidths.slice();
+    newWidths[colIndex] = Math.max(MIN_WIDTH, startWidths[colIndex] + dx);
+
+    setInventoryFlatColumnWidths(newWidths);
+
+    // Apply to header
+    applyInventoryFlatColumnWidthsToElement(headerEl);
+    // Apply to all existing flat rows
+    document
+      .querySelectorAll(".inventory-stack-flat > summary")
+      .forEach((sumEl) => {
+        applyInventoryFlatColumnWidthsToElement(sumEl);
+      });
+  }
+
+  function onMouseUp() {
+    if (!isResizing) return;
+    isResizing = false;
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  }
+
+  headerCells.forEach((cell, index) => {
+    // Each header cell gets a small drag handle on the right side
+    const handle = document.createElement("div");
+    handle.className = "col-resize-handle";
+    cell.appendChild(handle);
+
+    handle.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      e.stopPropagation(); // Don't trigger sort click
+
+      isResizing = true;
+      startX = e.clientX;
+      colIndex = index;
+
+      startWidths = getInventoryFlatColumnWidths().slice();
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
+  });
+}
+
