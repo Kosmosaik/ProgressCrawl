@@ -350,7 +350,7 @@
 
 .inventory-stack > summary .inv-qty {
   width: 50px;
-  text-align: right;
+  text-align: left;
 }
 
 .inventory-stack > summary .inv-qrange {
@@ -382,6 +382,56 @@
 .inventory-stack .inv-actions {
   display: inline-flex;
   gap: 4px;         /* space between Trash and Equip */
+}
+
+/* === Inventory: All Items flat list === */
+
+/* Header row (Item Name | Category | Rarity | Qty | Grades) */
+.inventory-flat-header {
+  display: grid;
+  grid-template-columns: 2fr 1.3fr 1fr 0.7fr 1.1fr;
+  column-gap: 8px;
+  padding: 4px 0;
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  border-bottom: 1px solid #333;
+}
+
+.inventory-flat-header .flat-header-cell {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: #d0d7e2;
+}
+
+.inventory-flat-header .flat-header-cell.active {
+  text-decoration: underline;
+}
+
+/* Make the flat view rows line up with the header */
+.inventory-stack-flat > summary {
+  display: grid;
+  grid-template-columns: 2fr 1.3fr 1fr 0.7fr 1.1fr;
+  column-gap: 8px;
+  align-items: baseline;
+}
+
+.inventory-stack-flat > summary span {
+  text-align: left;
+}
+
+/* Category + rarity text columns in flat view */
+.inventory-stack > summary .inv-category-tag {
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+
+.inventory-stack > summary .inv-rarity {
+  font-size: 0.75rem;
+  opacity: 0.9;
 }
 
 /* === Unlock attention effect for menu buttons === */
