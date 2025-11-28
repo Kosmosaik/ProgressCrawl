@@ -358,6 +358,13 @@
   opacity: 0.8;
 }
 
+/* Category tag used in the All Items flat view */
+.inventory-stack > summary .inv-category-tag {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
 /* Expanded inventory rows: left text + right actions */
 .inventory-stack .meta {
   display: flex;
