@@ -408,6 +408,31 @@
   color: #d0d7e2;
 }
 
+/* === Column separators for All Items flat view === */
+
+/* Header cells */
+.inventory-flat-header .flat-header-cell {
+  position: relative;
+  border-right: 1px solid #3c3c3c; /* thin gray vertical line */
+  padding-right: 6px;
+}
+
+/* Remove the line on the last column */
+.inventory-flat-header .flat-header-cell:last-child {
+  border-right: none;
+}
+
+/* Row cells inside <summary> */
+.inventory-stack-flat > summary span {
+  border-right: 1px solid #3c3c3c;
+  padding-right: 6px;
+}
+
+/* Remove line on the last cell of the row */
+.inventory-stack-flat > summary span:last-child {
+  border-right: none;
+}
+
 .inventory-flat-header .flat-header-cell.active {
   text-decoration: underline;
 }
