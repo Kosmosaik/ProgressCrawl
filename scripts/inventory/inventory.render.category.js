@@ -361,9 +361,126 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
   return div;
 }
 
-// Temporary "All Items" renderer – will be replaced in the next step
+// === All Items flat view ===
+// Shows a flat list of all stacks, sortable by Name / Category / Rarity / Quantity.
 function renderInventoryAllItemsView() {
-  // For now, use the same category view. We'll implement a true flat list next.
-  renderInventoryCategoryView();
+  inventoryList.innerHTML = "";
+  const names = Object.keys(inventory);
+  if (!names.length) return;
+
+  // ---- Sort bar (includes Category) ----
+  const sortBar = document.createElement("div");
+  sortBar.className = "inventory-sort-bar";
+
+  const sortLabel = document.createElement("span");
+  sortLabel.textContent = "Sort by:";
+  sortBar.appendChild(sortLabel);
+
+  function makeSortButton(key, label) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "sort-btn";
+    if (inventorySort.key === key) {
+      btn.classList.add("active");
+      btn.textContent = `${label} ${inventorySort.dir === "asc" ? "▲" : "▼"}`;
+    } else {
+      btn.textContent = label;
+    }
+    btn.addEventListener("click", () => {
+      if (inventorySort.key === key) {
+        inventorySort.dir = inventorySort.dir === "asc" ? "desc" : "asc";
+      } else {
+        inventorySort.key = key;
+        // Quantities default to descending; others to ascending
+        inventorySort.dir = key === "qty" ? "desc" : "asc";
+      }
+      renderInventory();
+    });
+    return btn;
+  }
+
+  sortBar.appendChild(makeSortButton("name", "Name"));
+  sortBar.appendChild(makeSortButton("category", "Category"));
+  sortBar.appendChild(makeSortButton("rarity", "Rarity"));
+  sortBar.appendChild(makeSortButton("qty", "Quantity"));
+  inventoryList.appendChild(sortBar);
+
+  // ---- Build a flat list of stacks and sort them ----
+  const stacks = names.map((name) => ({
+    name,
+    stack: inventory[name],
+  }));
+
+  stacks.sort(compareStacks);
+
+  // ---- Render each stack as a <details> row ----
+  stacks.forEach(({ name, stack }) => {
+    if (!stack || !Array.isArray(stack.items) || !stack.items.length) return;
+
+    const first = stack.items[0] || {};
+    const rarity = first.rarity || "";
+    const category = first.category || "Other";
+
+    const details = document.createElement("details");
+    details.className = "inventory-stack inventory-stack-flat";
+    details.dataset.category = category;
+    details.dataset.name = name;
+
+    // Reuse open/closed state (same key pattern as category view)
+    const key = `${category}::${name}`;
+    if (openStacks.has(key)) {
+      details.open = true;
+    }
+
+    details.addEventListener("toggle", () => {
+      if (details.open) {
+        openStacks.add(key);
+      } else {
+        openStacks.delete(key);
+      }
+    });
+
+    const summary = document.createElement("summary");
+
+    // Name (colored by rarity)
+    const nameSpan = span(name, `rarity ${rarityClass(rarity)}`);
+    nameSpan.classList.add("inv-name");
+    summary.appendChild(nameSpan);
+
+    // Category tag [Weapons], [Resources], etc.
+    const catSpan = document.createElement("span");
+    catSpan.className = "inv-category-tag";
+    catSpan.textContent = `[${category}]`;
+    summary.appendChild(catSpan);
+
+    // Quantity xN
+    const qtySpan = document.createElement("span");
+    qtySpan.className = "inv-qty";
+    qtySpan.textContent = `x${stack.qty}`;
+    summary.appendChild(qtySpan);
+
+    // Quality range (e.g. F0–E3)
+    const qRange = summarizeQualityRange(stack.items);
+    if (qRange) {
+      const qSpan = document.createElement("span");
+      qSpan.className = "inv-qrange";
+      qSpan.textContent = qRange;
+      summary.appendChild(qSpan);
+    }
+
+    details.appendChild(summary);
+
+    // Variants (identical groups) with tooltips + buttons
+    const variantsWrap = document.createElement("div");
+    variantsWrap.className = "stack-variants";
+    const groups = groupByIdentical(stack.items);
+    groups.forEach((g) => {
+      variantsWrap.appendChild(makeIdenticalGroupLine(name, rarity, g));
+    });
+    details.appendChild(variantsWrap);
+
+    inventoryList.appendChild(details);
+  });
 }
+
 
