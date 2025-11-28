@@ -93,7 +93,7 @@ function getInventoryFlatColumnWidths() {
 
     // Defaults if nothing stored or invalid
     if (!inventoryFlatColumnWidths) {
-      inventoryFlatColumnWidths = [220, 140, 100, 70, 90]; // px
+      inventoryFlatColumnWidths = [220, 140, 100, 40, 90]; // px
     }
   }
   return inventoryFlatColumnWidths;
