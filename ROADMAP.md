@@ -33,13 +33,6 @@ A small update to improve UI and create more options for the player
 
 ---
 
-## v0.0.69 - Prep for exploration
-- Add defense values and other stats to armor/equipment.
-- Add more items that are going to exist in the starting zone
-- Add all variables, properties/values etc on all items/equipment/character stats in preparation for crafting/gathering and exploring updates. Armor/PDEF, crafting modifier attributes/stats and more.
-
----
-
 ## v0.0.70 — Zones & Exploration (Phase 1)
 Unlocks real gameplay beyond clicking “Loot”. Exploring
 
@@ -73,6 +66,9 @@ Unlocks real gameplay beyond clicking “Loot”. Exploring
 - Blueprint system for Lean-To Shelter. Adds a blueprint. when clicking on blueprint you'll see a small window with required items to complete the shelter.
 - Hunger & Thirst System
 - Eat / Drink System
+- Add defense values and other stats to armor/equipment.
+- Add more items that are going to exist in the starting zone
+- Add all variables, properties/values etc on all items/equipment/character stats in preparation for crafting/gathering and exploring updates. Armor/PDEF, crafting modifier attributes/stats and more.
 
 ---
 
