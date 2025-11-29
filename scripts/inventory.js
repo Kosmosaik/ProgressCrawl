@@ -95,25 +95,27 @@ function setupInventoryFlatColumnResizing(headerEl) {
     document.removeEventListener("mouseup", onMouseUp);
   }
 
-  headerCells.forEach((cell, index) => {
-    // Each header cell gets a small drag handle on the right side
-    const handle = document.createElement("div");
-    handle.className = "col-resize-handle";
-    cell.appendChild(handle);
+ headerCells.forEach((cell, index) => {
+  const handle = document.createElement("div");
+  handle.className = "col-resize-handle";
+  cell.appendChild(handle);
 
-    handle.addEventListener("mousedown", (e) => {
-      e.preventDefault();
-      e.stopPropagation(); // Don't trigger sort click
+  handle.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      isResizing = true;
-      startX = e.clientX;
-      colIndex = index;
+    isResizing = true;
+    startX = e.clientX;
+    colIndex = index;
 
-      startWidths = getInventoryFlatColumnWidths().slice();
+    startWidths = getInventoryFlatColumnWidths().slice();
 
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
-    });
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
   });
-}
 
+  handle.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+});
