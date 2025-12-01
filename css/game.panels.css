@@ -140,6 +140,7 @@
 /* Panels: draggable header area */
 .draggable-handle {
   cursor: move;
+  margin-top: 1px;
   user-select: none; /* avoid selecting text while dragging */
 }
 
