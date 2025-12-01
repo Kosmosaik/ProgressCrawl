@@ -68,6 +68,8 @@ Inventory, Equipment, and Skills panels can now be freely moved around the scree
 
 ---
 
+
+
 ## v0.0.66 - Modularization & UI Foundation
 
 ### Refactors & Code Structure
@@ -115,10 +117,15 @@ Inventory, Equipment, and Skills panels can now be freely moved around the scree
 
 ---
 
+
+
 ## v0.0.65b - Inventory Category Fix
 - Fixed an issue where collapsing an item category and then equipping a weapon or armor would cause all categories beneath it to temporarily disappear.  
 All categories now stay visible and behave correctly when equipping, unequipping, or looting items.
 - Added a few new items in preparation for exploration, gathering and crafting updates.
+
+---
+
 
 
 ## v0.0.65 - Character & Combat Revamp
@@ -215,6 +222,8 @@ Inventory and equipment tooltips now match in style and information.
 Enjoy the update!
 
 ---
+
+
 
 ## v0.0.61 — Equipment & Stat Polish
 
