@@ -97,7 +97,6 @@ function makePanelDraggable(panel, handle, storageKey) {
     panel.style.top = `${newTop}px`;
   }
 
-
   function onMouseUp() {
     if (!isDragging) return;
     isDragging = false;
