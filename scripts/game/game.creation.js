@@ -158,8 +158,12 @@ if (btnCreateCharacter) {
     if (typeof createDebugZone === "function") {
       currentZone = createDebugZone();
       console.log("Debug Zone created:", currentZone);
+
+      if (typeof renderZoneUI === "function") {
+        renderZoneUI();
+      }
     }
-    
+
     setScreen("game");
   });
 }
