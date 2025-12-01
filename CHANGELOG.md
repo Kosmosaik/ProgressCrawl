@@ -2,14 +2,14 @@
 ## **UI Polish, Smarter Inventory & Movable Panels!**
 
 This update focuses entirely on making the UI feel smoother, look cleaner, and give you more control.  
-No new gameplay systems yet — just a ton of improvements that make everything more enjoyable and easier to interact with.
+No new gameplay systems yet - just a ton of improvements that make everything more enjoyable and easier to interact with.
 
 ---
 
 ### New: All-Items Inventory View
 You can now switch between:
-- **Category View** – the original grouped list  
-- **All Items View** – a clean spreadsheet-style layout
+- **Category View** - the original grouped list  
+- **All Items View** - a clean spreadsheet-style layout
 
 The All-Items view gives you:
 - One long list of all your items  
@@ -32,7 +32,7 @@ All columns in the new All-Items view can be resized by dragging the divider lin
 ---
 
 ### New: Auto-Adjusting Inventory Panel
-The inventory panel now **automatically resizes** to fit whatever columns you create.
+The inventory panel now automatically resizes to fit whatever columns you create.
 
 - No more hidden stats off-screen  
 - No need to stretch the panel manually  
