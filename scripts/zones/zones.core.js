@@ -135,6 +135,21 @@ function revealRandomExplorableTile(zone) {
   return true;
 }
 
+// Reveal ONE unexplored explorable tile in a fixed order (top-left to bottom-right).
+// Returns true if something was revealed, false if zone is fully explored.
+function revealNextExplorableTileSequential(zone) {
+  for (let y = 0; y < zone.height; y++) {
+    for (let x = 0; x < zone.width; x++) {
+      const tile = zone.tiles[y][x];
+      if (isTileExplorable(tile) && !tile.explored) {
+        tile.explored = true;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // Small debug helpers exposed on window so we can test in the browser console.
 window.ZoneDebug = {
   createDebugZone,
