@@ -65,32 +65,38 @@ function makePanelDraggable(panel, handle, storageKey) {
 
     e.preventDefault();
   });
-
+  
   function onMouseMove(e) {
     if (!isDragging) return;
-
+  
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-
+  
     let newLeft = startLeft + dx;
     let newTop = startTop + dy;
-
-    // Clamp inside viewport
+  
+    // Clamp inside viewport (keep out of bottom header area)
     const panelRect = panel.getBoundingClientRect();
     const width = panelRect.width;
     const height = panelRect.height;
-
-    const maxLeft = window.innerWidth - width - 10;
-    const maxTop = window.innerHeight - height - 10;
-
-    if (newLeft < 10) newLeft = 10;
-    if (newTop < 10) newTop = 10;
+  
+    const SIDE_MARGIN = 10;
+    const TOP_MARGIN = 10;
+    const BOTTOM_RESERVED = 40; // space for bottom header / footer
+  
+    const maxLeft = window.innerWidth - width - SIDE_MARGIN;
+    let maxTop = window.innerHeight - height - BOTTOM_RESERVED;
+    if (maxTop < TOP_MARGIN) maxTop = TOP_MARGIN;
+  
+    if (newLeft < SIDE_MARGIN) newLeft = SIDE_MARGIN;
+    if (newTop < TOP_MARGIN) newTop = TOP_MARGIN;
     if (newLeft > maxLeft) newLeft = maxLeft;
     if (newTop > maxTop) newTop = maxTop;
-
+  
     panel.style.left = `${newLeft}px`;
     panel.style.top = `${newTop}px`;
   }
+
 
   function onMouseUp() {
     if (!isDragging) return;
