@@ -153,6 +153,13 @@ if (btnCreateCharacter) {
     // Fresh save for this character (empty inventory)
     saveCurrentGame();
     updateCharacterSummary();
+
+    // --- 0.0.70a: initialize a debug Zone for testing ---
+    if (typeof createDebugZone === "function") {
+      currentZone = createDebugZone();
+      console.log("Debug Zone created:", currentZone);
+    }
+    
     setScreen("game");
   });
 }
