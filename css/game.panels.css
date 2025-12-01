@@ -220,7 +220,7 @@
   cursor: pointer;
 }
 
-.inventory-stack { margin: 6px 0; }
+.inventory-stack { margin: 4px 0; }
 .inventory-stack > summary { cursor: pointer; }
 .stack-variants { margin-left: 12px; padding-left: 8px; border-left: 1px solid #555; }
 
