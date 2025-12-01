@@ -1,7 +1,17 @@
 // scripts/inventory/inventory.render.category.js
 // Renders the standard "by category" inventory view.
 
+// Main inventory renderer: dispatches based on current view mode
 function renderInventory() {
+  if (inventoryViewMode === "all") {
+    // For now, fall back to category view until we implement the All Items renderer
+    renderInventoryAllItemsView();
+  } else {
+    renderInventoryCategoryView();
+  }
+}
+
+function renderInventoryCategoryView() {
   inventoryList.innerHTML = "";
   const names = Object.keys(inventory);
   if (!names.length) return;
@@ -349,4 +359,149 @@ function makeIdenticalGroupLine(itemName, rarity, group) {
   div.appendChild(btnWrap);
 
   return div;
+}
+
+// === All Items flat view ===
+// Shows a flat list of all stacks, sortable by column headers.
+function renderInventoryAllItemsView() {
+  inventoryList.innerHTML = "";
+  const names = Object.keys(inventory);
+  if (!names.length) return;
+
+  // ---- Header row with clickable columns ----
+  const header = document.createElement("div");
+  header.className = "inventory-flat-header";
+
+  function makeHeaderCell(key, label) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "flat-header-cell";
+
+    if (inventorySort.key === key) {
+      btn.classList.add("active");
+      const arrow = inventorySort.dir === "asc" ? "▲" : "▼";
+      btn.textContent = `${label} ${arrow}`;
+    } else {
+      btn.textContent = label;
+    }
+
+    btn.addEventListener("click", () => {
+      if (inventorySort.key === key) {
+        // Same column: toggle direction
+        inventorySort.dir = inventorySort.dir === "asc" ? "desc" : "asc";
+      } else {
+        // New column: choose a sensible default direction
+        inventorySort.key = key;
+        if (key === "qty" || key === "quality") {
+          // Show biggest stacks / best grades first
+          inventorySort.dir = "desc";
+        } else {
+          inventorySort.dir = "asc";
+        }
+      }
+      renderInventory();
+    });
+
+    return btn;
+  }
+
+  header.appendChild(makeHeaderCell("name", "Item Name"));
+  header.appendChild(makeHeaderCell("category", "Category"));
+  header.appendChild(makeHeaderCell("rarity", "Rarity"));
+  header.appendChild(makeHeaderCell("qty", "Qty"));
+  header.appendChild(makeHeaderCell("quality", "Grades"));
+  inventoryList.appendChild(header);
+
+  applyInventoryFlatColumnWidthsToElement(header);
+
+  // Adjust panel width to fit current columns
+  if (typeof updateInventoryPanelWidthToFitColumns === "function") {
+    updateInventoryPanelWidthToFitColumns();
+  }
+
+  // ---- Build & sort the flat stack list ----
+  const stacks = names.map((name) => ({
+    name,
+    stack: inventory[name],
+  }));
+
+  stacks.sort(compareStacks);
+
+  // ---- Render each stack as a <details> row ----
+  stacks.forEach(({ name, stack }) => {
+    if (!stack || !Array.isArray(stack.items) || !stack.items.length) return;
+
+    const first = stack.items[0] || {};
+    const rarity = first.rarity || "";
+    const category = first.category || "Other";
+
+    const details = document.createElement("details");
+    details.className = "inventory-stack inventory-stack-flat";
+    details.dataset.category = category;
+    details.dataset.name = name;
+
+    // Persist open/closed state like in category view
+    const key = `${category}::${name}`;
+    if (openStacks.has(key)) {
+      details.open = true;
+    }
+
+    details.addEventListener("toggle", () => {
+      if (details.open) {
+        openStacks.add(key);
+      } else {
+        openStacks.delete(key);
+      }
+    });
+
+    const summary = document.createElement("summary");
+
+    // Name (colored by rarity)
+    const nameSpan = span(name, `rarity ${rarityClass(rarity)}`);
+    nameSpan.classList.add("inv-name");
+    summary.appendChild(nameSpan);
+
+    // Category text (e.g. Weapons, Resources)
+    const catSpan = document.createElement("span");
+    catSpan.className = "inv-category-tag";
+    catSpan.textContent = category;
+    summary.appendChild(catSpan);
+
+    // Rarity text column (e.g. Rare, Exotic)
+    const raritySpan = document.createElement("span");
+    raritySpan.className = "inv-rarity";
+    raritySpan.textContent = rarity || "";
+    summary.appendChild(raritySpan);
+
+    // Quantity xN
+    const qtySpan = document.createElement("span");
+    qtySpan.className = "inv-qty";
+    qtySpan.textContent = `x${stack.qty}`;
+    summary.appendChild(qtySpan);
+
+    // Quality range (e.g. F0–E3)
+    const qRange = summarizeQualityRange(stack.items);
+    const qSpan = document.createElement("span");
+    qSpan.className = "inv-qrange";
+    qSpan.textContent = qRange || "";
+    summary.appendChild(qSpan);
+
+    details.appendChild(summary);
+
+    // Expanded: identical groups with buttons & tooltips
+    const variantsWrap = document.createElement("div");
+    variantsWrap.className = "stack-variants";
+    const groups = groupByIdentical(stack.items);
+    groups.forEach((g) => {
+      variantsWrap.appendChild(makeIdenticalGroupLine(name, rarity, g));
+    });
+    details.appendChild(variantsWrap);
+    
+    applyInventoryFlatColumnWidthsToElement(summary);
+
+    inventoryList.appendChild(details);
+  });
+  if (typeof setupInventoryFlatColumnResizing === "function") {
+    setupInventoryFlatColumnResizing(header);
+  }
 }

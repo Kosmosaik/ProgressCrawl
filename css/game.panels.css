@@ -130,10 +130,18 @@
   /* Resizable width */
   width: 500px;
   min-width: 360px;
-  max-width: 60vw;
-  max-height: 70vh;
-  overflow: auto;
-  resize: horizontal; /* user can drag the right edge */
+  max-width: 70vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;    /* columns should always fit */
+  resize: none;          /* no manual horizontal resize needed now */
+}
+
+/* Panels: draggable header area */
+.draggable-handle {
+  cursor: move;
+  margin-top: 1px;
+  user-select: none; /* avoid selecting text while dragging */
 }
 
 /* === Equipment panel sits to the right of the inventory panel === */
@@ -146,7 +154,7 @@
   border: 1px solid #555;
   padding: 10px;
   border-radius: 8px;
-  width: 400px;
+  width: 350px;
   max-height: 70vh;
   overflow: auto;
 }
@@ -199,7 +207,7 @@
 }
 
 .equipment-summary-row span:first-child {
-  width: 120px;
+  width: 80px;
 }
 
 .equipped-label {
@@ -212,7 +220,7 @@
   cursor: pointer;
 }
 
-.inventory-stack { margin: 6px 0; }
+.inventory-stack { margin: 4px 0; }
 .inventory-stack > summary { cursor: pointer; }
 .stack-variants { margin-left: 12px; padding-left: 8px; border-left: 1px solid #555; }
 
@@ -231,7 +239,7 @@
   border: 1px solid #555;
   padding: 10px;
   border-radius: 8px;
-  width: 320px;
+  width: 220px;
   max-height: 70vh;
   overflow: auto;
   z-index: 1000;         /* make sure it's above inventory/equipment */
@@ -300,6 +308,7 @@
   align-items: center;
   gap: 6px;
   margin-bottom: 6px;
+  margin-top: 6px;
   font-size: 0.75rem;
   color: #9aa5b1;
 }
@@ -322,11 +331,25 @@
   text-decoration: underline;
 }
 
+.inventory-toolbar button {
+  background: #1f2430;
+  border: 1px solid #313844;
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: #d0d7e2;
+}
+
+.inventory-toolbar button:hover {
+  background: #262c3a;
+}
+
 /* Make summary rows column-ish */
 .inventory-stack > summary {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   cursor: pointer;
 }
 
@@ -334,14 +357,27 @@
   flex: 1;
 }
 
+/* In the All Items flat view, let the grid control the Qty width */
+.inventory-stack.inventory-stack-flat > summary .inv-qty {
+  width: auto !important;
+  text-align: left;
+}
+
 .inventory-stack > summary .inv-qty {
-  width: 50px;
-  text-align: right;
+  width: 40px;
+  text-align: left;
 }
 
 .inventory-stack > summary .inv-qrange {
   font-size: 0.75rem;
   opacity: 0.8;
+}
+
+/* Category tag used in the All Items flat view */
+.inventory-stack > summary .inv-category-tag {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  margin-left: 4px;
 }
 
 /* Expanded inventory rows: left text + right actions */
@@ -361,6 +397,100 @@
 .inventory-stack .inv-actions {
   display: inline-flex;
   gap: 4px;         /* space between Trash and Equip */
+}
+
+/* === Inventory: All Items flat list === */
+
+/* Header row (Item Name | Category | Rarity | Qty | Grades) */
+.inventory-flat-header {
+  display: grid;
+  grid-template-columns: 2fr 1.3fr 1fr 0.7fr 1.1fr;
+  column-gap: 8px;
+  padding: 4px 0;
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  border-bottom: 1px solid #333;
+}
+
+.inventory-flat-header .flat-header-cell {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: #d0d7e2;
+}
+
+/* === Column separators for All Items flat view === */
+
+/* Header cells */
+.inventory-flat-header .flat-header-cell {
+  position: relative;
+  border-right: 1px solid #3c3c3c; /* thin gray vertical line */
+  padding-right: 6px;
+}
+
+/* Row cells inside <summary> */
+.inventory-stack-flat > summary span {
+  display: block;
+  border-right: 1px solid #3c3c3c;
+  padding-right: 6px;
+  text-align: left;
+}
+
+.inventory-flat-header .flat-header-cell.active {
+  text-decoration: underline;
+}
+
+/* Small drag zone on the right edge of header cells */
+.inventory-flat-header .col-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -3px; /* tiny overlap so it's easy to grab */
+  width: 6px;
+  cursor: col-resize;
+}
+
+/* Flat rows are also grids; JS sets their grid-template-columns */
+.inventory-stack-flat > summary {
+  display: grid;
+  column-gap: 8px;
+  align-items: baseline;
+}
+
+.inventory-stack-flat > summary span {
+  text-align: left;
+}
+
+/* Allow horizontal scrolling if it gets wide */
+#inventory-panel {
+  overflow-x: auto;
+}
+
+/* Make the flat view rows line up with the header */
+.inventory-stack-flat > summary {
+  display: grid;
+  grid-template-columns: 2fr 1.3fr 1fr 0.7fr 1.1fr;
+  column-gap: 8px;
+  align-items: baseline;
+}
+
+.inventory-stack-flat > summary span {
+  text-align: left;
+}
+
+/* Category + rarity text columns in flat view */
+.inventory-stack > summary .inv-category-tag {
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+
+.inventory-stack > summary .inv-rarity {
+  font-size: 0.75rem;
+  opacity: 0.9;
 }
 
 /* === Unlock attention effect for menu buttons === */
