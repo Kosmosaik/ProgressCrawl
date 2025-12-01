@@ -149,3 +149,13 @@ function updateInventoryPanelWidthToFitColumns() {
   panel.style.width = `${finalWidth}px`;
 }
 
+// Ensure initial resize mode matches the default view (category)
+(function initInventoryPanelResizeMode() {
+  const panel = document.getElementById("inventory-panel");
+  if (!panel) return;
+
+  // Default is category view
+  panel.style.resize = "horizontal";
+  panel.style.overflowX = "auto";
+})();
+
