@@ -120,3 +120,27 @@ function setupInventoryFlatColumnResizing(headerEl) {
     });
   });
 }
+
+// ----- Make inventory panel width follow flat column layout -----
+function updateInventoryPanelWidthToFitColumns() {
+  const panel = document.getElementById("inventory-panel");
+  if (!panel) return;
+
+  const widths = getInventoryFlatColumnWidths();
+  if (!widths || !widths.length) return;
+
+  const totalCols = widths.reduce((sum, w) => sum + w, 0);
+  const gap = 8;                          // matches column-gap in CSS
+  const totalGaps = gap * (widths.length - 1);
+
+  const PANEL_PADDING = 20;               // padding + borders margin
+  const desired = totalCols + totalGaps + PANEL_PADDING;
+
+  const viewportMax = window.innerWidth - 40; // keep some margin
+  const MIN_WIDTH = 360;
+  const maxWidth = Math.max(MIN_WIDTH, viewportMax);
+
+  const finalWidth = Math.min(Math.max(desired, MIN_WIDTH), maxWidth);
+  panel.style.width = `${finalWidth}px`;
+}
+
