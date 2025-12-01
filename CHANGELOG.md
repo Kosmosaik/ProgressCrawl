@@ -1,4 +1,4 @@
-# ProgressCrawl – Patch v0.0.67
+# Patch v0.0.67
 ## **UI Polish, Smarter Inventory & Movable Panels!**
 
 This update focuses entirely on making the UI feel smoother, look cleaner, and give you more control.  
