@@ -86,6 +86,11 @@ function setupInventoryFlatColumnResizing(headerEl) {
       .forEach((sumEl) => {
         applyInventoryFlatColumnWidthsToElement(sumEl);
       });
+    
+    // Keep panel width in sync with columns
+    if (typeof updateInventoryPanelWidthToFitColumns === "function") {
+      updateInventoryPanelWidthToFitColumns();
+    }
   }
 
   function onMouseUp() {
