@@ -9,7 +9,7 @@
 <body>
 <div id="game-header">
   <span class="game-header-text">
-    ProgressCrawl — v0.0.70a-dev : Exploration (EXPERIMENTAL) v2
+    ProgressCrawl — v0.0.70a-dev : Exploration (EXPERIMENTAL) v3
   </span>
   <button id="patch-notes-btn" type="button">Patch Notes</button>
 </div>
@@ -91,6 +91,7 @@
   <div id="menu-bar">
     <button id="inventory-btn" style="display:none;">Inventory</button>
     <button id="equipment-btn" style="display:none;">Equipment</button>
+    <button id="zone-btn" class="menu-btn">Zone</button>
     <button id="skills-btn" class="menu-btn">Skills</button>
   </div>
 
@@ -132,6 +133,31 @@
     
       <div id="equipment-slots"></div>
       <div id="equipment-summary"></div>
+    </div>
+
+    <!-- === Zone panel (0.0.70a test UI) === -->
+    <div id="zone-panel" class="panel" style="display:none">
+      <h2 class="draggable-handle">Zone</h2>
+
+      <div id="zone-info">
+        <div id="zone-name">Zone: (none)</div>
+        <div id="zone-exploration-stats">
+          Explored: 0% (0 / 0 tiles)
+        </div>
+      </div>
+
+      <div id="zone-actions">
+        <button id="zone-explore-random" type="button">
+          Explore (Random)
+        </button>
+        <button id="zone-explore-sequential" type="button">
+          Explore (Sequential)
+        </button>
+      </div>
+
+      <pre id="zone-grid-view" class="zone-grid-view">
+(No active zone)
+      </pre>
     </div>
 
     <div id="skills-panel" class="panel" style="display:none">
