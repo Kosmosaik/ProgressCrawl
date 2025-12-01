@@ -137,6 +137,12 @@
   resize: none;          /* no manual horizontal resize needed now */
 }
 
+/* Panels: draggable header area */
+.draggable-handle {
+  cursor: move;
+  user-select: none; /* avoid selecting text while dragging */
+}
+
 /* === Equipment panel sits to the right of the inventory panel === */
 #equipment-panel {
   position: fixed;
