@@ -131,4 +131,4 @@ if (zoneExploreSequentialBtn) {
     }
     renderZoneUI();
   });
-});
+};
