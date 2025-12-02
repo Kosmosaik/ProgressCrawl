@@ -8,11 +8,20 @@ const zonePanel = document.getElementById("zone-panel");
 const zoneButton = document.getElementById("zone-btn");
 
 const zoneNameEl = document.getElementById("zone-name");
+const zoneStatusEl = document.getElementById("zone-status");
 const zoneStatsEl = document.getElementById("zone-exploration-stats");
 const zoneGridEl = document.getElementById("zone-grid-view");
 
+const zoneEnterBtn = document.getElementById("zone-enter-debug");
+
 const zoneExploreRandomBtn = document.getElementById("zone-explore-random");
 const zoneExploreSequentialBtn = document.getElementById("zone-explore-sequential");
+
+const zoneDiscoveryListEl = document.getElementById("zone-discovery-list");
+
+const zoneFinishMenuEl = document.getElementById("zone-finish-menu");
+const zoneFinishStayBtn = document.getElementById("zone-finish-stay");
+const zoneFinishLeaveBtn = document.getElementById("zone-finish-leave");
 
 // ----- Helpers -----
 
@@ -46,19 +55,44 @@ function buildZoneGridString(zone) {
   return lines.join("\n");
 }
 
+function getZoneStatusText() {
+  if (!currentZone || !isInZone) {
+    return "Status: Not in a zone";
+  }
+
+  if (window.ZoneDebug && typeof ZoneDebug.getZoneExplorationStats === "function") {
+    const stats = ZoneDebug.getZoneExplorationStats(currentZone);
+    if (stats.percentExplored >= 100) {
+      return "Status: Zone completed";
+    }
+  }
+
+  return "Status: Exploring zone";
+}
+
 function renderZoneUI() {
   if (!zonePanel) return;
 
-  // No zone yet
+  // No zone or not in zone
   if (typeof currentZone === "undefined" || !currentZone) {
     if (zoneNameEl) {
       zoneNameEl.textContent = "Zone: (none)";
+    }
+    if (zoneStatusEl) {
+      zoneStatusEl.textContent = "Status: Not in a zone";
     }
     if (zoneStatsEl) {
       zoneStatsEl.textContent = "Explored: 0% (0 / 0 tiles)";
     }
     if (zoneGridEl) {
       zoneGridEl.textContent = "(No active zone)";
+    }
+    if (zoneFinishMenuEl) {
+      zoneFinishMenuEl.style.display = "none";
+    }
+    // When there's no zone, the Enter button should be visible
+    if (zoneEnterBtn) {
+      zoneEnterBtn.style.display = "inline-block";
     }
     return;
   }
@@ -71,10 +105,16 @@ function renderZoneUI() {
     zoneNameEl.textContent = `Zone: ${name}`;
   }
 
+  // Status text
+  if (zoneStatusEl) {
+    zoneStatusEl.textContent = getZoneStatusText();
+  }
+
   // Exploration stats
   let statsText = "Exploration stats unavailable";
+  let stats = null;
   if (window.ZoneDebug && typeof ZoneDebug.getZoneExplorationStats === "function") {
-    const stats = ZoneDebug.getZoneExplorationStats(zone);
+    stats = ZoneDebug.getZoneExplorationStats(zone);
     statsText = `Explored: ${stats.percentExplored}% (${stats.exploredTiles} / ${stats.totalExplorableTiles} tiles)`;
   }
   if (zoneStatsEl) {
@@ -85,7 +125,41 @@ function renderZoneUI() {
   if (zoneGridEl) {
     zoneGridEl.textContent = buildZoneGridString(zone);
   }
+
+  // Show/hide finish menu
+  if (zoneFinishMenuEl) {
+    if (stats && stats.percentExplored >= 100) {
+      zoneFinishMenuEl.style.display = "block";
+    } else {
+      zoneFinishMenuEl.style.display = "none";
+    }
+  }
+
+  // While inside a zone, hide the Enter button (we're already in)
+  if (zoneEnterBtn) {
+    if (isInZone) {
+      zoneEnterBtn.style.display = "none";
+    } else {
+      zoneEnterBtn.style.display = "inline-block";
+    }
+  }
 }
+
+function addZoneDiscoveryEntry(text) {
+  if (!zoneDiscoveryListEl) return;
+
+  const li = document.createElement("li");
+  li.textContent = text;
+  zoneDiscoveryListEl.prepend(li); // newest at top
+
+  // Limit to, say, 30 entries
+  while (zoneDiscoveryListEl.children.length > 30) {
+    zoneDiscoveryListEl.removeChild(zoneDiscoveryListEl.lastChild);
+  }
+}
+
+// Expose so game.js can use it after each tick
+window.addZoneDiscoveryEntry = addZoneDiscoveryEntry;
 
 // Expose this so game.creation.js can call it after creating the debug zone.
 window.renderZoneUI = renderZoneUI;
@@ -132,3 +206,47 @@ if (zoneExploreSequentialBtn) {
     renderZoneUI();
   });
 };
+
+// Enter Starting Zone (Debug)
+if (zoneEnterBtn) {
+  zoneEnterBtn.addEventListener("click", () => {
+    if (typeof createDebugZone === "function") {
+      currentZone = createDebugZone();
+      isInZone = true;
+      console.log("Entered Starting Zone (Debug):", currentZone);
+
+      // Start tick-based exploration
+      if (typeof startZoneExplorationTicks === "function") {
+        startZoneExplorationTicks();
+      }
+
+      renderZoneUI();
+    }
+  });
+}
+
+// Finish menu: STAY
+if (zoneFinishStayBtn) {
+  zoneFinishStayBtn.addEventListener("click", () => {
+    console.log("Player chose to STAY in the zone.");
+    // For now, just log it. In future, maybe change behavior.
+  });
+}
+
+// Finish menu: LEAVE ZONE
+if (zoneFinishLeaveBtn) {
+  zoneFinishLeaveBtn.addEventListener("click", () => {
+    console.log("Player chose to LEAVE the zone.");
+
+    isInZone = false;
+    currentZone = null;
+
+    if (typeof stopZoneExplorationTicks === "function") {
+      stopZoneExplorationTicks();
+    }
+
+    // Clear grid and stats
+    renderZoneUI();
+  });
+}
+
