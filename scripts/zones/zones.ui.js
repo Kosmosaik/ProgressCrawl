@@ -266,3 +266,59 @@ function addZoneDiscovery(text) {
 window.addZoneMessage = addZoneMessage;
 window.addZoneDiscovery = addZoneDiscovery;
 
+// Explore Next Tile (manual, one step)
+if (zoneExploreNextBtn) {
+  zoneExploreNextBtn.addEventListener("click", () => {
+    if (!currentZone || !isInZone) return;
+    if (!window.ZoneDebug || typeof ZoneDebug.revealNextExplorableTileSequential !== "function") return;
+    if (zoneExplorationActive) return; // guard: no manual while auto is running
+
+    const changed = ZoneDebug.revealNextExplorableTileSequential(currentZone);
+    if (changed) {
+      if (typeof addZoneMessage === "function") {
+        addZoneMessage("You carefully explore the next stretch of ground.");
+      }
+      if (typeof renderZoneUI === "function") {
+        renderZoneUI();
+      }
+    } else {
+      if (typeof addZoneMessage === "function") {
+        addZoneMessage("There is nothing left to explore here.");
+      }
+      if (typeof renderZoneUI === "function") {
+        renderZoneUI();
+      }
+    }
+  });
+}
+
+// Explore Auto (start tick-based exploring)
+if (zoneExploreAutoBtn) {
+  zoneExploreAutoBtn.addEventListener("click", () => {
+    if (!currentZone || !isInZone) return;
+    if (zoneExplorationActive) return; // already exploring
+    if (typeof startZoneExplorationTicks === "function") {
+      startZoneExplorationTicks();
+    }
+    if (typeof renderZoneUI === "function") {
+      renderZoneUI();
+    }
+  });
+}
+
+// Stop Exploring (stop tick-based exploring)
+if (zoneExploreStopBtn) {
+  zoneExploreStopBtn.addEventListener("click", () => {
+    if (!zoneExplorationActive) return;
+    if (typeof stopZoneExplorationTicks === "function") {
+      stopZoneExplorationTicks();
+    }
+    if (typeof addZoneMessage === "function") {
+      addZoneMessage("You stop to catch your breath and look around.");
+    }
+    if (typeof renderZoneUI === "function") {
+      renderZoneUI();
+    }
+  });
+}
+
