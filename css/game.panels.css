@@ -545,7 +545,7 @@
   opacity: 0.85;
 }
 
-/* === Zone panel === */
+/* === Zone main panel === */
 #zone-panel {
   margin: 0 auto 10px auto;      /* center horizontally, small bottom margin */
   max-width: 640px;
@@ -555,29 +555,27 @@
   border-radius: 8px;
 }
 
-#zone-panel h2 {
-  margin-top: 0;
-  font-size: 1rem;
-}
-
-#zone-info {
-  font-size: 0.85rem;
-  margin-bottom: 8px;
-}
-
-#zone-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-
-#zone-actions button {
+#zone-status {
   font-size: 0.8rem;
-  padding: 3px 6px;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+
+/* Grid + Discoveries side by side */
+#zone-main-layout {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* Center the grid IN its area, shrink black box to content */
+#zone-grid-container {
+  flex: 0 0 auto;
+  text-align: center;
 }
 
 .zone-grid-view {
+  display: inline-block;                /* shrink to content */
   font-family: "Fira Code", "Consolas", monospace;
   font-size: 0.75rem;
   line-height: 1.1;
@@ -587,31 +585,46 @@
   border-radius: 4px;
   max-height: 200px;
   overflow: auto;
+  text-align: left;
 }
 
-#zone-status {
-  font-size: 0.8rem;
-  color: #aaa;
-  margin-bottom: 4px;
-}
-
-#zone-discovery-log {
-  margin-top: 8px;
+/* Discoveries column */
+#zone-discoveries-log {
+  flex: 1 1 auto;
   font-size: 0.75rem;
 }
 
-#zone-discovery-log h3 {
+#zone-discoveries-log h3 {
   margin: 4px 0;
   font-size: 0.8rem;
 }
 
-#zone-discovery-list {
+#zone-discoveries-list {
+  list-style-type: disc;
+  padding-left: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Messages below */
+#zone-messages-log {
+  margin-top: 8px;
+  font-size: 0.75rem;
+}
+
+#zone-messages-log h3 {
+  margin: 4px 0;
+  font-size: 0.8rem;
+}
+
+#zone-messages-list {
   list-style-type: disc;
   padding-left: 16px;
   max-height: 120px;
   overflow-y: auto;
 }
 
+/* Finish menu buttons (keep if not already present) */
 #zone-finish-menu button {
   font-size: 0.8rem;
   margin-right: 6px;
