@@ -43,7 +43,7 @@ function buildZoneGridString(zone) {
         ch = "🔒"; // lock
       } else {
         // walkable
-        ch = tile.explored ? "🟩" : "⬛";
+        ch = tile.explored ? "🟩" : "🏔️";
       }
 
       row += ch;
