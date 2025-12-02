@@ -5,7 +5,6 @@ console.log("zones.ui.js loaded");
 
 // ----- DOM references -----
 const zonePanel = document.getElementById("zone-panel");
-const zoneButton = document.getElementById("zone-btn");
 
 const zoneNameEl = document.getElementById("zone-name");
 const zoneStatusEl = document.getElementById("zone-status");
@@ -163,21 +162,6 @@ window.addZoneDiscoveryEntry = addZoneDiscoveryEntry;
 
 // Expose this so game.creation.js can call it after creating the debug zone.
 window.renderZoneUI = renderZoneUI;
-
-// ----- Button wiring -----
-
-// Toggle Zone panel visibility
-if (zoneButton && zonePanel) {
-  zoneButton.addEventListener("click", () => {
-    const visible = zonePanel.style.display === "block";
-    zonePanel.style.display = visible ? "none" : "block";
-
-    // If we just opened it, update contents
-    if (!visible) {
-      renderZoneUI();
-    }
-  });
-}
 
 // Explore once (Random)
 if (zoneExploreRandomBtn) {
