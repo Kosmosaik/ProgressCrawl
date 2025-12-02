@@ -6,15 +6,19 @@ console.log("zones.ui.js loaded");
 // ----- DOM references -----
 const zonePanel = document.getElementById("zone-panel");
 
+const zonePanel = document.getElementById("zone-panel");
+
 const zoneNameEl = document.getElementById("zone-name");
 const zoneStatusEl = document.getElementById("zone-status");
 const zoneStatsEl = document.getElementById("zone-exploration-stats");
 const zoneGridEl = document.getElementById("zone-grid-view");
 
-const zoneExploreRandomBtn = document.getElementById("zone-explore-random");
-const zoneExploreSequentialBtn = document.getElementById("zone-explore-sequential");
+const zoneExploreNextBtn = document.getElementById("zone-explore-next");
+const zoneExploreAutoBtn = document.getElementById("zone-explore-auto");
+const zoneExploreStopBtn = document.getElementById("zone-explore-stop");
 
-const zoneDiscoveryListEl = document.getElementById("zone-discovery-list");
+const zoneMessagesListEl = document.getElementById("zone-messages-list");
+const zoneDiscoveriesListEl = document.getElementById("zone-discoveries-list");
 
 const zoneFinishMenuEl = document.getElementById("zone-finish-menu");
 const zoneFinishStayBtn = document.getElementById("zone-finish-stay");
