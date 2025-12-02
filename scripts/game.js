@@ -21,6 +21,96 @@ let isInZone = false;
 let zoneExplorationActive = false;
 let zoneExplorationTimerId = null;
 
+// --- Zone exploration tick system (2–5s random delay) ---
+
+function scheduleNextZoneExplorationTick() {
+  if (!zoneExplorationActive) return;
+
+  // 2–5 seconds delay (2000–5000 ms)
+  const delay = 2000 + Math.random() * 3000;
+
+  zoneExplorationTimerId = setTimeout(() => {
+    runZoneExplorationTick();
+  }, delay);
+}
+
+function runZoneExplorationTick() {
+  if (!zoneExplorationActive || !isInZone || !currentZone) {
+    return;
+  }
+
+  if (!window.ZoneDebug || typeof ZoneDebug.getZoneExplorationStats !== "function") {
+    return;
+  }
+
+  const stats = ZoneDebug.getZoneExplorationStats(currentZone);
+  if (stats.percentExplored >= 100) {
+    // Zone already done, stop ticking
+    console.log("Zone fully explored. Stopping exploration ticks.");
+    stopZoneExplorationTicks();
+
+    if (typeof renderZoneUI === "function") {
+      renderZoneUI();
+    }
+
+    // You *could* auto-open the finish menu here later, but for now,
+    // the UI logic already shows it when renderZoneUI sees 100%.
+    return;
+  }
+
+  // Reveal next tile (sequential for core logic)
+  if (typeof ZoneDebug.revealNextExplorableTileSequential === "function") {
+    const changed = ZoneDebug.revealNextExplorableTileSequential(currentZone);
+
+    if (changed) {
+      // Add a generic discovery entry
+      if (typeof addZoneDiscoveryEntry === "function") {
+        const genericMessages = [
+          "You uncover a patch of ground.",
+          "You scout a quiet stretch of the zone.",
+          "You reveal more of the surrounding area.",
+          "You push the boundary of the unknown.",
+          "You chart another small piece of this zone.",
+        ];
+        const msg =
+          genericMessages[Math.floor(Math.random() * genericMessages.length)];
+        addZoneDiscoveryEntry(msg);
+      }
+
+      if (typeof renderZoneUI === "function") {
+        renderZoneUI();
+      }
+    }
+  }
+
+  // Schedule the next tick
+  scheduleNextZoneExplorationTick();
+}
+
+function startZoneExplorationTicks() {
+  if (zoneExplorationActive) return;
+  if (!isInZone || !currentZone) return;
+
+  console.log("Starting zone exploration ticks.");
+  zoneExplorationActive = true;
+  scheduleNextZoneExplorationTick();
+}
+
+function stopZoneExplorationTicks() {
+  if (!zoneExplorationActive) return;
+
+  zoneExplorationActive = false;
+  if (zoneExplorationTimerId) {
+    clearTimeout(zoneExplorationTimerId);
+    zoneExplorationTimerId = null;
+  }
+  console.log("Zone exploration ticks stopped.");
+}
+
+// Expose for UI script
+window.startZoneExplorationTicks = startZoneExplorationTicks;
+window.stopZoneExplorationTicks = stopZoneExplorationTicks;
+
 // ----- Equipment helpers -----
 function unequipSlotToInventory(slotKey) {
   const item = unequipSlot(slotKey); // from equipment.js
