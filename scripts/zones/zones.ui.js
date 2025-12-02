@@ -74,7 +74,7 @@ function getZoneStatusText() {
 function renderZoneUI() {
   if (!zonePanel) return;
 
-  // No zone or not in zone
+  // No zone at all
   if (typeof currentZone === "undefined" || !currentZone) {
     if (zoneNameEl) {
       zoneNameEl.textContent = "Zone: (none)";
@@ -91,6 +91,9 @@ function renderZoneUI() {
     if (zoneFinishMenuEl) {
       zoneFinishMenuEl.style.display = "none";
     }
+    if (zoneExploreNextBtn) zoneExploreNextBtn.disabled = true;
+    if (zoneExploreAutoBtn) zoneExploreAutoBtn.disabled = true;
+    if (zoneExploreStopBtn) zoneExploreStopBtn.disabled = true;
     return;
   }
 
@@ -102,14 +105,27 @@ function renderZoneUI() {
     zoneNameEl.textContent = `Zone: ${name}`;
   }
 
-  // Status text
+  // Status
   if (zoneStatusEl) {
-    zoneStatusEl.textContent = getZoneStatusText();
+    if (!isInZone) {
+      zoneStatusEl.textContent = "Status: Not in a zone";
+    } else if (window.ZoneDebug && typeof ZoneDebug.getZoneExplorationStats === "function") {
+      const stats = ZoneDebug.getZoneExplorationStats(zone);
+      if (stats.percentExplored >= 100) {
+        zoneStatusEl.textContent = "Status: Zone completed";
+      } else if (zoneExplorationActive) {
+        zoneStatusEl.textContent = "Status: Exploring (Auto)";
+      } else {
+        zoneStatusEl.textContent = "Status: Idle (Ready to explore)";
+      }
+    } else {
+      zoneStatusEl.textContent = "Status: Exploring";
+    }
   }
 
   // Exploration stats
-  let statsText = "Exploration stats unavailable";
   let stats = null;
+  let statsText = "Exploration stats unavailable";
   if (window.ZoneDebug && typeof ZoneDebug.getZoneExplorationStats === "function") {
     stats = ZoneDebug.getZoneExplorationStats(zone);
     statsText = `Explored: ${stats.percentExplored}% (${stats.exploredTiles} / ${stats.totalExplorableTiles} tiles)`;
@@ -123,13 +139,30 @@ function renderZoneUI() {
     zoneGridEl.textContent = buildZoneGridString(zone);
   }
 
-  // Show/hide finish menu
+  // Finish menu
   if (zoneFinishMenuEl) {
     if (stats && stats.percentExplored >= 100) {
       zoneFinishMenuEl.style.display = "block";
     } else {
       zoneFinishMenuEl.style.display = "none";
     }
+  }
+
+  // Button states
+  const canExplore =
+    isInZone &&
+    stats &&
+    stats.totalExplorableTiles > 0 &&
+    stats.percentExplored < 100;
+
+  if (zoneExploreNextBtn) {
+    zoneExploreNextBtn.disabled = !canExplore || zoneExplorationActive;
+  }
+  if (zoneExploreAutoBtn) {
+    zoneExploreAutoBtn.disabled = !canExplore || zoneExplorationActive;
+  }
+  if (zoneExploreStopBtn) {
+    zoneExploreStopBtn.disabled = !zoneExplorationActive;
   }
 }
 
