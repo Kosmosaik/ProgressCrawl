@@ -148,7 +148,8 @@ function renderZoneUI() {
     stats.percentExplored < 100;
 
   // Manual or auto in progress?
-  const anyExploreInProgress = zoneExplorationActive || zoneManualExplorationActive;
+  const manualActive = !!zoneManualExplorationActive;
+  const anyExploreInProgress = zoneExplorationActive || manualActive;
 
   if (zoneExploreNextBtn) {
     // Manual only allowed when nothing else is running
@@ -163,6 +164,7 @@ function renderZoneUI() {
     zoneExploreStopBtn.disabled = !zoneExplorationActive;
   }
 }
+
 
 // Expose so other scripts can trigger UI refresh
 window.renderZoneUI = renderZoneUI;
