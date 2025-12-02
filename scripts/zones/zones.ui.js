@@ -11,8 +11,6 @@ const zoneStatusEl = document.getElementById("zone-status");
 const zoneStatsEl = document.getElementById("zone-exploration-stats");
 const zoneGridEl = document.getElementById("zone-grid-view");
 
-const zoneEnterBtn = document.getElementById("zone-enter-debug");
-
 const zoneExploreRandomBtn = document.getElementById("zone-explore-random");
 const zoneExploreSequentialBtn = document.getElementById("zone-explore-sequential");
 
@@ -89,10 +87,6 @@ function renderZoneUI() {
     if (zoneFinishMenuEl) {
       zoneFinishMenuEl.style.display = "none";
     }
-    // When there's no zone, the Enter button should be visible
-    if (zoneEnterBtn) {
-      zoneEnterBtn.style.display = "inline-block";
-    }
     return;
   }
 
@@ -131,15 +125,6 @@ function renderZoneUI() {
       zoneFinishMenuEl.style.display = "block";
     } else {
       zoneFinishMenuEl.style.display = "none";
-    }
-  }
-
-  // While inside a zone, hide the Enter button (we're already in)
-  if (zoneEnterBtn) {
-    if (isInZone) {
-      zoneEnterBtn.style.display = "none";
-    } else {
-      zoneEnterBtn.style.display = "inline-block";
     }
   }
 }
