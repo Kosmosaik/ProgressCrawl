@@ -11,3 +11,5 @@ When reaching > 10 damage it should only show one decimal, and over 20 it should
 @ Move Qty so it's right after Item Name in both inventory views.
 
 @ The Leet Power Sword of Doom weapon is not increasing DPS when I increase STR or DEX. Why?
+
+@ When equipping items, the gap/margins between each row of item increases a bit compared with when it just says <empty>.
