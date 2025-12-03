@@ -173,6 +173,7 @@
 - **Temperate‑forest role:** Very common wildlife in mixed and conifer forests; primary hunting target for early‑game food and crafting materials.
 ---
 > Aggregated from multiple game wikis. Each entry corresponds to a creature or entity that is documented as appearing in a **temperate forest or forest‑like biome** (broadleaf forests, coniferous forests, forested highlands, etc.). Loot and behavior notes are taken from those wikis and kept as literal as possible.
+> 
 Alghoul
 Alpha Boar
 Alpha Wolf
