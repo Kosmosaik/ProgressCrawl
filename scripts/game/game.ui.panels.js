@@ -6,6 +6,9 @@ const hpBarContainer = document.getElementById("hp-bar-container");
 const hpBarFill = document.getElementById("hp-bar-fill");
 const hpBarLabel = document.getElementById("hp-bar-label");
 
+// ----- WorldMap -----
+const worldMapButton = document.getElementById("worldmap-btn");
+
 // ----- Equipment / loot / inventory UI elements -----
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
