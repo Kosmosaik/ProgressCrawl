@@ -17,6 +17,9 @@ let currentZone = null;
 // Are we currently "inside" a zone?
 let isInZone = false;
 
+// ----- World Map -----
+let worldMap = null;
+
 // Tick-based exploration (2–5s) timer
 let zoneExplorationActive = false;
 let zoneExplorationTimerId = null;
@@ -580,4 +583,9 @@ window.debugZoneState = () => {
     );
   }
   return currentZone;
+};
+
+window.debugWorldMap = () => {
+  console.log("World Map:", worldMap);
+  return worldMap;
 };
