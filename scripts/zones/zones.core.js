@@ -43,7 +43,7 @@ function createDebugZone() {
   const height = 10;
   const zone = createZone({
     id: "zone_debug_01",
-    name: "Debug Meadow",
+    name: "Tutorial Zone",
     width,
     height,
   });
