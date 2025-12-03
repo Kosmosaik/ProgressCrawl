@@ -1,3 +1,50 @@
+# v0.0.70a2 – Data‑Driven Zones (Part 1)
+
+## Overview
+This patch introduces the first step toward fully data‑driven zones in ProgressCrawl.  
+Gameplay remains unchanged, but the internal structure for creating and managing zones has been refactored to allow future expansion such as procedural map generation, handcrafted layouts, and scripted tutorial sequences.
+
+---
+
+## Added
+- **New data file:** `zones.data.js`
+  - Holds all static zone definitions.
+  - Contains the new `tutorial_zone` layout as a pure ASCII map.
+  - Prepares the structure for future generated zones.
+- **Tile symbol mapping (`ZONE_TILE_SYMBOLS`)**
+  - Keeps existing UI tile symbols intact (`#`, `.`, `L`, `?`).
+  - Separates tile *type* (walkable/blocked/locked) from exploration state.
+
+---
+
+## Changed
+- **`createDebugZone()` is now fully data‑driven**
+  - No more hardcoded tile placement.
+  - Now simply calls `createZoneFromDefinition("tutorial_zone")`.
+- **Updated `index.html` script load order**
+  - Ensures data is loaded before core logic.
+
+---
+
+## Technical Notes
+- Exploration visuals remain 100% unchanged.
+- All gameplay behavior remains identical to 0.0.70a.
+- New structure enables:
+  - Handcrafted tutorial progression.
+  - Future procedural generators (cellular automata, biome rules, etc.).
+  - Modular and scalable zone creation.
+
+---
+
+## Files Added
+- `scripts/zones/zones.data.js`
+
+## Files Updated
+- `scripts/zones/zones.core.js`
+- `index.html`
+
+---
+
 ## Patch v0.0.70a - Zone Exploration Core System
 
 This update introduces the first foundation of the new Zone System.  
