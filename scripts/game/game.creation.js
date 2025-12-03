@@ -170,7 +170,17 @@ if (btnCreateCharacter) {
       // Do NOT start auto exploration here.
       // The player will start it with "Explore Auto" later.
     }
+    // Create the default world map for this new game.
+    // We know our starting zone is the tutorial zone.
+    if (typeof createDefaultWorldMap === "function") {
+      worldMap = createDefaultWorldMap("tutorial_zone");
+      console.log("World map created:", worldMap);
 
+      // If the World Map panel exists, render it once (in case player opens it).
+      if (typeof renderWorldMapUI === "function") {
+        renderWorldMapUI();
+      }
+    }
     setScreen("game");
   });
 }
