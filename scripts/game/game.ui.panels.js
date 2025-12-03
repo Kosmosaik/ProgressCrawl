@@ -6,6 +6,10 @@ const hpBarContainer = document.getElementById("hp-bar-container");
 const hpBarFill = document.getElementById("hp-bar-fill");
 const hpBarLabel = document.getElementById("hp-bar-label");
 
+// ----- World Map -----
+const worldMapPanel = document.getElementById("worldmap-panel");
+const worldMapButton = document.getElementById("worldmap-btn");
+
 // ----- Equipment / loot / inventory UI elements -----
 const lootButton = document.getElementById("loot-button");
 const progressBar = document.getElementById("progress");
@@ -58,3 +62,17 @@ if (skillsButton && skillsPanel) {
     skillsPanel.style.display = visible ? "none" : "block";
   });
 }
+
+// World map panel toggle
+if (worldMapButton && worldMapPanel) {
+  worldMapButton.addEventListener("click", () => {
+    const visible = worldMapPanel.style.display === "block";
+    worldMapPanel.style.display = visible ? "none" : "block";
+
+    // When opening, refresh the ASCII map
+    if (!visible && typeof renderWorldMapUI === "function") {
+      renderWorldMapUI();
+    }
+  });
+}
+
