@@ -84,6 +84,9 @@ function createDefaultWorldMap(startZoneId) {
   map.startX = centerX;
   map.startY = centerY;
 
+  // Track where the player currently is on the world map
+  map.currentX = centerX;
+  map.currentY = centerY;
   return map;
 }
 
