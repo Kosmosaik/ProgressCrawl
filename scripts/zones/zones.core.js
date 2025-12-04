@@ -205,13 +205,18 @@ function countExploredTiles(zone) {
 function getZoneExplorationStats(zone) {
   const total = countExplorableTiles(zone);
   const explored = countExploredTiles(zone);
-  const percent = total === 0 ? 0 : Math.round((explored / total) * 100);
+
+  // Use floor so we never claim 100% until explored === total.
+  const percent = total === 0 ? 0 : Math.floor((explored / total) * 100);
+
   return {
     totalExplorableTiles: total,
     exploredTiles: explored,
     percentExplored: percent,
+    isComplete: total > 0 && explored >= total,
   };
 }
+
 
 // Reveal ONE random unexplored explorable tile.
 // Returns true if something was revealed, false if zone is already fully explored.
