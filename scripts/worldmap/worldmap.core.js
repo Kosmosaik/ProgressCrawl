@@ -84,6 +84,9 @@ function createDefaultWorldMap(startZoneId) {
   map.startX = centerX;
   map.startY = centerY;
 
+  map.currentX = centerX;
+  map.currentY = centerY;
+
   return map;
 }
 
