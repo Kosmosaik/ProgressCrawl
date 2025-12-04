@@ -154,7 +154,7 @@ function runZoneExplorationTick() {
   }
 
   const stats = ZoneDebug.getZoneExplorationStats(currentZone);
-  if (stats.percentExplored >= 100) {
+  if (stats.isComplete || stats.exploredTiles >= stats.totalExplorableTiles) {
     // Zone already done, stop ticking
     console.log("Zone fully explored. Stopping exploration ticks.");
     stopZoneExplorationTicks();
@@ -199,7 +199,7 @@ function startZoneManualExploreOnce() {
   if (!window.ZoneDebug || typeof ZoneDebug.getZoneExplorationStats !== "function") return;
 
   const stats = ZoneDebug.getZoneExplorationStats(currentZone);
-  if (stats.percentExplored >= 100) {
+  if (stats.isComplete || stats.exploredTiles >= stats.totalExplorableTiles) {
     if (typeof addZoneMessage === "function") {
       addZoneMessage("There is nothing left to explore here.");
     }
