@@ -66,7 +66,7 @@ const ZONE_DEFINITIONS = {
       smoothIterations: 5,
       borderIsWall: true,
     },
-    defaultWeatherState: "humid"6,
+    defaultWeatherState: "humid",
   },
 
   tutorial_zone_west: {
