@@ -78,18 +78,19 @@ function generateLayoutCellularAutomata(config) {
     map = newMap;
   }
 
-  // TODO (later in 0.0.70b): post-process to add locked regions, etc.
-
-  // Convert to array of strings
   // Convert internal map (array of char arrays) to array of strings
   let layout = map.map((row) => row.join(""));
 
-  // Post-process layout to clean up islands and prepare for locked subregions.
-  // (If you haven't added postProcessCALayoutRegions yet, scroll up to the helper section.)
+  // First, clean up islands and connect bigger side blobs.
   layout = postProcessCALayoutRegions(layout, config || {});
+
+  // Then, always try to create a locked subregion between the
+  // largest and second-largest walkable regions (if they exist).
+  layout = injectLockedGateBetweenPrimaryAndSecondary(layout, config || {});
 
   return layout;
 }
+
 
 // ----- Region detection & post-processing helpers -----
 //
