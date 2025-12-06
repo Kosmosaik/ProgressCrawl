@@ -136,7 +136,7 @@ function renderZoneUI() {
 
   // Grid
   if (zoneGridEl) {
-    zoneGridEl.textContent = buildZoneGridString(zone);
+    zoneGridEl.innerHTML = buildZoneGridString(zone);
   }
 
   // Finish menu
