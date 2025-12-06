@@ -1,1 +1,0 @@
-I have uploaded a ZIP. Extract it, then recursively open the full contents of every .js, .md, and .css file in all folders and subfolders, and load all lines into your working memory before doing any analysis.
