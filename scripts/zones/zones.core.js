@@ -410,7 +410,7 @@ function revealRandomExplorableTile(zone) {
       if (isTileExplorable(tile) && !tile.explored) {
         candidates.push({ x, y });
       }
-    },
+    }
   }
 
   if (candidates.length === 0) {
