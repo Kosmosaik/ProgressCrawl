@@ -287,6 +287,177 @@ function postProcessCALayoutRegions(layout, config) {
   return charGridToLayout(grid);
 }
 
+// ----- Locked subregion helpers -----
+//
+// After we've cleaned up islands, we try to:
+// - Find the largest (primary) and second-largest (secondary) walkable regions.
+// - Place a single 'L' tile between them.
+// - If they are not adjacent by a single wall, carve a simple L-shaped corridor
+//   through walls, marking one of those corridor cells as 'L'.
+
+// Build boolean masks for quick "is this tile in region X?" checks.
+function buildRegionMask(width, height, region) {
+  const mask = [];
+  for (let y = 0; y < height; y++) {
+    mask[y] = [];
+    for (let x = 0; x < width; x++) {
+      mask[y][x] = false;
+    }
+  }
+  if (!region || !region.cells) return mask;
+  for (const cell of region.cells) {
+    if (cell.y >= 0 && cell.y < height && cell.x >= 0 && cell.x < width) {
+      mask[cell.y][cell.x] = true;
+    }
+  }
+  return mask;
+}
+
+// Try to find a single wall tile that touches both primary and secondary regions.
+function findSingleWallGateCandidate(grid, primaryRegion, secondaryRegion) {
+  const height = grid.length;
+  if (height === 0) return null;
+  const width = grid[0].length;
+
+  const primaryMask = buildRegionMask(width, height, primaryRegion);
+  const secondaryMask = buildRegionMask(width, height, secondaryRegion);
+
+  const dirs = [
+    { dx: 1, dy: 0 },
+    { dx: -1, dy: 0 },
+    { dx: 0, dy: 1 },
+    { dx: 0, dy: -1 },
+  ];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (grid[y][x] !== "#") continue;
+
+      let touchesPrimary = false;
+      let touchesSecondary = false;
+
+      for (const dir of dirs) {
+        const nx = x + dir.dx;
+        const ny = y + dir.dy;
+        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+        if (primaryMask[ny][nx]) touchesPrimary = true;
+        if (secondaryMask[ny][nx]) touchesSecondary = true;
+      }
+
+      if (touchesPrimary && touchesSecondary) {
+        return { x, y };
+      }
+    }
+  }
+
+  return null;
+}
+
+// Carve a corridor between primary and secondary, and mark ONE of the carved
+// wall cells as 'L'. We only carve through cells that are currently walls ('#').
+function carveLockedCorridorBetweenRegions(grid, primaryRegion, secondaryRegion) {
+  if (!primaryRegion || !secondaryRegion ||
+      !primaryRegion.cells || !secondaryRegion.cells ||
+      primaryRegion.cells.length === 0 || secondaryRegion.cells.length === 0) {
+    return;
+  }
+
+  let bestPair = null;
+  let bestDist = Infinity;
+
+  // Find the closest pair of cells between the two regions (Manhattan distance).
+  for (let i = 0; i < primaryRegion.cells.length; i++) {
+    const a = primaryRegion.cells[i];
+    for (let j = 0; j < secondaryRegion.cells.length; j++) {
+      const b = secondaryRegion.cells[j];
+      const dist = Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestPair = { a, b };
+      }
+    }
+  }
+
+  if (!bestPair) return;
+
+  const { a, b } = bestPair;
+
+  let x = a.x;
+  let y = a.y;
+  const pathCells = [];
+
+  // Step in x direction first
+  const stepX = b.x > x ? 1 : -1;
+  while (x !== b.x) {
+    x += stepX;
+    if (grid[y][x] === "#") {
+      pathCells.push({ x, y });
+    }
+  }
+
+  // Then step in y direction
+  const stepY = b.y > y ? 1 : -1;
+  while (y !== b.y) {
+    y += stepY;
+    if (grid[y][x] === "#") {
+      pathCells.push({ x, y });
+    }
+  }
+
+  if (pathCells.length === 0) {
+    // No walls along the simple L-shaped route. In practice this should be rare,
+    // but if it happens, we bail and do nothing.
+    return;
+  }
+
+  // Choose one of the carved cells to be the locked gate.
+  const gateIndex = Math.floor(pathCells.length / 2);
+
+  for (let i = 0; i < pathCells.length; i++) {
+    const cell = pathCells[i];
+    const cx = cell.x;
+    const cy = cell.y;
+    if (i === gateIndex) {
+      grid[cy][cx] = "L"; // locked gate
+    } else {
+      grid[cy][cx] = "."; // corridor floor
+    }
+  }
+}
+
+// Inject a single 'L' gate between the primary and secondary largest regions.
+// If they touch by one wall -> turn that wall into 'L'.
+// Otherwise -> carve a simple corridor through walls and put 'L' in the corridor.
+function injectLockedGateBetweenPrimaryAndSecondary(layout, config) {
+  if (!layout || layout.length === 0) return layout;
+
+  const regions = computeWalkableRegions(layout);
+  if (regions.length < 2) {
+    // Not enough regions to justify a locked subregion.
+    return layout;
+  }
+
+  // Sort by size (descending)
+  regions.sort((a, b) => b.cells.length - a.cells.length);
+
+  const primaryRegion = regions[0];
+  const secondaryRegion = regions[1];
+
+  const grid = layoutToCharGrid(layout);
+
+  // 1) Try the "nice" case: a single wall tile touches both regions.
+  const gateCandidate = findSingleWallGateCandidate(grid, primaryRegion, secondaryRegion);
+  if (gateCandidate) {
+    grid[gateCandidate.y][gateCandidate.x] = "L";
+    return charGridToLayout(grid);
+  }
+
+  // 2) Fallback: carve a corridor through walls and choose one cell as 'L'.
+  carveLockedCorridorBetweenRegions(grid, primaryRegion, secondaryRegion);
+
+  return charGridToLayout(grid);
+}
+
 // Main entry: create a layout string array from a zone definition.
 function generateLayoutFromDefinition(def) {
   if (!def || def.type !== "generated") {
