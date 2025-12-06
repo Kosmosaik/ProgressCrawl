@@ -431,11 +431,13 @@ function revealNextExplorableTileSequential(zone) {
       const tile = zone.tiles[y][x];
       if (isTileExplorable(tile) && !tile.explored) {
         tile.explored = true;
+        return true; // <-- stop after revealing ONE tile
       }
     }
   }
-  return false;
+  return false; // nothing left to reveal
 }
+
 
 // Small debug helpers exposed on window so we can test in the browser console.
 window.ZoneDebug = {
