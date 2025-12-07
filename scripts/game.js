@@ -20,6 +20,69 @@ let isInZone = false;
 // ----- World Map -----
 let worldMap = null;
 
+// Enter a zone by clicking it on the world map.
+function enterZoneFromWorldMap(x, y) {
+  if (typeof getWorldMapTile !== "function") {
+    console.warn("enterZoneFromWorldMap: getWorldMapTile is not available.");
+    return;
+  }
+  if (!worldMap) {
+    console.warn("enterZoneFromWorldMap: worldMap is not initialized.");
+    return;
+  }
+
+  const tile = getWorldMapTile(worldMap, x, y);
+  if (!tile || !tile.zoneId) {
+    console.warn("enterZoneFromWorldMap: no zone mapped at", x, y);
+    return;
+  }
+
+  // Stop any running auto exploration in the current zone
+  if (typeof stopZoneExplorationTicks === "function") {
+    stopZoneExplorationTicks();
+  }
+
+  // Create the zone instance from its definition
+  if (typeof createZoneFromDefinition !== "function") {
+    console.error("enterZoneFromWorldMap: createZoneFromDefinition is missing.");
+    return;
+  }
+
+  const newZone = createZoneFromDefinition(tile.zoneId);
+  if (!newZone) {
+    console.error("enterZoneFromWorldMap: failed to create zone", tile.zoneId);
+    return;
+  }
+
+  // Switch state to the new zone
+  currentZone = newZone;
+  isInZone = true;
+
+  // Update fog and current position on the world map
+  if (tile.fogState !== WORLD_FOG_STATE.VISITED) {
+    tile.fogState = WORLD_FOG_STATE.VISITED;
+  }
+  if (worldMap) {
+    worldMap.currentX = x;
+    worldMap.currentY = y;
+  }
+
+  // Switch panels: hide world map, show zone
+  if (typeof switchToZoneView === "function") {
+    switchToZoneView();
+  }
+
+  // Refresh UIs
+  if (typeof renderZoneUI === "function") {
+    renderZoneUI();
+  }
+  if (typeof renderWorldMapUI === "function") {
+    renderWorldMapUI();
+  }
+
+  console.log(`Entered zone from world map: ${tile.zoneId}`, newZone);
+}
+
 // Tick-based exploration (2–5s) timer
 let zoneExplorationActive = false;
 let zoneExplorationTimerId = null;
@@ -50,7 +113,7 @@ function scheduleNextZoneExplorationTick() {
   if (!zoneExplorationActive) return;
 
   // 2–5 seconds delay (2000–5000 ms)
-  const delay = 500 + Math.random() * 500;
+  const delay = 50 + Math.random() * 50;
 
   zoneExplorationTimerId = setTimeout(() => {
     runZoneExplorationTick();
@@ -91,7 +154,7 @@ function runZoneExplorationTick() {
   }
 
   const stats = ZoneDebug.getZoneExplorationStats(currentZone);
-  if (stats.percentExplored >= 100) {
+  if (stats.isComplete || stats.exploredTiles >= stats.totalExplorableTiles) {
     // Zone already done, stop ticking
     console.log("Zone fully explored. Stopping exploration ticks.");
     stopZoneExplorationTicks();
@@ -136,7 +199,7 @@ function startZoneManualExploreOnce() {
   if (!window.ZoneDebug || typeof ZoneDebug.getZoneExplorationStats !== "function") return;
 
   const stats = ZoneDebug.getZoneExplorationStats(currentZone);
-  if (stats.percentExplored >= 100) {
+  if (stats.isComplete || stats.exploredTiles >= stats.totalExplorableTiles) {
     if (typeof addZoneMessage === "function") {
       addZoneMessage("There is nothing left to explore here.");
     }

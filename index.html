@@ -9,7 +9,7 @@
 <body>
 <div id="game-header">
   <span class="game-header-text">
-    ProgressCrawl — v0.0.70b-dev : Exploration Part 2 (EXPERIMENTAL) v1
+    ProgressCrawl — v0.0.70b-dev : Exploration part 2 v17
   </span>
   <button id="patch-notes-btn" type="button">Patch Notes</button>
 </div>
@@ -129,20 +129,20 @@
               <pre id="zone-grid-view" class="zone-grid-view">(No active zone)</pre>
             </div>
           </div>
-    
+          
+          <!-- Finish Zone -->
+          <div class="zone-section" id="zone-finish-menu" style="display:none;">
+            <div class="zone-section-title">Zone Completed</div>
+            <button id="zone-finish-stay" type="button">STAY</button>
+            <button id="zone-finish-leave" type="button">LEAVE ZONE</button>
+          </div>
+          
           <!-- Messages -->
           <div class="zone-section">
             <div class="zone-section-title">Messages</div>
             <div id="zone-messages-log">
               <ul id="zone-messages-list"></ul>
             </div>
-          </div>
-    
-          <!-- Finish Zone -->
-          <div class="zone-section" id="zone-finish-menu" style="display:none;">
-            <div class="zone-section-title">Zone Completed</div>
-            <button id="zone-finish-stay" type="button">STAY</button>
-            <button id="zone-finish-leave" type="button">LEAVE ZONE</button>
           </div>
     
         </div>
@@ -255,10 +255,10 @@
 <script src="scripts/ui/ui.draggablePanels.js"></script>
 <script src="scripts/ui.js"></script>
 
+<script src="scripts/zones/zones.data.js"></script>
+<script src="scripts/zones/zones.generator.js"></script>
 <script src="scripts/worldmap/worldmap.core.js"></script>
 <script src="scripts/worldmap/worldmap.ui.js"></script>
-
-<script src="scripts/zones/zones.data.js"></script>
 <script src="scripts/zones/zones.core.js"></script>
 <script src="scripts/zones/zones.ui.js"></script>
 

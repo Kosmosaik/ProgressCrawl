@@ -1,3 +1,38 @@
+# ProgressCrawl - Patch 0.0.70b  
+## **Introducing Locked Subregions**
+
+---
+
+##  **New Feature: Locked Subregions**
+Some zones now contain areas that are **cut off from the main region**.  
+You’ll notice a special **`L` tile** on the map - this marks a **locked gate**.
+
+- Exploring normally reveals the main region.  
+- Locked subregions cannot be explored until the gate is opened.  
+- Clicking the **`L` gate** unlocks the passage and opens up the hidden area.  
+
+---
+
+##  **Improved Map Generation**
+The zone generator now scans each map layout and:
+
+- Detects separate walkable regions  
+- Connects isolated regions using natural corridors  
+- Produces clearer and more dynamic shapes  
+- Reduces awkward “island” tiles and dead-ends  
+
+---
+
+##  **Exploration Improvements**
+- You can now **leave any zone at any time**.  
+
+---
+
+##  **UI & Interaction**
+- Tiles are now interactive, allowing direct clicks on locked gates.  
+
+---
+
 # v0.0.70a2 – Data‑Driven Zones (Part 1)
 
 ## Overview
