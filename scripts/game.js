@@ -242,6 +242,10 @@ function onZoneFullyExplored() {
       "You feel the world open up. New areas are now visible on the world map."
     );
   }
+    // 0.0.70c — Auto-save after world expansion so unlocked zones persist
+  if (typeof saveCurrentGame === "function") {
+    saveCurrentGame();
+  }
 }
 
 function startZoneManualExploreOnce() {
