@@ -181,9 +181,15 @@ function loadSave(id) {
     renderWorldMapUI();
   }
 
+  // Show the main game screen
   setScreen("game");
-}
 
+  // 0.0.70c — After loading a save, default to the World Map view
+  // (hide the Zone panel that says "No active zone").
+  if (typeof switchToWorldMapView === "function") {
+    switchToWorldMapView();
+  }
+}
 
 function deleteSave(id) {
   let saves = loadAllSaves();
