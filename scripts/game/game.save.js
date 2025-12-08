@@ -127,6 +127,15 @@ function loadSave(id) {
   currentSaveId = save.id;
 
   loadInventoryFromSnapshot(save.inventory || {});
+
+  // 0.0.70c — Restore world map / world slots (if present in the save).
+  // For old saves that don't have worldMap, create a fresh default map.
+  if (save.worldMap) {
+    worldMap = save.worldMap;
+  } else if (typeof createDefaultWorldMap === "function") {
+    worldMap = createDefaultWorldMap("tutorial_zone");
+  }
+  
   // Restore equipped items (if present)
   if (save.equipped) {
     loadEquippedFromSnapshot(save.equipped);
@@ -167,8 +176,14 @@ function loadSave(id) {
     equipmentPanel.style.display = "none";
   }
 
+  // 0.0.70c — Re-render world map if we have it in this save.
+  if (typeof renderWorldMapUI === "function" && typeof worldMap !== "undefined" && worldMap) {
+    renderWorldMapUI();
+  }
+
   setScreen("game");
 }
+
 
 function deleteSave(id) {
   let saves = loadAllSaves();
