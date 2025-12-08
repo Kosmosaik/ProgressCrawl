@@ -65,8 +65,8 @@ function getWorldMapTile(worldMap, x, y) {
 // For now: a small grid with the Tutorial Zone in the center,
 // and 4 adjacent placeholder zones around it.
 function createDefaultWorldMap(startZoneId) {
-  const width = 9;
-  const height = 9;
+  const width = 13;
+  const height = 13;
 
   const map = createEmptyWorldMap(width, height);
 
