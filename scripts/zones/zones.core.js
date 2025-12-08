@@ -476,7 +476,12 @@ function ensureGeneratedZoneDefinitionForWorldTile(tile) {
   const generator = template.generator || "cellular_automata";
   const generatorConfig = Object.assign({}, template.generatorConfig || {});
 
-  // Later we might inject difficulty/era/biome tweaks here.
+  // 0.0.70c — feed tile.seed into the generator config so layout is deterministic.
+  if (tile.seed) {
+    generatorConfig.seed = tile.seed;
+  }
+
+  // Later we might inject difficulty/era/biome/difficulty tweaks here.
   // For now, we only ensure width/height/etc are passed through.
 
   const def = {
@@ -489,6 +494,10 @@ function ensureGeneratedZoneDefinitionForWorldTile(tile) {
   };
 
   ZONE_DEFINITIONS[tile.zoneId] = def;
+
+  // 0.0.70c — mark the world slot as having a generated definition.
+  tile.zoneGenerated = true;
+
   return def;
 }
 
