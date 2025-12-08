@@ -141,6 +141,14 @@ function revealNextTileWithMessageAndUI() {
     renderZoneUI();
   }
 
+  // 0.0.70c — after revealing a tile, check if we just completed the zone.
+  if (window.ZoneDebug && typeof ZoneDebug.getZoneExplorationStats === "function") {
+    const stats = ZoneDebug.getZoneExplorationStats(currentZone);
+    if (stats && stats.isComplete && typeof onZoneFullyExplored === "function") {
+      onZoneFullyExplored();
+    }
+  }
+
   return changed;
 }
 
@@ -158,6 +166,11 @@ function runZoneExplorationTick() {
     // Zone already done, stop ticking
     console.log("Zone fully explored. Stopping exploration ticks.");
     stopZoneExplorationTicks();
+
+    // 0.0.70c — world map adjacency unlock
+    if (typeof onZoneFullyExplored === "function") {
+      onZoneFullyExplored();
+    }
 
     if (typeof renderZoneUI === "function") {
       renderZoneUI();
@@ -192,6 +205,32 @@ function stopZoneExplorationTicks() {
   console.log("Zone exploration ticks stopped.");
 }
 
+// 0.0.70c — Called once when a zone becomes fully explored.
+function onZoneFullyExplored() {
+  console.log("Zone fully explored. Unlocking adjacent world tiles (0.0.70c).");
+
+  // Need a world map + helper to do anything.
+  if (!worldMap) return;
+  if (typeof unlockAdjacentWorldTiles !== "function") return;
+
+  const x = worldMap.currentX;
+  const y = worldMap.currentY;
+
+  if (typeof x !== "number" || typeof y !== "number") {
+    return;
+  }
+
+  // Apply the world rule: reveal neighbors around this world tile.
+  unlockAdjacentWorldTiles(worldMap, x, y);
+
+  // Optional player feedback.
+  if (typeof addZoneMessage === "function") {
+    addZoneMessage(
+      "You feel the world open up. New areas are now visible on the world map."
+    );
+  }
+}
+
 function startZoneManualExploreOnce() {
   if (zoneManualExplorationActive) return;
   if (zoneExplorationActive) return;
@@ -200,6 +239,11 @@ function startZoneManualExploreOnce() {
 
   const stats = ZoneDebug.getZoneExplorationStats(currentZone);
   if (stats.isComplete || stats.exploredTiles >= stats.totalExplorableTiles) {
+    // 0.0.70c — in case the player fully explored manually
+    if (typeof onZoneFullyExplored === "function") {
+      onZoneFullyExplored();
+    }
+
     if (typeof addZoneMessage === "function") {
       addZoneMessage("There is nothing left to explore here.");
     }
