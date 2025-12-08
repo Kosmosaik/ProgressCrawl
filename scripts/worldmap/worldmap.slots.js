@@ -49,11 +49,23 @@ function initializeWorldSlotMetadata(tile, options) {
     tile.templateId = opts.templateId || "primitive_forest_easy";
   }
 
-  // Difficulty rating 1–10 (if provided by caller; else leave null for now).
+  // Difficulty rating 1–10 — derived from the zone template if available.
   if (typeof tile.difficultyRating !== "number") {
+    // 1) explicit override on options (if we ever use it)
     if (typeof opts.difficultyRating === "number") {
       tile.difficultyRating = opts.difficultyRating;
-    } else {
+    }
+    // 2) otherwise, try to get it from the zone template by templateId
+    else if (
+      typeof ZONE_TEMPLATES !== "undefined" &&
+      tile.templateId &&
+      ZONE_TEMPLATES[tile.templateId] &&
+      typeof ZONE_TEMPLATES[tile.templateId].difficulty === "number"
+    ) {
+      tile.difficultyRating = ZONE_TEMPLATES[tile.templateId].difficulty;
+    }
+    // 3) fallback
+    else {
       tile.difficultyRating = null;
     }
   }
