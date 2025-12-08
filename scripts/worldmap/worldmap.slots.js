@@ -142,14 +142,9 @@ function initializeWorldSlotFromDistance(tile, distance) {
     pickWorldSlotTemplateForDistance(distance) ||
     WORLD_SLOT_TEMPLATES.primitive_forest_easy;
 
-  const difficulty = pickDifficultyForDistance(distance);
-
-  // Merge difficulty into the options we pass to the generic initializer.
-  const options = Object.assign({}, preset, {
-    difficultyRating: difficulty,
-  });
-
-  initializeWorldSlotMetadata(tile, options);
+  // No difficulty here anymore; we let initializeWorldSlotMetadata
+  // derive it from ZONE_TEMPLATES[preset.templateId].
+  initializeWorldSlotMetadata(tile, preset);
 }
 
 // Debug helper – so you can poke this from DevTools if you want.
