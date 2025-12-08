@@ -45,8 +45,8 @@ const ZONE_DEFINITIONS = {
     type: "generated",
     generator: "cellular_automata",
     generatorConfig: {
-      width: 38,
-      height: 20,
+      width: 40,
+      height: 26,
       fillChance: 0.57,       // probability a tile starts as wall
       smoothIterations: 4,    // how many CA smoothing passes
       borderIsWall: true,     // keep solid border
@@ -60,8 +60,8 @@ const ZONE_DEFINITIONS = {
     type: "generated",
     generator: "cellular_automata",
     generatorConfig: {
-      width: 35,
-      height: 22,
+      width: 42,
+      height: 30,
       fillChance: 0.46,
       smoothIterations: 5,
       borderIsWall: true,
@@ -75,8 +75,8 @@ const ZONE_DEFINITIONS = {
     type: "generated",
     generator: "cellular_automata",
     generatorConfig: {
-      width: 32,
-      height: 23,
+      width: 43,
+      height: 32,
       fillChance: 0.40,
       smoothIterations: 4,
       borderIsWall: true,
@@ -90,8 +90,8 @@ const ZONE_DEFINITIONS = {
     type: "generated",
     generator: "cellular_automata",
     generatorConfig: {
-      width: 36,
-      height: 21,
+      width: 41,
+      height: 28,
       fillChance: 0.51,
       smoothIterations: 5,
       borderIsWall: true,
