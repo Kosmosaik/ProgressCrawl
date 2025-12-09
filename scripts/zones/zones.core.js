@@ -473,6 +473,7 @@ function revealNextExplorableTileSequential(zone) {
       const tile = zone.tiles[y][x];
       if (isTileExplorable(tile) && !tile.explored) {
         tile.explored = true;
+        tile.isActiveExplore = false;
         return true; // <-- stop after revealing ONE tile
       }
     }
