@@ -27,6 +27,9 @@ const zoneFinishLeaveBtn = document.getElementById("zone-finish-leave");
 // Build an HTML grid from the current zone.
 // # = blocked, ? = unexplored walkable, . = explored walkable, L = locked
 // Each cell is a <span> so we can click on it.
+// Build an HTML grid from the current zone.
+// # = blocked, ? = unexplored walkable, . = explored walkable, L = locked
+// Each cell is a <span> so we can click on it.
 function buildZoneGridString(zone) {
   if (!zone) return "(No active zone)";
 
@@ -60,14 +63,8 @@ function buildZoneGridString(zone) {
       }
 
       // --- 4) Player marker ☺ on the latest explored tile ---
-      // We draw the sprite based purely on zone.playerX / zone.playerY.
-      const isPlayerHere =
-        typeof zone.playerX === "number" &&
-        typeof zone.playerY === "number" &&
-        zone.playerX === x &&
-        zone.playerY === y;
-
-      if (isPlayerHere) {
+      // We now track the player directly on the tile as tile.hasPlayer.
+      if (tile.hasPlayer) {
         ch = "☺";
       }
 
