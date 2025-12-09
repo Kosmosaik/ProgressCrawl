@@ -123,9 +123,21 @@ function addRandomZoneMessage() {
 // --- Zone exploration tick system (2–5s random delay) ---
 
 function scheduleNextZoneExplorationTick() {
-  if (!zoneExplorationActive) return;
+  if (!zoneExplorationActive || !isInZone || !currentZone) return;
 
-  // 2–5 seconds delay (2000–5000 ms)
+  // Mark which tile will be explored next so the UI can show the blinking "?".
+  if (
+    window.ZoneDebug &&
+    typeof ZoneDebug.prepareNextExplorationTile === "function"
+  ) {
+    ZoneDebug.prepareNextExplorationTile(currentZone);
+  }
+
+  if (typeof renderZoneUI === "function") {
+    renderZoneUI();
+  }
+
+  // 2–5 seconds delay (comment), currently tuned to 50–100 ms.
   const delay = 1000 + Math.random() * 2000;
 
   zoneExplorationTimerId = setTimeout(() => {
@@ -136,12 +148,23 @@ function scheduleNextZoneExplorationTick() {
 // Reveal the next explorable tile (sequential), add a random message, update UI.
 // Returns true if a tile was actually revealed, false otherwise.
 function revealNextTileWithMessageAndUI() {
-  if (!window.ZoneDebug || typeof ZoneDebug.revealNextExplorableTileSequential !== "function") {
+  if (
+    !window.ZoneDebug ||
+    (typeof ZoneDebug.revealPreparedExplorationTile !== "function" &&
+      typeof ZoneDebug.revealNextExplorableTileSequential !== "function")
+  ) {
     return false;
   }
   if (!currentZone) return false;
 
-  const changed = ZoneDebug.revealNextExplorableTileSequential(currentZone);
+  // Prefer revealing a pre-marked tile, fall back to old sequential reveal.
+  let changed = false;
+  if (typeof ZoneDebug.revealPreparedExplorationTile === "function") {
+    changed = ZoneDebug.revealPreparedExplorationTile(currentZone);
+  } else {
+    changed = ZoneDebug.revealNextExplorableTileSequential(currentZone);
+  }
+  
   if (changed) {
     addRandomZoneMessage();
   } else {
@@ -268,6 +291,24 @@ function startZoneManualExploreOnce() {
       renderZoneUI();
     }
     return;
+  }
+
+  // Pick the tile that WILL be explored after the delay, so it can blink as "?"
+  if (
+    window.ZoneDebug &&
+    typeof ZoneDebug.prepareNextExplorationTile === "function"
+  ) {
+    const prepared = ZoneDebug.prepareNextExplorationTile(currentZone);
+    if (!prepared) {
+      // Safety: no tile found even though stats said there should be one.
+      if (typeof addZoneMessage === "function") {
+        addZoneMessage("There is nothing left to explore here.");
+      }
+      if (typeof renderZoneUI === "function") {
+        renderZoneUI();
+      }
+      return;
+    }
   }
 
   zoneManualExplorationActive = true;
