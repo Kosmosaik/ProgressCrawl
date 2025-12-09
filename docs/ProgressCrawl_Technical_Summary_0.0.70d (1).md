@@ -55,16 +55,21 @@ resourceNodes: {
   uncommon: [...],
 }
 
+
 pois: {
   rare: [...],
   ultraRare: [...],
 }
+
+// Comment from developer: Entities, resources and POI loot table will also make use of the grade systems for items looted (F0 -> S9).
+Grades till be low in difficulty 0 and also depending on biome/era type. There will be different rarities to POIs. Some will be commonly spawned in zones, and some will be rare.
 ```
 
 Templates will later include:
 - biome  
 - era  
-- future difficulty / spawn scaling rules  
+- future difficulty / spawn scaling rules
+- Locations (interactable objects that will transition the player to a smaller zone inside the zone).
 
 ---
 
@@ -101,7 +106,7 @@ Each content entry structure:
   state: {}
 }
 ```
-
+// Comment from developer: Entities needs a loot table too (not sure if this is mentioned anywhere).
 ---
 
 ### **3. Modify Zone Creation Flow**
@@ -153,7 +158,7 @@ Rules for content placement:
 - Difficulty scaling affects which entities appear  
 
 #### **POIs**
-- Very rare  
+- Common to Very rare  
 - Avoid spawning near zone entrance  
 
 These layers will grow in future patches.
@@ -178,7 +183,11 @@ Examples:
 Each defines:
 - rarity  
 - interaction placeholder  
-- tile footprint (1x1)  
+- tile footprint (1x1)
+- grade (This will determine what grade the items will have that you get from the nodes). 
+  Later on we will develop a formula and success/fail system for improvement of the node that will
+  determine the item grade, but for now in short term we will just roll it randomly, with low grade
+  being more likely to generate in low difficulty zones, and higher grades in higher difficulty zones.
 
 ---
 
@@ -186,14 +195,16 @@ Each defines:
 
 #### Passive creatures:
 - Deer  
-- Forest Hare  
+- Forest Hare
+- Squirrel 
 
 #### Aggressive creatures:
 - Wild Boar  
-- Cave Spider  
+- Cave Spider
+- Wolf 
 
 Each should define:
-- aggression flag  
+- aggression flag (0 = Completely neutral (not able to attack) -> 10 (Super aggressive, will attack on sight). 
 - placeholder stats (HP, damage)  
 - spawn rarity  
 - biome + difficulty gating  
