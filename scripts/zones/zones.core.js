@@ -499,6 +499,82 @@ function revealRandomExplorableTile(zone) {
   return true;
 }
 
+// Clear the "this tile will be explored next" flag on all tiles.
+function clearTileActiveExploreFlags(zone) {
+  if (!zone || !zone.tiles) return;
+
+  for (let y = 0; y < zone.height; y++) {
+    for (let x = 0; x < zone.width; x++) {
+      const t = zone.tiles[y][x];
+      if (t && t.isActiveExplore) {
+        t.isActiveExplore = false;
+      }
+    }
+  }
+}
+
+// Mark the next explorable tile as "pending exploration" (for blinking).
+// Does NOT set tile.explored; it just marks tile.isActiveExplore = true.
+// Returns true if a tile was marked, false if none were found.
+function prepareNextExplorationTile(zone) {
+  if (!zone || !zone.tiles) return false;
+
+  // Only one tile should ever be marked as "next".
+  clearTileActiveExploreFlags(zone);
+
+  for (let y = 0; y < zone.height; y++) {
+    for (let x = 0; x < zone.width; x++) {
+      const tile = zone.tiles[y][x];
+      if (isTileExplorable(tile) && !tile.explored) {
+        tile.isActiveExplore = true;
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+// Reveal the tile that was previously marked by prepareNextExplorationTile.
+// If none is marked, falls back to the old sequential reveal.
+// Returns true if something was revealed, false if there was nothing to do.
+function revealPreparedExplorationTile(zone) {
+  if (!zone || !zone.tiles) return false;
+
+  let target = null;
+
+  // Find the tile that was marked as "will be explored".
+  for (let y = 0; y < zone.height; y++) {
+    for (let x = 0; x < zone.width; x++) {
+      const tile = zone.tiles[y][x];
+      if (tile && tile.isActiveExplore) {
+        target = { x, y };
+        break;
+      }
+    }
+    if (target) break;
+  }
+
+  // If nothing was prepared (safety / fallback), use the older behaviour.
+  if (!target) {
+    return revealNextExplorableTileSequential(zone);
+  }
+
+  const tile = zone.tiles[target.y][target.x];
+
+  // Stop blinking — it's no longer "pending", it's being revealed now.
+  tile.isActiveExplore = false;
+  tile.explored = true;
+
+  // If you have player position fields, keep them in sync.
+  if (typeof zone.playerX === "number" || typeof zone.playerX === "undefined") {
+    zone.playerX = target.x;
+    zone.playerY = target.y;
+  }
+
+  return true;
+}
+
 // Reveal ONE unexplored explorable tile in a fixed order (top-left to bottom-right).
 // Returns true if something was revealed, false if zone is fully explored.
 function revealNextExplorableTileSequential(zone) {
@@ -597,8 +673,11 @@ window.ZoneDebug = {
   createZoneFromDefinition,
   getZoneExplorationStats,
   revealRandomExplorableTile,
-  revealNextExplorableTileSequential,
+  revealNextExplorableTileSequential, // old direct reveal (still available)
+  prepareNextExplorationTile,         // NEW: pre-mark next tile (for blinking)
+  revealPreparedExplorationTile,      // NEW: reveal the pre-marked tile
   ensureGeneratedZoneDefinitionForWorldTile,
 };
+
 
 
