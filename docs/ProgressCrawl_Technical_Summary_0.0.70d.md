@@ -388,4 +388,8 @@ Version **0.0.70d** builds the **content ecosystem layer** and populates the fir
 
 This patch transitions ProgressCrawl from generating “empty caves” into generating **living ecosystems** with entities, resources, and landmarks.
 
+EXTRA NOTES FROM DEVELOPER:
+- We need to add randomized min/max width and height and randomized fillChance in Zone Templates for variations.
+  In the future we will revise this depending on what type of zone it is (Caves should be more pathway-like while plains should be more open etc).
+
 **END OF DOCUMENT**
