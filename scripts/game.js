@@ -126,7 +126,7 @@ function scheduleNextZoneExplorationTick() {
   if (!zoneExplorationActive) return;
 
   // 2–5 seconds delay (2000–5000 ms)
-  const delay = 50 + Math.random() * 50;
+  const delay = 1000 + Math.random() * 2000;
 
   zoneExplorationTimerId = setTimeout(() => {
     runZoneExplorationTick();
@@ -273,7 +273,7 @@ function startZoneManualExploreOnce() {
   zoneManualExplorationActive = true;
 
   // Same 2–5s delay as auto
-  const delay = 50 + Math.random() * 50;
+  const delay = 1000 + Math.random() * 2000;
 
   zoneManualTimerId = setTimeout(() => {
     zoneManualTimerId = null;
