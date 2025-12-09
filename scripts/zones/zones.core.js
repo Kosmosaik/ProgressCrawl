@@ -44,6 +44,11 @@ function createZone({ id, name, width, height }) {
     height,
     tiles,
 
+    // 0.0.70c-qol — track the current "player" position in this zone.
+    // Null means "no position yet" (e.g. nothing explored so far).
+    playerX: null,
+    playerY: null,
+
     // 0.0.70d+ — content / state scaffolding
     // (will be filled from templates later)
     content: {
@@ -461,6 +466,10 @@ function revealRandomExplorableTile(zone) {
 
   const choice = candidates[Math.floor(Math.random() * candidates.length)];
   zone.tiles[choice.y][choice.x].explored = true;
+
+  // 0.0.70c-qol — move the "player" marker to this newly explored tile.
+  zone.playerX = choice.x;
+  zone.playerY = choice.y;
   
   return true;
 }
@@ -473,6 +482,11 @@ function revealNextExplorableTileSequential(zone) {
       const tile = zone.tiles[y][x];
       if (isTileExplorable(tile) && !tile.explored) {
         tile.explored = true;
+
+        // 0.0.70c-qol — update the player marker to this tile.
+        zone.playerX = x;
+        zone.playerY = y;
+
         return true; // <-- stop after revealing ONE tile
       }
     }
