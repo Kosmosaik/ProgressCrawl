@@ -46,7 +46,13 @@ function buildZoneGridString(zone) {
         ch = tile.explored ? "." : "?";
       }
 
-      html += `<span class="zone-cell" data-x="${x}" data-y="${y}">${ch}</span>`;
+      let extraClass = "";
+      if (tile.isActiveExplore && ch === "?") {
+        extraClass = " exploring-blink";
+      }
+      
+      html += `<span class="zone-cell${extraClass}" data-x="${x}" data-y="${y}">${ch}</span>`;
+
     }
     html += "<br>";
   }
