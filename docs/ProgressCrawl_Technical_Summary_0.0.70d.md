@@ -391,5 +391,9 @@ This patch transitions ProgressCrawl from generating “empty caves” into gene
 EXTRA NOTES FROM DEVELOPER:
 - We need to add randomized min/max width and height and randomized fillChance in Zone Templates for variations.
   In the future we will revise this depending on what type of zone it is (Caves should be more pathway-like while plains should be more open etc).
+- Resource Nodes, Entities etc will spawn with a random grade system (F0 -> S9). This grade system will determine the grade on the items/loot the player will get from the node/entity.
+  In the future, we will implement a system where the player can "improve" the node/loot before adding it to the inventory. There will be a "roll" function and then success/fail will
+  be determined based on the characters skills and knowledge in the entity, resource type, life skill (mining, foraging, skinning whatever) and tool qualities etc. We need to
+  keep this in mind when we're developing so we don't add other stuff that contradicts/collide with this vision.
 
 **END OF DOCUMENT**
