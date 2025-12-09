@@ -105,11 +105,13 @@ the full ecosystem of creatures, materials, and points of interest coming in 0.0
 - Updated templates system to support difficulty, biome, and era metadata
 
 ### Known Issues
-- Difficulty Rating is visible but not yet used for spawn balancing
-  (this begins in v0.0.70d).
-- Zone content (creatures, resources, POIs) is scaffolded but not yet populated.
 - Completed zones and visited zones use similar map symbols —  
   a clearer distinction will be added in a future update.
+- The "L" tile is always visible on the map. This will be changed so the tile only appears
+  when the player has explored adjacent tiles.
+- The "L" tile is always clickable. This will be changed to "click only when in idle state and "L" tile is discovered".
+- "Zone Completed" text is always visible even when you've not completed the zone.
+- Overview header in world map has no function (will be removed in future QoL update to save height space).
 
 ---
 
