@@ -36,7 +36,7 @@ function buildZoneGridString(zone) {
     for (let x = 0; x < zone.width; x++) {
       const tile = zone.tiles[y][x];
 
-      // Base character from tile kind + explored flag
+      // --- 1) Base character based on tile kind + explored ---
       let ch;
       if (tile.kind === "blocked") {
         ch = "#";
@@ -47,23 +47,27 @@ function buildZoneGridString(zone) {
         ch = tile.explored ? "." : "?";
       }
 
+      // --- 2) Base CSS class for the cell ---
       let classes = "zone-cell";
 
-      // If this tile is the one that will be explored after the delay,
-      // we keep it as "?" and give it a blinking CSS class.
-      if (tile.isActiveExplore && ch === "?") {
+      // --- 3) Blinking for the tile that WILL be explored next ---
+      // This is the "pending" tile (during the delay) and should:
+      // - show as "?"
+      // - have a special CSS class so it can blink
+      if (tile.isActiveExplore && !tile.explored) {
+        ch = "?";
         classes += " zone-cell-exploring";
       }
 
-      // Player marker: only override the character if this is the
-      // player position AND the tile is NOT the pending exploration target.
+      // --- 4) Player marker ☺ on the latest explored tile ---
+      // We draw the sprite based purely on zone.playerX / zone.playerY.
       const isPlayerHere =
         typeof zone.playerX === "number" &&
         typeof zone.playerY === "number" &&
         zone.playerX === x &&
         zone.playerY === y;
 
-      if (isPlayerHere && !tile.isActiveExplore) {
+      if (isPlayerHere) {
         ch = "☺";
       }
 
