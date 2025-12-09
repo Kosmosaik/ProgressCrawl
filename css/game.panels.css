@@ -701,3 +701,15 @@
   font-size: 0.85rem;
 }
 
+/* === Zone exploration: blinking tile === */
+.zone-cell-exploring {
+  animation: zoneExploringBlink 0.6s infinite;
+  font-weight: bold;
+}
+
+@keyframes zoneExploringBlink {
+  0%   { color: #ffffff; }
+  50%  { color: #000000; }
+  100% { color: #ffffff; }
+}
+
