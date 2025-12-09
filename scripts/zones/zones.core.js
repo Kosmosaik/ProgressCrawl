@@ -43,6 +43,19 @@ function createZone({ id, name, width, height }) {
     width,
     height,
     tiles,
+
+    // 0.0.70d+ — content / state scaffolding
+    // (will be filled from templates later)
+    content: {
+      resourceNodes: [],
+      entities: [],
+      pois: [],
+    },
+
+    // These already exist conceptually but we give them defaults
+    // so every zone object has a predictable shape.
+    defaultWeatherState: null,
+    lockedRegions: null, // will be set by locked-region helpers if needed
   };
 }
 
@@ -100,7 +113,9 @@ function createZoneFromDefinition(zoneId) {
         }
       }
     }
-
+    // After building tiles, prepare content scaffolding.
+    initializeZoneContent(zone, def);
+    
     return zone;
   }
 
@@ -154,6 +169,8 @@ function createZoneFromDefinition(zoneId) {
     if (typeof markZoneLockedSubregionsFromLayout === "function") {
       markZoneLockedSubregionsFromLayout(zone);
     }
+    // 0.0.70d — content scaffolding
+    initializeZoneContent(zone, def);    
     
     return zone;
   }
@@ -162,6 +179,29 @@ function createZoneFromDefinition(zoneId) {
     `createZoneFromDefinition: unsupported zone type "${def.type}" for zoneId="${zoneId}".`
   );
   return null;
+}
+
+// 0.0.70d — Zone content scaffolding.
+// This is where we will later populate zone.content based on templates:
+// entities, resource nodes, POIs, etc.
+function initializeZoneContent(zone, def) {
+  if (!zone) return;
+
+  // Ensure content object exists (in case older zones were created before
+  // we added it to createZone).
+  if (!zone.content) {
+    zone.content = {
+      resourceNodes: [],
+      entities: [],
+      pois: [],
+    };
+  }
+
+  // For now, we don't actually spawn anything.
+  // Later we will:
+  //  - Look up a template by def.templateId or zone.id
+  //  - Read entities/resources/pois spawn tables from ZONE_TEMPLATES
+  //  - Use the zone seed (or derived sub-seeds) for deterministic placement
 }
 
 // ----- Locked subregion helpers -----
