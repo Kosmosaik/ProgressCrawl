@@ -36,6 +36,7 @@ function buildZoneGridString(zone) {
     for (let x = 0; x < zone.width; x++) {
       const tile = zone.tiles[y][x];
 
+      // Base character based on tile kind
       let ch;
       if (tile.kind === "blocked") {
         ch = "#";
@@ -46,18 +47,28 @@ function buildZoneGridString(zone) {
         ch = tile.explored ? "." : "?";
       }
 
-      // 0.0.70c-qol — draw the "player" marker on the latest explored tile.
-      // We only override the character if we actually have a player position.
+      // Base CSS class for all cells
+      let classes = "zone-cell";
+
+      // If this tile is the one currently being explored, we:
+      //  - force it to display as "?"
+      //  - add a special CSS class so it can blink
+      if (tile.isActiveExplore) {
+        ch = "?";
+        classes += " zone-cell-exploring";
+      }
+
+      // Player marker (☺) on the latest explored tile
       if (
         typeof zone.playerX === "number" &&
         typeof zone.playerY === "number" &&
         zone.playerX === x &&
         zone.playerY === y
       ) {
-        ch = "☺"; // You can also use '&#9786;' if encoding gives trouble.
+        ch = "☺";
       }
 
-      html += `<span class="zone-cell" data-x="${x}" data-y="${y}">${ch}</span>`;
+      html += `<span class="${classes}" data-x="${x}" data-y="${y}">${ch}</span>`;
     }
     html += "<br>";
   }
