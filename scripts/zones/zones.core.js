@@ -477,20 +477,6 @@ function clearTileActiveExploreFlags(zone) {
   }
 }
 
-// Clear the "this tile will be explored next" flag on all tiles.
-function clearTileActiveExploreFlags(zone) {
-  if (!zone || !zone.tiles) return;
-
-  for (let y = 0; y < zone.height; y++) {
-    for (let x = 0; x < zone.width; x++) {
-      const t = zone.tiles[y][x];
-      if (t && t.isActiveExplore) {
-        t.isActiveExplore = false;
-      }
-    }
-  }
-}
-
 // Find the current player position in this zone based on tile.hasPlayer.
 // Returns { x, y } or null if not found yet.
 function findZonePlayerPosition(zone) {
