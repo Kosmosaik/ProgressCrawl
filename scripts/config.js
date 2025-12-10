@@ -3,10 +3,6 @@
 const GAME_CONFIG = {
   version: "0.0.70c2-dev",
 
-  zone: {
-  movementTilesPerSecond: 6,
-  }
-
   loot: {
     // Progress bar behavior
     progressDuration: 0.5,  // seconds for a full loot tick
