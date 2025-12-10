@@ -491,6 +491,54 @@ function clearTileActiveExploreFlags(zone) {
   }
 }
 
+// Find the current player position in this zone based on tile.hasPlayer.
+// Returns { x, y } or null if not found yet.
+function findZonePlayerPosition(zone) {
+  if (!zone || !zone.tiles) return null;
+
+  for (let y = 0; y < zone.height; y++) {
+    for (let x = 0; x < zone.width; x++) {
+      const t = zone.tiles[y][x];
+      if (t && t.hasPlayer) {
+        return { x, y };
+      }
+    }
+  }
+  return null;
+}
+
+// Check if tile at (x, y) has at least one 4-direction neighbor
+// that is already explored or currently has the player on it.
+// Used to build a "frontier" of natural expansion tiles.
+function tileHasExploredOrPlayerNeighbor(zone, x, y) {
+  if (!zone || !zone.tiles) return false;
+
+  const dirs = [
+    { dx:  1, dy:  0 },
+    { dx: -1, dy:  0 },
+    { dx:  0, dy:  1 },
+    { dx:  0, dy: -1 },
+  ];
+
+  for (let i = 0; i < dirs.length; i++) {
+    const nx = x + dirs[i].dx;
+    const ny = y + dirs[i].dy;
+
+    if (ny < 0 || ny >= zone.height || nx < 0 || nx >= zone.width) {
+      continue;
+    }
+
+    const neighbor = zone.tiles[ny][nx];
+    if (!neighbor) continue;
+
+    if (neighbor.explored || neighbor.hasPlayer) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // Mark the next explorable tile as "pending exploration" (for blinking).
 // Does NOT set tile.explored; it just marks tile.isActiveExplore = true.
 // Returns true if a tile was marked, false if none were found.
@@ -500,17 +548,73 @@ function prepareNextExplorationTile(zone) {
   // Only one tile should ever be marked as "next".
   clearTileActiveExploreFlags(zone);
 
+  // 1) Try to base exploration around the current player position,
+  // so it feels like a "walk" instead of random teleports.
+  const playerPos = findZonePlayerPosition(zone);
+
+  const frontier = [];
+  const fallback = [];
+
   for (let y = 0; y < zone.height; y++) {
     for (let x = 0; x < zone.width; x++) {
       const tile = zone.tiles[y][x];
-      if (isTileExplorable(tile) && !tile.explored) {
-        tile.isActiveExplore = true;
-        return true;
+
+      // Only consider tiles that *could* be explored.
+      if (!isTileExplorable(tile) || tile.explored) {
+        continue;
+      }
+
+      // Tiles that are directly adjacent to explored/player tiles
+      // are "frontier" candidates.
+      if (tileHasExploredOrPlayerNeighbor(zone, x, y)) {
+        let dist = 0;
+        if (playerPos) {
+          dist = Math.abs(playerPos.x - x) + Math.abs(playerPos.y - y);
+        }
+        frontier.push({ x, y, dist });
+      } else {
+        // Still remember them as a fallback in case the frontier is empty.
+        fallback.push({ x, y });
       }
     }
   }
 
-  return false;
+  let choice = null;
+
+  if (frontier.length > 0) {
+    // Prefer tiles that are close to the player, but keep a bit of randomness.
+    if (playerPos) {
+      let minDist = frontier[0].dist;
+      for (let i = 1; i < frontier.length; i++) {
+        if (frontier[i].dist < minDist) {
+          minDist = frontier[i].dist;
+        }
+      }
+
+      // Allow a small "band" around the closest distance so the path
+      // doesn't look like a perfect straight line.
+      const band = frontier.filter(f => f.dist <= minDist + 1);
+      choice = band[Math.floor(Math.random() * band.length)];
+    } else {
+      // No player yet (first tile): just pick a random frontier tile.
+      const idx = Math.floor(Math.random() * frontier.length);
+      choice = frontier[idx];
+    }
+  } else if (fallback.length > 0) {
+    // No frontier tiles (this mainly happens at the very start of a zone).
+    // Fall back to "any unexplored explorable tile", but choose randomly.
+    const idx = Math.floor(Math.random() * fallback.length);
+    choice = fallback[idx];
+  }
+
+  if (!choice) {
+    // Nothing left to explore.
+    return false;
+  }
+
+  const targetTile = zone.tiles[choice.y][choice.x];
+  targetTile.isActiveExplore = true;
+  return true;
 }
 
 // Reveal the tile that was previously marked by prepareNextExplorationTile.
