@@ -181,11 +181,13 @@ function findPathToPreparedTile(zone) {
       const tile = zone.tiles[ny][nx];
       if (!tile) continue;
 
-      // Only allow moving through non-blocked tiles.
-      if (tile.kind === "blocked") continue;
+      const isTarget = (nx === tx && ny === ty);
 
-      visited[ny][nx] = true;
-      queue.push({ x: nx, y: ny, prev: node });
+      // Only allow moving through:
+      //  - non-blocked tiles
+      //  - that are already explored OR are the target tile.
+      if (tile.kind === "blocked") continue;
+      if (!tile.explored && !tile.hasPlayer && !isTarget) continue;
     }
   }
 
