@@ -55,10 +55,10 @@ This gives players a clear sense of progress and anticipation.
 ---
 
 ## 📌 What’s Coming Next
-These items are planned for a future QoL pass:
+These items are planned for a future QoL pass before we continue with adding resources/entities/pois:
 
 - Hidden “L” tiles until discovered nearby.
-- A proper view‑distance system (torches, light radius, etc.).
+- A proper view‑distance system (in preparation for torches, light radius, etc.).
 - Cleanup of unused buttons and small UI improvements.
 
 ---
