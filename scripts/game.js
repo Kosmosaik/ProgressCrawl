@@ -102,6 +102,17 @@ let zoneExplorationTimerId = null;
 let zoneManualExplorationActive = false;
 let zoneManualTimerId = null;
 
+// ----- Zone movement (character walking between tiles) -----
+let zoneMovementActive = false;
+let zoneMovementTimerId = null;
+let zoneMovementPath = null;
+let zoneMovementOnArrival = null;
+
+// Movement speed: tiles per second. You can override this in GAME_CONFIG.zone
+// by adding "movementTilesPerSecond" there.
+const ZONE_MOVEMENT_TILES_PER_SECOND =
+  (GAME_CONFIG.zone && GAME_CONFIG.zone.movementTilesPerSecond) || 4;
+
 // Shared generic messages for exploration
 const ZONE_GENERIC_MESSAGES = [
   "You uncover a patch of ground.",
