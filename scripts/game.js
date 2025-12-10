@@ -102,6 +102,9 @@ let zoneExplorationTimerId = null;
 let zoneManualExplorationActive = false;
 let zoneManualTimerId = null;
 
+// Delay timer while a tile is being explored
+let zoneExploreDelayTimerId = null;
+
 // ----- Zone movement (character walking between tiles) -----
 let zoneMovementActive = false;
 let zoneMovementTimerId = null;
@@ -444,6 +447,7 @@ function beginZoneExplorationCycle() {
       runZoneExplorationTick();
     });
   });
+}
 
 function runZoneExplorationTick() {
   if (!zoneExplorationActive || !isInZone || !currentZone) {
