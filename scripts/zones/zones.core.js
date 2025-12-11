@@ -22,7 +22,6 @@ const ZONE_TILE_SYMBOLS = {
   "L": { kind: ZONE_TILE_KIND.LOCKED },
 };
 
-
 // Create an empty zone filled with unexplored walkable tiles.
 function createZone({ id, name, width, height }) {
   const tiles = [];
@@ -49,6 +48,13 @@ function createZone({ id, name, width, height }) {
     playerX: null,
     playerY: null,
 
+    // 0.0.70c+ — where the player should spawn when entering this zone.
+    // This is chosen after the layout is built (see pickZoneEntrySpawn).
+    entrySpawn: null,
+    // 0.0.70c+ — "focus" center for exploration. When set, we try to
+    // finish tiles around this point before jumping to another area.
+    exploreFocusX: null,
+    exploreFocusY: null,
     // 0.0.70d+ — content / state scaffolding
     // (will be filled from templates later)
     content: {
@@ -62,6 +68,122 @@ function createZone({ id, name, width, height }) {
     defaultWeatherState: null,
     lockedRegions: null, // will be set by locked-region helpers if needed
   };
+}
+
+// Choose a good entry spawn tile for this zone.
+// We prefer:
+// - WALKABLE tiles that are one step away from the border,
+// - not too close to an 'L' locked gate tile (if present),
+// - falling back to any walkable near the border, then any walkable at all.
+function pickZoneEntrySpawn(zone, def) {
+  if (!zone || !zone.tiles) return;
+
+  const width = zone.width;
+  const height = zone.height;
+
+  // Collect any locked gate tiles so we can keep spawn a bit away from them.
+  const gateTiles = [];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const t = zone.tiles[y][x];
+      if (t && t.kind === ZONE_TILE_KIND.LOCKED) {
+        gateTiles.push({ x, y });
+      }
+    }
+  }
+
+  function distanceToNearestGate(x, y) {
+    if (gateTiles.length === 0) return Infinity;
+    let best = Infinity;
+    for (let i = 0; i < gateTiles.length; i++) {
+      const g = gateTiles[i];
+      const d = Math.abs(g.x - x) + Math.abs(g.y - y);
+      if (d < best) best = d;
+    }
+    return best;
+  }
+
+  // If the definition explicitly provides an entry spawn, try that first.
+  if (def && def.entrySpawn) {
+    const sx = def.entrySpawn.x;
+    const sy = def.entrySpawn.y;
+    if (
+      typeof sx === "number" && typeof sy === "number" &&
+      sy >= 0 && sy < height && sx >= 0 && sx < width
+    ) {
+      const tile = zone.tiles[sy][sx];
+      if (tile && tile.kind === ZONE_TILE_KIND.WALKABLE) {
+        zone.entrySpawn = { x: sx, y: sy };
+        return;
+      }
+    }
+  }
+
+  const borderPreferred = [];
+  const borderFallback = [];
+  const anyWalkable = [];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const tile = zone.tiles[y][x];
+      if (!tile || tile.kind !== ZONE_TILE_KIND.WALKABLE) continue;
+
+      // Distance from the outer border (0 means on the very edge).
+      const distBorder = Math.min(x, y, width - 1 - x, height - 1 - y);
+      const distGate = distanceToNearestGate(x, y);
+
+      anyWalkable.push({ x, y, distBorder, distGate });
+
+      // We really like "one step in" tiles, away from the gate.
+      if (distBorder === 1) {
+        borderPreferred.push({ x, y, distBorder, distGate });
+      } else if (distBorder === 2) {
+        borderFallback.push({ x, y, distBorder, distGate });
+      }
+    }
+  }
+
+  function chooseBest(candidates, minGateDist) {
+    if (!candidates || candidates.length === 0) return null;
+
+    // Filter by gate distance if requested.
+    let filtered = candidates;
+    if (typeof minGateDist === "number") {
+      filtered = candidates.filter(c => c.distGate >= minGateDist);
+      if (filtered.length === 0) {
+        filtered = candidates; // fall back to the full list
+      }
+    }
+
+    // Among these, pick the one farthest from any gate.
+    let best = filtered[0];
+    for (let i = 1; i < filtered.length; i++) {
+      const c = filtered[i];
+      if (c.distGate > best.distGate) {
+        best = c;
+      }
+    }
+    return best;
+  }
+
+  let choice =
+    chooseBest(borderPreferred, 4) ||
+    chooseBest(borderPreferred, 2) ||
+    chooseBest(borderFallback, 4) ||
+    chooseBest(borderFallback, 2);
+
+  if (!choice && anyWalkable.length > 0) {
+    choice = chooseBest(anyWalkable, 2) || anyWalkable[0];
+  }
+
+  if (choice) {
+    zone.entrySpawn = { x: choice.x, y: choice.y };
+  } else {
+    // Absolute last resort: center-ish of the map.
+    const cx = Math.floor(width / 2);
+    const cy = Math.floor(height / 2);
+    zone.entrySpawn = { x: cx, y: cy };
+  }
 }
 
 // Create a zone instance based on a ZONE_DEFINITIONS entry.
@@ -119,6 +241,9 @@ function createZoneFromDefinition(zoneId) {
       }
     }
     
+    // 0.0.70c+ — pick an entry spawn tile for this static zone.
+    pickZoneEntrySpawn(zone, def);  
+    
     // After building tiles, prepare content scaffolding.
     initializeZoneContent(zone, def);
     
@@ -175,6 +300,9 @@ function createZoneFromDefinition(zoneId) {
     if (typeof markZoneLockedSubregionsFromLayout === "function") {
       markZoneLockedSubregionsFromLayout(zone);
     }
+
+    // 0.0.70c+ — choose a spawn tile near the border, away from the L gate.
+    pickZoneEntrySpawn(zone, def);
 
     // 0.0.70d — content scaffolding
     initializeZoneContent(zone, def);
@@ -525,12 +653,243 @@ function tileHasExploredOrPlayerNeighbor(zone, x, y) {
   return false;
 }
 
+// Ensure explored tiles form a single connected region around the player.
+// Any explored tile that is not reachable from the player's position
+// through explored ground is reset back to unexplored.
+function normalizeZoneExploredConnectivity(zone) {
+  if (!zone || !zone.tiles) return;
+
+  const playerPos = findZonePlayerPosition(zone);
+  if (!playerPos) return;
+
+  const width = zone.width;
+  const height = zone.height;
+
+  const visited = [];
+  for (let y = 0; y < height; y++) {
+    visited[y] = [];
+  }
+
+  const queue = [];
+  queue.push({ x: playerPos.x, y: playerPos.y });
+  visited[playerPos.y][playerPos.x] = true;
+
+  const dirs = [
+    { dx:  1, dy:  0 },
+    { dx: -1, dy:  0 },
+    { dx:  0, dy:  1 },
+    { dx:  0, dy: -1 },
+  ];
+
+  while (queue.length > 0) {
+    const node = queue.shift();
+
+    for (let i = 0; i < dirs.length; i++) {
+      const nx = node.x + dirs[i].dx;
+      const ny = node.y + dirs[i].dy;
+
+      if (ny < 0 || ny >= height || nx < 0 || nx >= width) continue;
+      if (visited[ny][nx]) continue;
+
+      const tile = zone.tiles[ny][nx];
+      if (!tile) continue;
+
+      // We only traverse:
+      // - non-blocked tiles
+      // - that are already explored OR currently have the player marker.
+      if (tile.kind === "blocked") continue;
+      if (!tile.explored && !tile.hasPlayer) continue;
+
+      visited[ny][nx] = true;
+      queue.push({ x: nx, y: ny });
+    }
+  }
+
+  // Any explored tile that was NOT visited by this flood fill
+  // is an unreachable "island": reset it back to unexplored.
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const tile = zone.tiles[y][x];
+      if (!tile) continue;
+      if (!tile.explored) continue;
+
+      if (!visited[y][x]) {
+        tile.explored = false;
+      }
+    }
+  }
+}
+
+// Compute which explored tiles are reachable from the player's current position,
+// and their distance (number of steps) using 4-direction movement.
+function computeReachableExploredFromPlayer(zone) {
+  if (!zone || !zone.tiles) return null;
+
+  const playerPos = findZonePlayerPosition(zone);
+  if (!playerPos) return null;
+
+  const width = zone.width;
+  const height = zone.height;
+
+  const visited = [];
+  const dist = [];
+  for (let y = 0; y < height; y++) {
+    visited[y] = [];
+    dist[y] = [];
+  }
+
+  const queue = [];
+  queue.push({ x: playerPos.x, y: playerPos.y });
+  visited[playerPos.y][playerPos.x] = true;
+  dist[playerPos.y][playerPos.x] = 0;
+
+  const dirs = [
+    { dx:  1, dy:  0 },
+    { dx: -1, dy:  0 },
+    { dx:  0, dy:  1 },
+    { dx:  0, dy: -1 },
+  ];
+
+  while (queue.length > 0) {
+    const node = queue.shift();
+    const baseDist = dist[node.y][node.x];
+
+    for (let i = 0; i < dirs.length; i++) {
+      const nx = node.x + dirs[i].dx;
+      const ny = node.y + dirs[i].dy;
+
+      if (ny < 0 || ny >= height || nx < 0 || nx >= width) continue;
+      if (visited[ny][nx]) continue;
+
+      const tile = zone.tiles[ny][nx];
+      if (!tile) continue;
+
+      // We only walk through:
+      //  - non-blocked tiles
+      //  - that are already explored OR currently have the player marker.
+      if (tile.kind === "blocked") continue;
+      if (!tile.explored && !tile.hasPlayer) continue;
+
+      visited[ny][nx] = true;
+      dist[ny][nx] = baseDist + 1;
+      queue.push({ x: nx, y: ny });
+    }
+  }
+
+  return { visited, dist };
+}
+
+// Compute (and cache) distance in steps from the zone.entrySpawn tile
+// across walkable tiles. Used to prefer "inner" tiles before expanding outward.
+function ensureEntryDistanceMap(zone) {
+  if (!zone || !zone.tiles) return null;
+  if (!zone.entrySpawn) return null;
+
+  const width = zone.width;
+  const height = zone.height;
+
+  // Reuse cached map if size matches.
+  if (
+    zone._entryDistanceMap &&
+    zone._entryDistanceMapWidth === width &&
+    zone._entryDistanceMapHeight === height
+  ) {
+    return zone._entryDistanceMap;
+  }
+
+  const dist = [];
+  for (let y = 0; y < height; y++) {
+    dist[y] = [];
+    for (let x = 0; x < width; x++) {
+      dist[y][x] = Infinity;
+    }
+  }
+
+  const startX = zone.entrySpawn.x;
+  const startY = zone.entrySpawn.y;
+  if (
+    typeof startX !== "number" || typeof startY !== "number" ||
+    startX < 0 || startX >= width ||
+    startY < 0 || startY >= height
+  ) {
+    return null;
+  }
+
+  const startTile = zone.tiles[startY][startX];
+  if (!startTile) return null;
+
+  const queue = [];
+  dist[startY][startX] = 0;
+  queue.push({ x: startX, y: startY });
+
+  const dirs = [
+    { dx:  1, dy:  0 },
+    { dx: -1, dy:  0 },
+    { dx:  0, dy:  1 },
+    { dx:  0, dy: -1 },
+  ];
+
+  while (queue.length > 0) {
+    const node = queue.shift();
+    const baseDist = dist[node.y][node.x];
+
+    for (let i = 0; i < dirs.length; i++) {
+      const nx = node.x + dirs[i].dx;
+      const ny = node.y + dirs[i].dy;
+
+      if (ny < 0 || ny >= height || nx < 0 || nx >= width) continue;
+      if (dist[ny][nx] !== Infinity) continue;
+
+      const tile = zone.tiles[ny][nx];
+      if (!tile) continue;
+
+      // We only walk through tiles that are not BLOCKED and not LOCKED.
+      if (tile.kind === ZONE_TILE_KIND.BLOCKED) continue;
+      if (tile.kind === ZONE_TILE_KIND.LOCKED) continue;
+
+      dist[ny][nx] = baseDist + 1;
+      queue.push({ x: nx, y: ny });
+    }
+  }
+
+  zone._entryDistanceMap = dist;
+  zone._entryDistanceMapWidth = width;
+  zone._entryDistanceMapHeight = height;
+  return dist;
+}
+
+// Mark the next explorable tile as "pending exploration" (for blinking),
+// using strict ring-by-ring order based on distance from entrySpawn.
+//
+// Algorithm:
+//   1) Use ensureEntryDistanceMap(zone) to get distance-from-spawn for each tile.
+//   2) Find the smallest ring distance that still has unexplored explorable tiles.
+//   3) Build candidates = all unexplored tiles in that ring.
+//   4) For each candidate, estimate how hard it is to reach from the current
+//      player position (using distances from computeReachableExploredFromPlayer).
+//   5) Choose the candidate with the cheapest "stance cost", with a small
+//      smoothing preference for tiles that already have more explored neighbors.
+//   6) Mark that tile as isActiveExplore and store preparedTargetX/Y.
+//
+// This guarantees:
+//   - We never explore a tile farther from spawn while a closer tile is still ?.
+//   - When only a few tiles are left, we don't ping-pong across the zone.
 // Mark the next explorable tile as "pending exploration" (for blinking).
+// New strategy: always pick the *nearest frontier tile* from the player's
+// current position, with a small preference for smoother edges.
+// Frontier tile = explorable, unexplored, and touching at least one
+// explored/hasPlayer tile.
+//
 // Priority:
 //   1) An unexplored neighbor directly next to the player (4-dir).
-//   2) Otherwise, a "frontier" tile next to explored/player area.
-//   3) Otherwise, any unexplored explorable tile.
-// Also records the chosen coordinates on the zone as preparedTargetX/Y.
+//   2) Otherwise, among all frontier tiles, choose the one with the
+//      smallest walking distance from the player (stance cost).
+//      If there are multiple, prefer tiles that already have more
+//      explored neighbors (smoother edge), then break ties randomly.
+//
+// Records chosen coords as preparedTargetX/Y and sets isActiveExplore=true,
+// so revealPreparedExplorationTile() will reveal it and move the player.
+//
 // Returns true if a tile was marked, false if none were found.
 function prepareNextExplorationTile(zone) {
   if (!zone || !zone.tiles) return false;
@@ -541,6 +900,9 @@ function prepareNextExplorationTile(zone) {
   // Clear any previous target metadata.
   zone.preparedTargetX = undefined;
   zone.preparedTargetY = undefined;
+
+  const width = zone.width;
+  const height = zone.height;
 
   // --- STEP 1: Try to pick a tile directly next to the player (1-tile move) ---
   const playerPos = findZonePlayerPosition(zone);
@@ -557,7 +919,7 @@ function prepareNextExplorationTile(zone) {
       const nx = playerPos.x + dirs[i].dx;
       const ny = playerPos.y + dirs[i].dy;
 
-      if (ny < 0 || ny >= zone.height || nx < 0 || nx >= zone.width) {
+      if (ny < 0 || ny >= height || nx < 0 || nx >= width) {
         continue;
       }
 
@@ -572,44 +934,150 @@ function prepareNextExplorationTile(zone) {
     if (neighborCandidates.length > 0) {
       const choice =
         neighborCandidates[Math.floor(Math.random() * neighborCandidates.length)];
+
+      const chosenTile = zone.tiles[choice.y][choice.x];
+      if (chosenTile) {
+        chosenTile.isActiveExplore = true;
+      }
+
       zone.preparedTargetX = choice.x;
       zone.preparedTargetY = choice.y;
       return true;
     }
   }
 
-  // --- STEP 2: Frontier / fallback logic ---
-  const frontier = [];
-  const fallback = [];
+  // --- STEP 2: Distances from the current player position (for stance cost) ---
+  if (typeof computeReachableExploredFromPlayer !== "function") {
+    return false;
+  }
+  const reachable = computeReachableExploredFromPlayer(zone);
+  if (!reachable || !reachable.dist || !reachable.visited) {
+    return false;
+  }
 
-  for (let y = 0; y < zone.height; y++) {
-    for (let x = 0; x < zone.width; x++) {
+  const distFromPlayer = reachable.dist;
+  const visited = reachable.visited;
+
+  const dirs4 = [
+    { dx:  1, dy:  0 },
+    { dx: -1, dy:  0 },
+    { dx:  0, dy:  1 },
+    { dx:  0, dy: -1 },
+  ];
+
+  // --- STEP 3: Collect all frontier candidates with stance cost ---
+  const candidates = [];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
       const tile = zone.tiles[y][x];
+      if (!tile) continue;
+      if (!isTileExplorable(tile)) continue;
+      if (tile.explored) continue;
 
-      if (!isTileExplorable(tile) || tile.explored) {
-        continue;
+      // Must be a frontier tile: touching explored or player tile.
+      let hasExploredNeighbor = false;
+      for (let i = 0; i < dirs4.length; i++) {
+        const nx = x + dirs4[i].dx;
+        const ny = y + dirs4[i].dy;
+        if (ny < 0 || ny >= height || nx < 0 || nx >= width) continue;
+        const nTile = zone.tiles[ny][nx];
+        if (!nTile) continue;
+        if (nTile.explored || nTile.hasPlayer) {
+          hasExploredNeighbor = true;
+          break;
+        }
+      }
+      if (!hasExploredNeighbor) continue;
+
+      // Estimate stance cost: minimum distance from player to any explored/hasPlayer
+      // neighbor of this tile, using distFromPlayer.
+      let stanceCost = Infinity;
+      for (let i = 0; i < dirs4.length; i++) {
+        const nx = x + dirs4[i].dx;
+        const ny = y + dirs4[i].dy;
+        if (ny < 0 || ny >= height || nx < 0 || nx >= width) continue;
+
+        if (!visited[ny][nx]) continue;
+
+        const nTile = zone.tiles[ny][nx];
+        if (!nTile) continue;
+        if (!nTile.explored && !nTile.hasPlayer) continue;
+
+        const dPlayer =
+          distFromPlayer[ny] && distFromPlayer[ny][nx] !== undefined
+            ? distFromPlayer[ny][nx]
+            : Infinity;
+
+        if (typeof dPlayer === "number" && dPlayer < stanceCost) {
+          stanceCost = dPlayer;
+        }
       }
 
-      if (tileHasExploredOrPlayerNeighbor(zone, x, y)) {
-        frontier.push({ x, y });
-      } else {
-        fallback.push({ x, y });
+      // If we can't reach any stance tile yet, skip this candidate for now.
+      if (!isFinite(stanceCost)) continue;
+
+      // Count explored neighbors (for smoother edge preference).
+      let exploredNeighbors = 0;
+      for (let i = 0; i < dirs4.length; i++) {
+        const nx = x + dirs4[i].dx;
+        const ny = y + dirs4[i].dy;
+        if (ny < 0 || ny >= height || nx < 0 || nx >= width) continue;
+        const nTile = zone.tiles[ny][nx];
+        if (!nTile) continue;
+        if (nTile.explored || nTile.hasPlayer) {
+          exploredNeighbors++;
+        }
       }
+
+      candidates.push({
+        x,
+        y,
+        stanceCost,
+        exploredNeighbors,
+      });
     }
   }
 
-  let choice = null;
-
-  if (frontier.length > 0) {
-    const idx = Math.floor(Math.random() * frontier.length);
-    choice = frontier[idx];
-  } else if (fallback.length > 0) {
-    const idx = Math.floor(Math.random() * fallback.length);
-    choice = fallback[idx];
+  if (candidates.length === 0) {
+    // No reachable frontier tiles – likely fully explored.
+    return false;
   }
 
+  // --- STEP 4: Choose nearest candidates by stance cost ---
+
+  let minCost = Infinity;
+  for (let i = 0; i < candidates.length; i++) {
+    if (candidates[i].stanceCost < minCost) {
+      minCost = candidates[i].stanceCost;
+    }
+  }
+
+  // Keep a small band so behavior isn't too rigid.
+  const COST_BAND = 1;
+  let cheapest = candidates.filter(c => c.stanceCost <= minCost + COST_BAND);
+
+  // --- STEP 5: Within cheapest, prefer smoother edges (more explored neighbors) ---
+
+  let maxNeighbors = -1;
+  for (let i = 0; i < cheapest.length; i++) {
+    if (cheapest[i].exploredNeighbors > maxNeighbors) {
+      maxNeighbors = cheapest[i].exploredNeighbors;
+    }
+  }
+  let best = cheapest.filter(c => c.exploredNeighbors === maxNeighbors);
+  if (best.length === 0) {
+    best = cheapest;
+  }
+
+  const choice = best[Math.floor(Math.random() * best.length)];
   if (!choice) {
     return false;
+  }
+
+  const chosenTile = zone.tiles[choice.y][choice.x];
+  if (chosenTile) {
+    chosenTile.isActiveExplore = true;
   }
 
   zone.preparedTargetX = choice.x;

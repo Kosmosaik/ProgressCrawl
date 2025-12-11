@@ -77,15 +77,46 @@ function enterZoneFromWorldMap(x, y) {
     console.error("enterZoneFromWorldMap: failed to create zone", tile.zoneId);
     return;
   }
-
+  
   // Switch state to the new zone
   currentZone = newZone;
   isInZone = true;
+
+  // 0.0.70c+ — place the player on the zone's entry spawn tile immediately.
+  if (currentZone.entrySpawn && currentZone.tiles) {
+    const sx = currentZone.entrySpawn.x;
+    const sy = currentZone.entrySpawn.y;
+    if (
+      typeof sx === "number" && typeof sy === "number" &&
+      sy >= 0 && sy < currentZone.height &&
+      sx >= 0 && sx < currentZone.width
+    ) {
+      const spawnTile = currentZone.tiles[sy][sx];
+      if (spawnTile) {
+        // Reveal the spawn tile and set the player marker.
+        spawnTile.explored = true;
+        setZonePlayerPosition(currentZone, sx, sy);
+        currentZone.playerX = sx;
+        currentZone.playerY = sy;
+      }
+    } else {
+      console.warn(
+        "enterZoneFromWorldMap: entrySpawn out of bounds",
+        currentZone.entrySpawn
+      );
+    }
+  }
+
+  // 0.0.70c+ — cleanup: remove unreachable explored islands created by old logic.
+  if (typeof normalizeZoneExploredConnectivity === "function") {
+    normalizeZoneExploredConnectivity(currentZone);
+  }
 
   // Update fog and current position on the world map
   if (tile.fogState !== WORLD_FOG_STATE.VISITED) {
     tile.fogState = WORLD_FOG_STATE.VISITED;
   }
+
   worldMap.currentX = x;
   worldMap.currentY = y;
 
@@ -442,8 +473,20 @@ function beginZoneExplorationCycle() {
 
   const path = findPathToPreparedTile(currentZone);
 
-  if (!path || path.length === 0) {
-    // Already on that tile: just run the explore delay + reveal.
+  if (!path) {
+    console.warn("beginZoneExplorationCycle: no path to prepared tile; stopping auto exploration.");
+    stopZoneExplorationTicks();
+    if (typeof addZoneMessage === "function") {
+      addZoneMessage("You can't reach that area yet.");
+    }
+    if (typeof renderZoneUI === "function") {
+      renderZoneUI();
+    }
+    return;
+  }
+
+  if (path.length === 0) {
+    // Already in stance position next to the target: skip walking.
     startZoneExploreDelay(() => {
       runZoneExplorationTick();
     });
@@ -659,6 +702,18 @@ function startZoneManualExploreOnce() {
   }
 
   const path = findPathToPreparedTile(currentZone);
+
+  if (!path) {
+    // No path from the player to this target using known ground.
+    if (typeof addZoneMessage === "function") {
+      addZoneMessage("You can't reach that area yet.");
+    }
+    if (typeof renderZoneUI === "function") {
+      renderZoneUI();
+    }
+    return;
+  }
+
   zoneManualExplorationActive = true;
 
   const finishManualExplore = () => {
@@ -669,7 +724,7 @@ function startZoneManualExploreOnce() {
     }
   };
 
-  if (!path || path.length === 0) {
+  if (path.length === 0) {
     // Already on the tile: just run the explore delay + reveal.
     startZoneExploreDelay(finishManualExplore);
     return;
