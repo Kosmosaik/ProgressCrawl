@@ -1067,7 +1067,7 @@ function prepareNextExplorationTile(zone) {
   }
 
   // 3) And finally, prefer smoother edges (more explored neighbors).
-  let best = candidates.filter(info => info.exploredNeighbors >= 1);
+  let best = candidates.filter(info => info.exploredNeighbors >= 3);
   if (best.length === 0) {
     best = candidates.filter(info => info.exploredNeighbors >= 2);
   }
