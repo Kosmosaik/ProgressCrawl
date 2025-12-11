@@ -833,8 +833,6 @@ function prepareNextExplorationTile(zone) {
   }
 
   // --- STEP 2: Connectivity-aware frontier selection ---
-  // We only want to consider unexplored tiles that are adjacent to tiles
-  // that are actually reachable from the player's current explored blob.
   const reachable = computeReachableExploredFromPlayer(zone);
   if (!reachable || !reachable.visited) {
     return false;
@@ -843,9 +841,6 @@ function prepareNextExplorationTile(zone) {
   const visited = reachable.visited;
   const dist = reachable.dist;
 
-  // For each reachable explored tile, look at its neighbors and collect
-  // unexplored explorable tiles as "frontier" tiles. We also remember the
-  // distance from the player so we can bias our choice.
   const frontier = [];
   const frontierBestDist = [];
   for (let y = 0; y < height; y++) {
@@ -879,14 +874,11 @@ function prepareNextExplorationTile(zone) {
         if (!isTileExplorable(tile)) continue;
         if (tile.explored) continue;
 
-        // Approximate distance from player to this frontier tile as the
-        // distance to the explored tile plus one.
         const candidateDist = baseDist + 1;
 
         if (candidateDist < frontierBestDist[ny][nx]) {
           frontierBestDist[ny][nx] = candidateDist;
 
-          // First time we see this tile, push it into the list.
           if (!frontier.some(p => p.x === nx && p.y === ny)) {
             frontier.push({ x: nx, y: ny });
           }
@@ -896,32 +888,45 @@ function prepareNextExplorationTile(zone) {
   }
 
   if (frontier.length === 0) {
-    // No reachable frontier tiles – zone is probably fully explored for this blob.
+    // No reachable frontier tiles – likely fully explored.
     return false;
   }
 
-  // --- STEP 3: Distance-biased choice among frontier tiles ---
-  let minDist = Infinity;
+  // --- STEP 3: Strong local bias around the player ---
+  const LOCAL_RADIUS = 4; // tiles within this distance are "nearby"
+  const localFrontier = [];
   for (let i = 0; i < frontier.length; i++) {
     const p = frontier[i];
+    const d = frontierBestDist[p.y][p.x];
+    if (d <= LOCAL_RADIUS) {
+      localFrontier.push(p);
+    }
+  }
+
+  // If there are nearby frontier tiles, only consider those.
+  const frontierToUse = localFrontier.length > 0 ? localFrontier : frontier;
+
+  // Among the chosen frontier set, prefer the very closest band.
+  let minDist = Infinity;
+  for (let i = 0; i < frontierToUse.length; i++) {
+    const p = frontierToUse[i];
     const d = frontierBestDist[p.y][p.x];
     if (d < minDist) {
       minDist = d;
     }
   }
 
-  // Build a pool of tiles that are among the closest ones.
+  const maxBandDist = minDist + 1; // small band around the closest distance
   const band = [];
-  const maxBandDist = minDist + 1; // allow a small "band" around the closest
-  for (let i = 0; i < frontier.length; i++) {
-    const p = frontier[i];
+  for (let i = 0; i < frontierToUse.length; i++) {
+    const p = frontierToUse[i];
     const d = frontierBestDist[p.y][p.x];
     if (d <= maxBandDist) {
       band.push(p);
     }
   }
 
-  const pool = band.length > 0 ? band : frontier;
+  const pool = band.length > 0 ? band : frontierToUse;
   const choice = pool[Math.floor(Math.random() * pool.length)];
 
   if (!choice) {
