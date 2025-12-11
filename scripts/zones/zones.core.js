@@ -923,9 +923,9 @@ function prepareNextExplorationTile(zone) {
 
   // 3a) Gap tiles = unexplored tiles with 2+ explored neighbors.
   // We fill ALL such gaps before expanding the frontier further away.
-  const HOLE_RADIUS = 8; // only care about holes within a reasonable range
+  const HOLE_RADIUS = 12; // only care about holes within a reasonable range
   const holeTiles = frontierInfo.filter(info =>
-    info.exploredNeighbors >= 2 && info.dist <= HOLE_RADIUS
+    info.exploredNeighbors >= 1 && info.dist <= HOLE_RADIUS
   );
 
   if (holeTiles.length > 0) {
@@ -947,7 +947,7 @@ function prepareNextExplorationTile(zone) {
   // --- STEP 4: Normal frontier expansion (when no holes exist) ---
 
   // Local radius bias: stay near the player if possible.
-  const LOCAL_RADIUS = 4;
+  const LOCAL_RADIUS = 5;
   let candidates = frontierInfo.filter(info => info.dist <= LOCAL_RADIUS);
   if (candidates.length === 0) {
     candidates = frontierInfo;
