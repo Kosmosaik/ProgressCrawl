@@ -467,8 +467,20 @@ function beginZoneExplorationCycle() {
 
   const path = findPathToPreparedTile(currentZone);
 
-  if (!path || path.length === 0) {
-    // Already on that tile: just run the explore delay + reveal.
+  if (!path) {
+    console.warn("beginZoneExplorationCycle: no path to prepared tile; stopping auto exploration.");
+    stopZoneExplorationTicks();
+    if (typeof addZoneMessage === "function") {
+      addZoneMessage("You can't reach that area yet.");
+    }
+    if (typeof renderZoneUI === "function") {
+      renderZoneUI();
+    }
+    return;
+  }
+
+  if (path.length === 0) {
+    // Already in stance position next to the target: skip walking.
     startZoneExploreDelay(() => {
       runZoneExplorationTick();
     });
@@ -684,6 +696,18 @@ function startZoneManualExploreOnce() {
   }
 
   const path = findPathToPreparedTile(currentZone);
+
+  if (!path) {
+    // No path from the player to this target using known ground.
+    if (typeof addZoneMessage === "function") {
+      addZoneMessage("You can't reach that area yet.");
+    }
+    if (typeof renderZoneUI === "function") {
+      renderZoneUI();
+    }
+    return;
+  }
+
   zoneManualExplorationActive = true;
 
   const finishManualExplore = () => {
@@ -694,7 +718,7 @@ function startZoneManualExploreOnce() {
     }
   };
 
-  if (!path || path.length === 0) {
+  if (path.length === 0) {
     // Already on the tile: just run the explore delay + reveal.
     startZoneExploreDelay(finishManualExplore);
     return;
