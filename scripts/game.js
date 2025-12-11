@@ -20,6 +20,15 @@ let isInZone = false;
 // ----- World Map -----
 let worldMap = null;
 
+
+function clearActiveExplorationFlag(zone) {
+  for (let y = 0; y < zone.height; y++) {
+    for (let x = 0; x < zone.width; x++) {
+      zone.tiles[y][x].isActiveExplore = false;
+    }
+  }
+}
+
 // Enter a zone by clicking it on the world map.
 function enterZoneFromWorldMap(x, y) {
   if (typeof getWorldMapTile !== "function") {
