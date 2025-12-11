@@ -22,7 +22,6 @@ const ZONE_TILE_SYMBOLS = {
   "L": { kind: ZONE_TILE_KIND.LOCKED },
 };
 
-
 // Create an empty zone filled with unexplored walkable tiles.
 function createZone({ id, name, width, height }) {
   const tiles = [];
@@ -49,6 +48,10 @@ function createZone({ id, name, width, height }) {
     playerX: null,
     playerY: null,
 
+    // 0.0.70c+ — where the player should spawn when entering this zone.
+    // This is chosen after the layout is built (see pickZoneEntrySpawn).
+    entrySpawn: null,
+
     // 0.0.70d+ — content / state scaffolding
     // (will be filled from templates later)
     content: {
@@ -62,6 +65,122 @@ function createZone({ id, name, width, height }) {
     defaultWeatherState: null,
     lockedRegions: null, // will be set by locked-region helpers if needed
   };
+}
+
+// Choose a good entry spawn tile for this zone.
+// We prefer:
+// - WALKABLE tiles that are one step away from the border,
+// - not too close to an 'L' locked gate tile (if present),
+// - falling back to any walkable near the border, then any walkable at all.
+function pickZoneEntrySpawn(zone, def) {
+  if (!zone || !zone.tiles) return;
+
+  const width = zone.width;
+  const height = zone.height;
+
+  // Collect any locked gate tiles so we can keep spawn a bit away from them.
+  const gateTiles = [];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const t = zone.tiles[y][x];
+      if (t && t.kind === ZONE_TILE_KIND.LOCKED) {
+        gateTiles.push({ x, y });
+      }
+    }
+  }
+
+  function distanceToNearestGate(x, y) {
+    if (gateTiles.length === 0) return Infinity;
+    let best = Infinity;
+    for (let i = 0; i < gateTiles.length; i++) {
+      const g = gateTiles[i];
+      const d = Math.abs(g.x - x) + Math.abs(g.y - y);
+      if (d < best) best = d;
+    }
+    return best;
+  }
+
+  // If the definition explicitly provides an entry spawn, try that first.
+  if (def && def.entrySpawn) {
+    const sx = def.entrySpawn.x;
+    const sy = def.entrySpawn.y;
+    if (
+      typeof sx === "number" && typeof sy === "number" &&
+      sy >= 0 && sy < height && sx >= 0 && sx < width
+    ) {
+      const tile = zone.tiles[sy][sx];
+      if (tile && tile.kind === ZONE_TILE_KIND.WALKABLE) {
+        zone.entrySpawn = { x: sx, y: sy };
+        return;
+      }
+    }
+  }
+
+  const borderPreferred = [];
+  const borderFallback = [];
+  const anyWalkable = [];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const tile = zone.tiles[y][x];
+      if (!tile || tile.kind !== ZONE_TILE_KIND.WALKABLE) continue;
+
+      // Distance from the outer border (0 means on the very edge).
+      const distBorder = Math.min(x, y, width - 1 - x, height - 1 - y);
+      const distGate = distanceToNearestGate(x, y);
+
+      anyWalkable.push({ x, y, distBorder, distGate });
+
+      // We really like "one step in" tiles, away from the gate.
+      if (distBorder === 1) {
+        borderPreferred.push({ x, y, distBorder, distGate });
+      } else if (distBorder === 2) {
+        borderFallback.push({ x, y, distBorder, distGate });
+      }
+    }
+  }
+
+  function chooseBest(candidates, minGateDist) {
+    if (!candidates || candidates.length === 0) return null;
+
+    // Filter by gate distance if requested.
+    let filtered = candidates;
+    if (typeof minGateDist === "number") {
+      filtered = candidates.filter(c => c.distGate >= minGateDist);
+      if (filtered.length === 0) {
+        filtered = candidates; // fall back to the full list
+      }
+    }
+
+    // Among these, pick the one farthest from any gate.
+    let best = filtered[0];
+    for (let i = 1; i < filtered.length; i++) {
+      const c = filtered[i];
+      if (c.distGate > best.distGate) {
+        best = c;
+      }
+    }
+    return best;
+  }
+
+  let choice =
+    chooseBest(borderPreferred, 4) ||
+    chooseBest(borderPreferred, 2) ||
+    chooseBest(borderFallback, 4) ||
+    chooseBest(borderFallback, 2);
+
+  if (!choice && anyWalkable.length > 0) {
+    choice = chooseBest(anyWalkable, 2) || anyWalkable[0];
+  }
+
+  if (choice) {
+    zone.entrySpawn = { x: choice.x, y: choice.y };
+  } else {
+    // Absolute last resort: center-ish of the map.
+    const cx = Math.floor(width / 2);
+    const cy = Math.floor(height / 2);
+    zone.entrySpawn = { x: cx, y: cy };
+  }
 }
 
 // Create a zone instance based on a ZONE_DEFINITIONS entry.
@@ -119,8 +238,11 @@ function createZoneFromDefinition(zoneId) {
       }
     }
     
+    // 0.0.70c+ — pick an entry spawn tile for this static zone.
+    pickZoneEntrySpawn(zone, def);  
+    
     // After building tiles, prepare content scaffolding.
-    initializeZoneContent(zone, def);
+    initializeZoneContent(zone, def);,
     
     return zone;
   }
@@ -175,6 +297,9 @@ function createZoneFromDefinition(zoneId) {
     if (typeof markZoneLockedSubregionsFromLayout === "function") {
       markZoneLockedSubregionsFromLayout(zone);
     }
+
+    // 0.0.70c+ — choose a spawn tile near the border, away from the L gate.
+    pickZoneEntrySpawn(zone, def);
 
     // 0.0.70d — content scaffolding
     initializeZoneContent(zone, def);
