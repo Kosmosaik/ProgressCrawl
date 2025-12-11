@@ -292,34 +292,33 @@ function findPathToPreparedTile(zone) {
 }
 
 function startZoneMovement(path, onArrival) {
-  if (!currentZone || !Array.isArray(path) || path.length === 0) {
-    if (typeof onArrival === "function") {
-      onArrival();
-    }
+  if (!currentZone || !isInZone) {
+    if (typeof onArrival === "function") onArrival();
+    return;
+  }
+  if (!path || path.length === 0) {
+    if (typeof onArrival === "function") onArrival();
     return;
   }
 
   zoneMovementActive = true;
-  zoneMovementPath = path.slice(); // copy so we can shift()
-
-  if (zoneMovementTimerId) {
-    clearTimeout(zoneMovementTimerId);
-    zoneMovementTimerId = null;
-  }
+  zoneMovementPath = path.slice(); // copy
+  zoneMovementOnArrival = typeof onArrival === "function" ? onArrival : null;
 
   const stepDelayMs = Math.max(50, 1000 / ZONE_MOVEMENT_TILES_PER_SECOND);
 
   function step() {
-    if (!zoneMovementActive || !currentZone) {
+    if (!zoneMovementActive || !currentZone || !isInZone) {
+      zoneMovementTimerId = null;
       return;
     }
 
     if (!zoneMovementPath || zoneMovementPath.length === 0) {
-      zoneMovementTimerId = null;
       zoneMovementActive = false;
-      if (typeof onArrival === "function") {
-        onArrival();
-      }
+      zoneMovementTimerId = null;
+      const cb = zoneMovementOnArrival;
+      zoneMovementOnArrival = null;
+      if (typeof cb === "function") cb();
       return;
     }
 
@@ -330,16 +329,10 @@ function startZoneMovement(path, onArrival) {
       renderZoneUI();
     }
 
-    // Pause here for adjacent explores (if any), then schedule the next movement step.
-    revealAdjacentsWithDelay(next.x, next.y, () => {
-      if (!zoneMovementActive || !currentZone) {
-        return;
-      }
-      zoneMovementTimerId = setTimeout(step, stepDelayMs);
-    });
+    zoneMovementTimerId = setTimeout(step, stepDelayMs);
   }
 
-  // Kick off the first movement step.
+  // Kick off the first movement step
   step();
 }
 
