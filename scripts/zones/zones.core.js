@@ -892,43 +892,71 @@ function prepareNextExplorationTile(zone) {
     return false;
   }
 
-  // --- STEP 3: Strong local bias around the player ---
-  const LOCAL_RADIUS = 4; // tiles within this distance are "nearby"
-  const localFrontier = [];
+  // --- STEP 3: Strong local + "gap-filling" bias ---
+
+  // 1) Build info for each frontier tile:
+  //    - distance from player (from frontierBestDist)
+  //    - how many explored neighbors it already has (holes will have 2–4).
+  const frontierInfo = [];
   for (let i = 0; i < frontier.length; i++) {
     const p = frontier[i];
     const d = frontierBestDist[p.y][p.x];
-    if (d <= LOCAL_RADIUS) {
-      localFrontier.push(p);
+
+    let exploredNeighbors = 0;
+    for (let j = 0; j < dirs4.length; j++) {
+      const nx = p.x + dirs4[j].dx;
+      const ny = p.y + dirs4[j].dy;
+      if (ny < 0 || ny >= height || nx < 0 || nx >= width) continue;
+      const nTile = zone.tiles[ny][nx];
+      if (!nTile) continue;
+      if (nTile.explored || nTile.hasPlayer) {
+        exploredNeighbors++;
+      }
     }
+
+    frontierInfo.push({
+      x: p.x,
+      y: p.y,
+      dist: d,
+      exploredNeighbors,
+    });
   }
 
-  // If there are nearby frontier tiles, only consider those.
-  const frontierToUse = localFrontier.length > 0 ? localFrontier : frontier;
+  // 2) First, restrict to tiles reasonably close to the player.
+  const LOCAL_RADIUS = 4; // tiles within this BFS distance are "nearby"
+  let candidates = frontierInfo.filter(info => info.dist <= LOCAL_RADIUS);
+  if (candidates.length === 0) {
+    // If nothing is nearby, use the whole frontier.
+    candidates = frontierInfo;
+  }
 
-  // Among the chosen frontier set, prefer the very closest band.
+  // 3) Among candidates, prefer the ones that are closest in distance.
   let minDist = Infinity;
-  for (let i = 0; i < frontierToUse.length; i++) {
-    const p = frontierToUse[i];
-    const d = frontierBestDist[p.y][p.x];
-    if (d < minDist) {
-      minDist = d;
+  for (let i = 0; i < candidates.length; i++) {
+    if (candidates[i].dist < minDist) {
+      minDist = candidates[i].dist;
     }
   }
 
-  const maxBandDist = minDist + 1; // small band around the closest distance
-  const band = [];
-  for (let i = 0; i < frontierToUse.length; i++) {
-    const p = frontierToUse[i];
-    const d = frontierBestDist[p.y][p.x];
-    if (d <= maxBandDist) {
-      band.push(p);
-    }
+  const maxBandDist = minDist + 1;
+  candidates = candidates.filter(info => info.dist <= maxBandDist);
+
+  if (candidates.length === 0) {
+    candidates = frontierInfo;
   }
 
-  const pool = band.length > 0 ? band : frontierToUse;
-  const choice = pool[Math.floor(Math.random() * pool.length)];
+  // 4) "Gap filling" preference:
+  //    - First try tiles with 3+ explored neighbors (almost surrounded).
+  //    - Then 2+. If none, fall back to whatever we have.
+  let best = candidates.filter(info => info.exploredNeighbors >= 3);
+  if (best.length === 0) {
+    best = candidates.filter(info => info.exploredNeighbors >= 2);
+  }
+  if (best.length === 0) {
+    best = candidates;
+  }
 
+  const choice = best[Math.floor(Math.random() * best.length)];
   if (!choice) {
     return false;
   }
