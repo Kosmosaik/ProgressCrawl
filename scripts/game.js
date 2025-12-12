@@ -149,8 +149,9 @@ function enterZoneFromWorldMap(x, y) {
 }
 
 // ---- Runtime state (authoritative) ----
-const EXP = PC.state.exploration;
-const MOV = PC.state.movement;
+// IMPORTANT: avoid global const collisions across scripts.
+function EXP() { return PC.state.exploration; }
+function MOV() { return PC.state.movement; }
 
 // Ensure keys exist (safe if pc.core.js already created them)
 EXP.zoneExplorationActive = EXP.zoneExplorationActive ?? false;
