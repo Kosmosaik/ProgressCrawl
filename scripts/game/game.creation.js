@@ -215,5 +215,5 @@ if (typeof createDebugZone === "function") {
       }
     }
     setScreen("game");
-  });
+  };
 }
