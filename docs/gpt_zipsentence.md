@@ -10,22 +10,16 @@ Perfect! What do you think of the projects code structure? Is it good? Anything 
 
 Rules: 
 
-NEVER guess file contents
-
-Never duplicate state access
-Make sure to check all relevant scripts
-Never refactor structure without approval
-Always provide full replacement blocks
-Summarize changes before continuing
+NEVER guess file contents,
+Never duplicate state access,
+Make sure to check all relevant scripts,
+Never refactor structure without approval,
+Always provide full replacement blocks,
+Summarize changes before continuing.
 
 New systems (resource nodes/entities/POIs) must:
-
 store their persistent data under PC.state.* (or the appropriate state subtree),
-
 expose read/write via STATE()/EXP()/MOV() (or a new PC.api.* accessor if needed),
-
 expose actions via PC.api.<domain>.*,
-
 never create a new global function STATE() or new direct PC.state alias.
-
 This prevents the “must refactor again” loop.
