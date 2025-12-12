@@ -1,18 +1,17 @@
 // scripts/core/pc.api.js
 console.log("pc.api.js loaded");
 
-// Central API + state access helpers.
-// IMPORTANT:
-// - Never overwrite PC.api (we extend it).
-// - EXP/MOV/STATE are defined here as the single source of truth for state access.
+// Authoritative state/API access.
+// Rules:
+// - Never overwrite PC.api (extend only).
+// - STATE/EXP/MOV are defined here and nowhere else.
+// - Game/UI should prefer PC.api.* actions, and STATE/EXP/MOV for state reads/writes.
 
 (function () {
   const PC = (window.PC = window.PC || {});
-
-  // Ensure api namespace exists
   PC.api = PC.api || {};
 
-  // ---- State access helpers (single source of truth) ----
+  // ---- Authoritative state access ----
   PC.api.state = function () {
     return PC.state;
   };
@@ -25,38 +24,31 @@ console.log("pc.api.js loaded");
     return PC.state.movement;
   };
 
-  // Legacy/global shorthands used across the project (zones.* expects these)
+  // Global shorthands used by existing modules (zones.*, game.*, etc.)
   window.STATE = PC.api.state;
   window.EXP = PC.api.exp;
   window.MOV = PC.api.mov;
 
-  // ---- Action API (extend; do not replace PC.api) ----
+  // ---- Action API (extend only) ----
   PC.api.zone = PC.api.zone || {};
+  PC.api.world = PC.api.world || {};
+
+  // Zone actions (wire to existing functions if present)
   PC.api.zone.exploreOnce = () => {
-    if (typeof startZoneManualExploreOnce === "function") {
-      startZoneManualExploreOnce();
-    }
+    if (typeof startZoneManualExploreOnce === "function") startZoneManualExploreOnce();
   };
   PC.api.zone.startAutoExplore = () => {
-    if (typeof startZoneExplorationTicks === "function") {
-      startZoneExplorationTicks();
-    }
+    if (typeof startZoneExplorationTicks === "function") startZoneExplorationTicks();
   };
   PC.api.zone.stopAutoExplore = () => {
-    if (typeof stopZoneExplorationTicks === "function") {
-      stopZoneExplorationTicks();
-    }
+    if (typeof stopZoneExplorationTicks === "function") stopZoneExplorationTicks();
   };
 
-  PC.api.world = PC.api.world || {};
+  // World actions
   PC.api.world.enterZone = (x, y) => {
-    if (typeof enterZoneFromWorldMap === "function") {
-      enterZoneFromWorldMap(x, y);
-    }
+    if (typeof enterZoneFromWorldMap === "function") enterZoneFromWorldMap(x, y);
   };
   PC.api.world.showWorldMap = () => {
-    if (typeof switchToWorldMapView === "function") {
-      switchToWorldMapView();
-    }
+    if (typeof switchToWorldMapView === "function") switchToWorldMapView();
   };
 })();
