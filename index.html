@@ -9,7 +9,7 @@
 <body>
 <div id="game-header">
   <span class="game-header-text">
-    ProgressCrawl — v0.0.70d4-dev : Modularization v5
+    ProgressCrawl — v0.0.70d4-dev : Modularization v6
   </span>
   <button id="patch-notes-btn" type="button">Patch Notes</button>
 </div>
@@ -233,10 +233,15 @@
     </div>
   </div>
 </div>
-
 <script src="scripts/config.js"></script>
 <script src="scripts/core/pc.core.js"></script>
 <script src="scripts/core/pc.api.js"></script>
+
+<!-- Character modules (required by game.creation.js) -->
+<script src="scripts/character/character.core.js"></script>
+<script src="scripts/character/character.derived.js"></script>
+<script src="scripts/character/character.skills.js"></script>
+<script src="scripts/character/character.compute.js"></script>
 
 <script src="scripts/zones/zones.data.js"></script>
 <script src="scripts/zones/zones.generator.js"></script>
@@ -259,21 +264,7 @@
 <!-- zones UI binds buttons to the now-defined functions -->
 <script src="scripts/zones/zones.ui.js"></script>
 
-<!-- INVENTORY (required by New Game + Save/Load) -->
-<script src="scripts/inventory/inventory.state.js"></script>
-<script src="scripts/inventory/inventory.data.js"></script>
-<script src="scripts/inventory/inventory.sort.js"></script>
-<script src="scripts/inventory/inventory.render.category.js"></script>
-<script src="scripts/inventory/inventory.persistence.js"></script>
-<script src="scripts/inventory/inventory.core.js"></script>
-<script src="scripts/inventory.js"></script>
-
-<!-- EQUIPMENT (required by New Game + Save/Load) -->
-<script src="scripts/equipment/equipment.core.js"></script>
-<script src="scripts/equipment/equipment.tooltip.js"></script>
-<script src="scripts/equipment.js"></script>
-
-<!-- game modules -->
+<!-- game modules that depend on game.js state helpers -->
 <script src="scripts/game/game.loot.js"></script>
 <script src="scripts/game/game.save.js"></script>
 <script src="scripts/game/game.patchnotes.js"></script>
