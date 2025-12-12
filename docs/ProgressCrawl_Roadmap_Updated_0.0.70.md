@@ -19,17 +19,19 @@ A stable, persistent overworld ready to host dynamic and static content.
 
 ---
 
-## ** 0.0.70d - QoL updates (Improve Zone Generation, Exploration logic, UI/UX etc (ONGOING) ** ##
+## ** 0.0.70d - QoL updates (Improve Zone Generation, Exploration logic, UI/UX etc (ONGOING - Current phase) ** ##
+- See 0.0.70d-qol-exploration-summary.md for detailed information.
 
 ---
 
-## **0.0.70e — Static Zone Content Generation (Current Phase)**  
+## **0.0.70e — Static Zone Content Generation **  
 **Goal:** Populate zones with pre-generated content using the new template and scaffolding systems.
 
 ### Includes:
 ### **Biome Definitions (First Pass)**
 - Primitive Temperate Forest  
-- Primitive Cave  
+- Primitive Cave
+- Primitive Plains and more (This is not decided here, we will discuss and I will provide with more details during chat or add code myself)  
 
 ### **Static Resource Nodes**
 - Berry Bush  
@@ -60,6 +62,7 @@ A stable, persistent overworld ready to host dynamic and static content.
 - Spawn tables embedded into ZONE_TEMPLATES
 - Placement respects tile rules (walkable, visibility, entry regions)
 - All content revealed through exploration, tile by tile
+- Zone discovery list integration
 
 ### **Deliverable:**  
 Zones feel full and alive even before adding dynamic systems.
@@ -75,6 +78,7 @@ Zones feel full and alive even before adding dynamic systems.
 - Respawn timers (2–4 days)  
 - Resource node info in discovery list  
 - First pass of the “Interaction Menu”
+- NOTE: This interaction system will be expanded upon with skill/tool/knowledge calculation and a roll system to improve the resources grade.
 
 ### **Deliverable:**  
 Players can begin gathering resources inside each zone.
@@ -87,7 +91,6 @@ Players can begin gathering resources inside each zone.
 ### Includes:
 - Weather changes  
 - Ambushes  
-- Roaming enemies  
 - Boss spawns  
 - Environmental disasters (fire, quake, storm)  
 - Travelling merchants & wanderers  
@@ -106,8 +109,7 @@ Exploration becomes dynamic, reactive, and surprising.
 
 ### Includes:
 - Entity behavior flags (passive/neutral/aggressive)  
-- Light roaming / wandering  
-- Zone discovery list integration  
+- Light roaming / wandering (NOT DECIDED IF THIS WILL BE A THING YET)  
 - Interaction options:
   - Observe  
   - Track (placeholder)  
