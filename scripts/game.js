@@ -154,16 +154,16 @@ function EXP() { return PC.state.exploration; }
 function MOV() { return PC.state.movement; }
 
 // Ensure keys exist (safe if pc.core.js already created them)
-EXP.zoneExplorationActive = EXP.zoneExplorationActive ?? false;
-EXP.zoneExplorationTimerId = EXP.zoneExplorationTimerId ?? null;
-EXP.zoneManualExplorationActive = EXP.zoneManualExplorationActive ?? false;
-EXP.zoneManualTimerId = EXP.zoneManualTimerId ?? null;
-EXP.zoneExploreDelayTimerId = EXP.zoneExploreDelayTimerId ?? null;
+EXP().zoneExplorationActive = EXP().zoneExplorationActive ?? false;
+EXP().zoneExplorationTimerId = EXP().zoneExplorationTimerId ?? null;
+EXP().zoneManualExplorationActive = EXP().zoneManualExplorationActive ?? false;
+EXP().zoneManualTimerId = EXP().zoneManualTimerId ?? null;
+EXP().zoneExploreDelayTimerId = EXP().zoneExploreDelayTimerId ?? null;
 
-MOV.zoneMovementActive = MOV.zoneMovementActive ?? false;
-MOV.zoneMovementTimerId = MOV.zoneMovementTimerId ?? null;
-MOV.zoneMovementPath = MOV.zoneMovementPath ?? null;
-MOV.zoneMovementOnArrival = MOV.zoneMovementOnArrival ?? null;
+MOV().zoneMovementActive = MOV().zoneMovementActive ?? false;
+MOV().zoneMovementTimerId = MOV().zoneMovementTimerId ?? null;
+MOV().zoneMovementPath = MOV().zoneMovementPath ?? null;
+MOV().zoneMovementOnArrival = MOV().zoneMovementOnArrival ?? null;
 
 // Movement speed: tiles per second. You can override this in GAME_CONFIG.zone
 // by adding "movementTilesPerSecond" there.
@@ -316,49 +316,49 @@ function startZoneMovement(path, onArrival) {
     return;
   }
 
-  MOV.zoneMovementActive = true;
-  MOV.zoneMovementPath = path.slice(); // copy
-  MOV.zoneMovementOnArrival = typeof onArrival === "function" ? onArrival : null;
+  MOV().zoneMovementActive = true;
+  MOV().zoneMovementPath = path.slice(); // copy
+  MOV().zoneMovementOnArrival = typeof onArrival === "function" ? onArrival : null;
 
   const stepDelayMs = Math.max(50, 1000 / ZONE_MOVEMENT_TILES_PER_SECOND);
 
   function step() {
     const z = getCurrentZone();
-    if (!MOV.zoneMovementActive || !z || !getIsInZone()) {
-      MOV.zoneMovementTimerId = null;
+    if (!MOV().zoneMovementActive || !z || !getIsInZone()) {
+      MOV().zoneMovementTimerId = null;
       return;
     }
 
-    if (!MOV.zoneMovementPath || MOV.zoneMovementPath.length === 0) {
-      MOV.zoneMovementActive = false;
-      MOV.zoneMovementTimerId = null;
-      const cb = MOV.zoneMovementOnArrival;
-      MOV.zoneMovementOnArrival = null;
+    if (!MOV().zoneMovementPath || MOV().zoneMovementPath.length === 0) {
+      MOV().zoneMovementActive = false;
+      MOV().zoneMovementTimerId = null;
+      const cb = MOV().zoneMovementOnArrival;
+      MOV().zoneMovementOnArrival = null;
       if (typeof cb === "function") cb();
       return;
     }
 
-    const next = MOV.zoneMovementPath.shift();
+    const next = MOV().zoneMovementPath.shift();
     setZonePlayerPosition(z, next.x, next.y);
 
     if (typeof renderZoneUI === "function") {
       renderZoneUI();
     }
 
-    MOV.zoneMovementTimerId = setTimeout(step, stepDelayMs);
+    MOV().zoneMovementTimerId = setTimeout(step, stepDelayMs);
   }
 
   step();
 }
 
 function stopZoneMovement() {
-  if (MOV.zoneMovementTimerId) {
-    clearTimeout(MOV.zoneMovementTimerId);
-    MOV.zoneMovementTimerId = null;
+  if (MOV().zoneMovementTimerId) {
+    clearTimeout(MOV().zoneMovementTimerId);
+    MOV().zoneMovementTimerId = null;
   }
-  MOV.zoneMovementActive = false;
-  MOV.zoneMovementPath = null;
-  MOV.zoneMovementOnArrival = null;
+  MOV().zoneMovementActive = false;
+  MOV().zoneMovementPath = null;
+  MOV().zoneMovementOnArrival = null;
 }
 
 // Shared generic messages for exploration
@@ -394,12 +394,12 @@ function addRandomZoneMessage() {
 // --- Zone exploration tick system (2–5s random delay) ---
 
 function scheduleNextZoneExplorationTick() {
-  if (!EXP.zoneExplorationActive || !getIsInZone() || !getCurrentZone()) return;
+  if (!EXP().zoneExplorationActive || !getIsInZone() || !getCurrentZone()) return;
 
   const idleDelay = 200;
 
-  EXP.zoneExplorationTimerId = setTimeout(() => {
-    EXP.zoneExplorationTimerId = null;
+  EXP().zoneExplorationTimerId = setTimeout(() => {
+    EXP().zoneExplorationTimerId = null;
     beginZoneExplorationCycle();
   }, idleDelay);
 }
@@ -448,7 +448,7 @@ function revealNextTileWithMessageAndUI() {
 }
 
 function beginZoneExplorationCycle() {
-  if (!EXP.zoneExplorationActive || !getIsInZone() || !getCurrentZone()) return;
+  if (!EXP().zoneExplorationActive || !getIsInZone() || !getCurrentZone()) return;
   if (!window.ZoneDebug || typeof ZoneDebug.getZoneExplorationStats !== "function") return;
 
   const zone = getCurrentZone();
@@ -494,7 +494,7 @@ function beginZoneExplorationCycle() {
 }
 
 function runZoneExplorationTick() {
-  if (!EXP.zoneExplorationActive || !getIsInZone() || !getCurrentZone()) return;
+  if (!EXP().zoneExplorationActive || !getIsInZone() || !getCurrentZone()) return;
   if (!window.ZoneDebug || typeof ZoneDebug.getZoneExplorationStats !== "function") return;
 
   const zone = getCurrentZone();
@@ -513,12 +513,12 @@ function runZoneExplorationTick() {
 }
 
 function startZoneExplorationTicks() {
-  if (EXP.zoneExplorationActive) return;
+  if (EXP().zoneExplorationActive) return;
   if (!getIsInZone() || !getCurrentZone()) return;
-  if (MOV.zoneMovementActive) return;
+  if (MOV().zoneMovementActive) return;
 
   console.log("Starting zone exploration ticks.");
-  EXP.zoneExplorationActive = true;
+  EXP().zoneExplorationActive = true;
   scheduleNextZoneExplorationTick();
 }
 
@@ -560,27 +560,27 @@ function startZoneExploreDelay(onReveal) {
 
   const delay = 200 + Math.random() * 200;
 
-  EXP.zoneExploreDelayTimerId = setTimeout(() => {
-    EXP.zoneExploreDelayTimerId = null;
+  EXP().zoneExploreDelayTimerId = setTimeout(() => {
+    EXP().zoneExploreDelayTimerId = null;
     if (typeof onReveal === "function") onReveal();
   }, delay);
 }
 
 function cancelZoneExploreDelay() {
-  if (EXP.zoneExploreDelayTimerId) {
-    clearTimeout(EXP.zoneExploreDelayTimerId);
-    EXP.zoneExploreDelayTimerId = null;
+  if (EXP().zoneExploreDelayTimerId) {
+    clearTimeout(EXP().zoneExploreDelayTimerId);
+    EXP().zoneExploreDelayTimerId = null;
   }
 }
 
 function stopZoneExplorationTicks() {
-  if (!EXP.zoneExplorationActive) return;
+  if (!EXP().zoneExplorationActive) return;
 
-  EXP.zoneExplorationActive = false;
+  EXP().zoneExplorationActive = false;
 
-  if (EXP.zoneExplorationTimerId) {
-    clearTimeout(EXP.zoneExplorationTimerId);
-    EXP.zoneExplorationTimerId = null;
+  if (EXP().zoneExplorationTimerId) {
+    clearTimeout(EXP().zoneExplorationTimerId);
+    EXP().zoneExplorationTimerId = null;
   }
 
   stopZoneMovement();
@@ -625,9 +625,9 @@ function onZoneFullyExplored() {
 }
 
 function startZoneManualExploreOnce() {
-  if (EXP.zoneManualExplorationActive) return;
-  if (EXP.zoneExplorationActive) return;
-  if (MOV.zoneMovementActive) return;
+  if (EXP().zoneManualExplorationActive) return;
+  if (EXP().zoneExplorationActive) return;
+  if (MOV().zoneMovementActive) return;
   if (!getIsInZone() || !getCurrentZone()) return;
   if (!window.ZoneDebug || typeof ZoneDebug.getZoneExplorationStats !== "function") return;
 
@@ -659,10 +659,10 @@ function startZoneManualExploreOnce() {
     return;
   }
 
-  EXP.zoneManualExplorationActive = true;
+  EXP().zoneManualExplorationActive = true;
 
   const finishManualExplore = () => {
-    EXP.zoneManualExplorationActive = false;
+    EXP().zoneManualExplorationActive = false;
     revealNextTileWithMessageAndUI();
     if (typeof renderZoneUI === "function") renderZoneUI();
   };
