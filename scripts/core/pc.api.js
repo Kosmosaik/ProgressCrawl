@@ -1,6 +1,12 @@
 // scripts/core/pc.api.js
 console.log("pc.api.js loaded");
 
+// ---- Global state accessors (single source of truth) ----
+// These MUST be defined once, early, so every script can rely on them.
+function STATE() { return window.PC && PC.state; }
+function EXP() { return STATE().exploration; }
+function MOV() { return STATE().movement; }
+
 PC.api = {
   zone: {
     exploreOnce: () => {
