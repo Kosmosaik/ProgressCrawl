@@ -33,7 +33,7 @@ The 0.0.70 milestone focuses heavily on **zone exploration**, **procedural gener
 - Persistence of worldMap
 - Zone content scaffolding (`zone.content = { resourceNodes, entities, pois }`)
 
-**0.0.70d’s mission:**
+**0.0.70e’s mission:**
 
 > **Build the Zone Content Generation System AND add the first real content (entities, resource nodes, POIs) across selected biomes/templates.**
 
@@ -41,7 +41,7 @@ This patch is foundational for future world interaction, resource systems, comba
 
 ---
 
-# 1. Goals of 0.0.70d
+# 1. Goals of 0.0.70e
 
 0.0.70d has two main components:
 
@@ -185,7 +185,7 @@ These layers will grow in future patches.
 
 0.0.70d must also include a small, usable content pack so the system can be tested in-game.
 
-Only **Primitive Era + Temperate Forest / Cave** biomes need content initially.
+Only **Primitive Era + Temperate Forest / Cave / Whatever** biomes need content initially.
 
 ---
 
@@ -320,23 +320,7 @@ populateZoneContent(zone, template, rand)
 
 ---
 
-## **2.5 Persistence**
-
-For 0.0.70d:
-
-- Content does **NOT** need to be persisted yet  
-- OK to regenerate content each time zone is entered  
-
-Persistence will be added later when:
-
-- mobs die  
-- nodes are harvested  
-- POIs are solved  
-- time-based changes occur  
-
----
-
-# 3. Deliverables for 0.0.70d
+# 3. Deliverables for 0.0.70e
 
 ---
 
@@ -366,7 +350,7 @@ These are placeholders but fully functional within the system.
 
 ---
 
-# 4. Non-Goals (Explicitly Not in 0.0.70d)
+# 4. Non-Goals (Explicitly Not in 0.0.70e)
 
 - Combat  
 - AI  
@@ -384,7 +368,7 @@ These will come later.
 # 5. Summary
 
 Version **0.0.70c** established the world-slot + template generation foundation.  
-Version **0.0.70d** builds the **content ecosystem layer** and populates the first zones.
+Version **0.0.70e** builds the **content ecosystem layer** and populates the first zones.
 
 This patch transitions ProgressCrawl from generating “empty caves” into generating **living ecosystems** with entities, resources, and landmarks.
 
