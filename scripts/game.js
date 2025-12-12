@@ -150,20 +150,19 @@ function enterZoneFromWorldMap(x, y) {
 
 // ---- Runtime state (authoritative) ----
 // IMPORTANT: avoid global const collisions across scripts.
-function EXP() { return PC.state.exploration; }
-function MOV() { return PC.state.movement; }
+const exp = EXP();
+const mov = MOV();
 
-// Ensure keys exist (safe if pc.core.js already created them)
-EXP().zoneExplorationActive = EXP().zoneExplorationActive ?? false;
-EXP().zoneExplorationTimerId = EXP().zoneExplorationTimerId ?? null;
-EXP().zoneManualExplorationActive = EXP().zoneManualExplorationActive ?? false;
-EXP().zoneManualTimerId = EXP().zoneManualTimerId ?? null;
-EXP().zoneExploreDelayTimerId = EXP().zoneExploreDelayTimerId ?? null;
+exp.zoneExplorationActive = exp.zoneExplorationActive ?? false;
+exp.zoneExplorationTimerId = exp.zoneExplorationTimerId ?? null;
+exp.zoneManualExplorationActive = exp.zoneManualExplorationActive ?? false;
+exp.zoneManualTimerId = exp.zoneManualTimerId ?? null;
+exp.zoneExploreDelayTimerId = exp.zoneExploreDelayTimerId ?? null;
 
-MOV().zoneMovementActive = MOV().zoneMovementActive ?? false;
-MOV().zoneMovementTimerId = MOV().zoneMovementTimerId ?? null;
-MOV().zoneMovementPath = MOV().zoneMovementPath ?? null;
-MOV().zoneMovementOnArrival = MOV().zoneMovementOnArrival ?? null;
+mov.zoneMovementActive = mov.zoneMovementActive ?? false;
+mov.zoneMovementTimerId = mov.zoneMovementTimerId ?? null;
+mov.zoneMovementPath = mov.zoneMovementPath ?? null;
+mov.zoneMovementOnArrival = mov.zoneMovementOnArrival ?? null;
 
 // Movement speed: tiles per second. You can override this in GAME_CONFIG.zone
 // by adding "movementTilesPerSecond" there.
