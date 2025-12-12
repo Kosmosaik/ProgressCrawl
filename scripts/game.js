@@ -4,22 +4,27 @@ console.log(`game.js loaded v${GAME_CONFIG.version}`);
 // ----- Screen elements -----
 const saveListContainer = document.getElementById("save-list");
 
-let currentHP = 0;
+const saveListContainer = document.getElementById("save-list");
 
-// Holds the fully computed character state (attributes + derived stats)
-// so UI or other systems can use it.
-let characterComputed = null;
+// ---- State bridge (temporary) ----
+// We are migrating old globals to PC.state step-by-step.
+// For now, keep the old variable names but store the real values in PC.state.
+const S = PC.state;
 
-// ----- Zones / Exploration -----
-// For now we just track a single current Zone in memory.
-let currentZone = null;
+function getCurrentHP() { return S.currentHP; }
+function setCurrentHP(v) { S.currentHP = v; }
 
-// Are we currently "inside" a zone?
-let isInZone = false;
+function getCharacterComputed() { return S.characterComputed; }
+function setCharacterComputed(v) { S.characterComputed = v; }
 
-// ----- World Map -----
-let worldMap = null;
+function getCurrentZone() { return S.currentZone; }
+function setCurrentZone(z) { S.currentZone = z; }
 
+function getIsInZone() { return S.isInZone; }
+function setIsInZone(v) { S.isInZone = v; }
+
+function getWorldMap() { return S.worldMap; }
+function setWorldMap(m) { S.worldMap = m; }
 
 function clearActiveExplorationFlag(zone) {
   for (let y = 0; y < zone.height; y++) {
@@ -35,12 +40,12 @@ function enterZoneFromWorldMap(x, y) {
     console.warn("enterZoneFromWorldMap: getWorldMapTile is not available.");
     return;
   }
-  if (!worldMap) {
+  if (!getWorldMap()) {
     console.warn("enterZoneFromWorldMap: worldMap is not initialized.");
     return;
   }
 
-  const tile = getWorldMapTile(worldMap, x, y);
+  const tile = getWorldMapTile(getWorldMap(), x, y);
   if (!tile || !tile.zoneId) {
     console.warn("enterZoneFromWorldMap: no zone mapped at", x, y);
     return;
@@ -79,37 +84,37 @@ function enterZoneFromWorldMap(x, y) {
   }
   
   // Switch state to the new zone
-  currentZone = newZone;
-  isInZone = true;
+  setCurrentZone(newZone);
+  setIsInZone(true);
 
   // 0.0.70c+ — place the player on the zone's entry spawn tile immediately.
-  if (currentZone.entrySpawn && currentZone.tiles) {
-    const sx = currentZone.entrySpawn.x;
-    const sy = currentZone.entrySpawn.y;
+  if (getCurrentZone();.entrySpawn && getCurrentZone();.tiles) {
+    const sx = getCurrentZone();.entrySpawn.x;
+    const sy = getCurrentZone();.entrySpawn.y;
     if (
       typeof sx === "number" && typeof sy === "number" &&
-      sy >= 0 && sy < currentZone.height &&
-      sx >= 0 && sx < currentZone.width
+      sy >= 0 && sy < getCurrentZone();.height &&
+      sx >= 0 && sx < getCurrentZone();.width
     ) {
-      const spawnTile = currentZone.tiles[sy][sx];
+      const spawnTile = getCurrentZone();.tiles[sy][sx];
       if (spawnTile) {
         // Reveal the spawn tile and set the player marker.
         spawnTile.explored = true;
-        setZonePlayerPosition(currentZone, sx, sy);
-        currentZone.playerX = sx;
-        currentZone.playerY = sy;
+        setZonePlayerPosition(getCurrentZone();, sx, sy);
+        getCurrentZone();.playerX = sx;
+        getCurrentZone();.playerY = sy;
       }
     } else {
       console.warn(
         "enterZoneFromWorldMap: entrySpawn out of bounds",
-        currentZone.entrySpawn
+        getCurrentZone();.entrySpawn
       );
     }
   }
 
   // 0.0.70c+ — cleanup: remove unreachable explored islands created by old logic.
   if (typeof normalizeZoneExploredConnectivity === "function") {
-    normalizeZoneExploredConnectivity(currentZone);
+    normalizeZoneExploredConnectivity(getCurrentZone(););
   }
 
   // Update fog and current position on the world map
@@ -117,8 +122,8 @@ function enterZoneFromWorldMap(x, y) {
     tile.fogState = WORLD_FOG_STATE.VISITED;
   }
 
-  worldMap.currentX = x;
-  worldMap.currentY = y;
+  getWorldMap().currentX = x;
+  getWorldMap().currentY = y;
 
   // Switch panels: hide world map, show zone
   if (typeof switchToZoneView === "function") {
