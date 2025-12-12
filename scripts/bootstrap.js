@@ -1,17 +1,22 @@
 // scripts/bootstrap.js
 (function () {
-  // Basic sanity checks
   if (!window.PC) {
     console.error("Bootstrap failed: window.PC missing. Did pc.core.js load?");
     return;
   }
-  if (!window.GAME_CONFIG) {
+
+  // In browsers, top-level `const GAME_CONFIG = ...` does NOT attach to window.
+  const hasGameConfig =
+    (typeof GAME_CONFIG !== "undefined") || !!window.GAME_CONFIG;
+
+  if (!hasGameConfig) {
     console.error("Bootstrap failed: GAME_CONFIG missing. Did config.js load?");
     return;
   }
 
-  // Optional: log a clean "boot ok"
-  console.log(`Bootstrap OK — ProgressCrawl v${GAME_CONFIG.version}`);
+  // Prefer the non-window one if it exists
+  const cfg =
+    (typeof GAME_CONFIG !== "undefined") ? GAME_CONFIG : window.GAME_CONFIG;
 
-  // If later we add PC.game.init(), it can go here.
+  console.log(`Bootstrap OK — ProgressCrawl v${cfg.version}`);
 })();
