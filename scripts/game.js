@@ -121,6 +121,15 @@ function enterZoneFromWorldMap(x, y) {
     normalizeZoneExploredConnectivity(zone);
   }
 
+  // 0.0.70e — apply saved per-zone deltas (deterministic regen + deltas)
+  try {
+    if (window.PC && PC.content && typeof PC.content.applyZoneDeltas === "function") {
+      PC.content.applyZoneDeltas(zone);
+    }
+  } catch (e) {
+    console.warn("enterZoneFromWorldMap: failed to apply zone deltas", e);
+  }
+
   // Update fog + current position on the world map
   if (tile.fogState !== WORLD_FOG_STATE.VISITED) {
     tile.fogState = WORLD_FOG_STATE.VISITED;
