@@ -61,6 +61,7 @@ function createZone({ id, name, width, height }) {
       resourceNodes: [],
       entities: [],
       pois: [],
+      locations: [],
     },
 
     // These already exist conceptually but we give them defaults
@@ -329,14 +330,29 @@ function initializeZoneContent(zone, def) {
       resourceNodes: [],
       entities: [],
       pois: [],
+      locations: [],
     };
   }
+  // Backward-compat: ensure all expected arrays exist.
+  zone.content.resourceNodes = Array.isArray(zone.content.resourceNodes) ? zone.content.resourceNodes : [];
+  zone.content.entities = Array.isArray(zone.content.entities) ? zone.content.entities : [];
+  zone.content.pois = Array.isArray(zone.content.pois) ? zone.content.pois : [];
+  zone.content.locations = Array.isArray(zone.content.locations) ? zone.content.locations : [];
 
-  // For now, we don't actually spawn anything.
-  // Later we will:
-  //  - Look up a template by def.templateId or zone.id
-  //  - Read entities/resources/pois spawn tables from ZONE_TEMPLATES
-  //  - Use the zone seed (or derived sub-seeds) for deterministic placement
+  // 0.0.70e — populate deterministic static zone content.
+  // We derive context from the world map slot when available.
+  try {
+    const worldMap = (typeof STATE === "function" && STATE()) ? STATE().worldMap : null;
+    const worldTile = (typeof findWorldTileByZoneId === "function" && worldMap)
+      ? (findWorldTileByZoneId(worldMap, zone.id)?.tile || null)
+      : null;
+
+    if (window.PC && PC.content && typeof PC.content.populateZoneContent === "function") {
+      PC.content.populateZoneContent(zone, def, worldTile);
+    }
+  } catch (e) {
+    console.warn("initializeZoneContent: failed to populate content", e);
+  }
 }
 
 // ----- Locked subregion helpers -----
