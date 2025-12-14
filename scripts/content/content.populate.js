@@ -14,11 +14,20 @@
   const PC = (window.PC = window.PC || {});
   PC.content = PC.content || {};
 
-  // Build a stable seed string for this zone.
-  function buildZoneContentSeed(zone, worldTile) {
-    const worldSeed = worldTile && worldTile.seed ? String(worldTile.seed) : "";
+  // ---------------------------------------------------------------------------
+  // Step 1.3 — Seed layering contract
+  // ---------------------------------------------------------------------------
+
+  // Base deterministic seed string for this zone.
+  // We keep this stable so later delta systems can rely on IDs.
+  function buildZoneSeed(zone, worldTile) {
+    const worldSeed = worldTile && worldTile.seed != null ? String(worldTile.seed) : "";
     const zoneId = zone && zone.id ? String(zone.id) : "";
     return `${worldSeed}::${zoneId}::content_v1`;
+  }
+
+  function subSeed(zoneSeed, label) {
+    return `${zoneSeed}::${label}`;
   }
 
   // Pick a spawn table id to use for this zone.
@@ -37,16 +46,6 @@
     return null;
   }
 
-  // Utility: shuffle array in-place with RNG.
-  function shuffleInPlace(arr, rng) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      const tmp = arr[i];
-      arr[i] = arr[j];
-      arr[j] = tmp;
-    }
-  }
-
   // Utility: clamp int.
   function clampInt(n, a, b) {
     const x = Math.floor(Number(n) || 0);
@@ -56,19 +55,20 @@
   // Pick a count from a config.
   // - number => exact
   // - [min,max] => rng
-  function pickCount(countSpec, rng) {
+  function pickCount(countSpec, rngObj) {
     if (Array.isArray(countSpec) && countSpec.length >= 2) {
       const min = clampInt(countSpec[0], 0, 9999);
       const max = clampInt(countSpec[1], 0, 9999);
       if (max <= min) return min;
-      return min + Math.floor(rng() * (max - min + 1));
+      const r = rngObj?.nextInt ? rngObj.nextInt(min, max) : (min + Math.floor(Math.random() * (max - min + 1)));
+      return r;
     }
     if (typeof countSpec === "number") return clampInt(countSpec, 0, 9999);
     return 0;
   }
 
   // Place one kind of content (resourceNodes/entities/pois/locations).
-  function placeKind(zone, kindKey, kindDefKey, kindCfg, rng, used) {
+  function placeKind(zone, kindKey, kindDefKey, kindCfg, rngObj, used) {
     if (!zone || !zone.content) return;
     if (!kindCfg) return;
 
@@ -77,7 +77,7 @@
       : {};
 
     const entries = Array.isArray(kindCfg.entries) ? kindCfg.entries : [];
-    const count = pickCount(kindCfg.count, rng);
+    const count = pickCount(kindCfg.count, rngObj);
     if (count <= 0 || entries.length === 0) return;
 
     // Candidate tiles: all walkable.
@@ -91,7 +91,9 @@
     }
 
     // Shuffle candidates so we can pick sequentially.
-    shuffleInPlace(candidates, rng);
+    if (typeof PC.content.shuffle === "function") {
+      PC.content.shuffle(rngObj, candidates);
+    }
 
     let placed = 0;
     for (let idx = 0; idx < candidates.length && placed < count; idx++) {
@@ -100,7 +102,7 @@
       if (used.has(k)) continue;
 
       const picked = typeof PC.content.pickWeighted === "function"
-        ? PC.content.pickWeighted(entries, rng)
+        ? PC.content.pickWeighted(rngObj, entries)
         : entries[0];
       const defId = picked && picked.id ? String(picked.id) : null;
       if (!defId || !defsRegistry[defId]) continue;
@@ -143,18 +145,22 @@
     const table = PC.content.SPAWN_TABLES ? PC.content.SPAWN_TABLES[tableId] : null;
     if (!table) return;
 
-    const seed = buildZoneContentSeed(zone, worldTile);
-    const rng = typeof PC.content.createRng === "function"
-      ? PC.content.createRng(seed)
-      : Math.random;
+    const zoneSeed = buildZoneSeed(zone, worldTile);
+
+    // Separate RNG streams per content kind so later tweaks don't domino-shift
+    // other placements.
+    const rngResources = PC.content.makeRng ? PC.content.makeRng(subSeed(zoneSeed, "resources")) : null;
+    const rngEntities = PC.content.makeRng ? PC.content.makeRng(subSeed(zoneSeed, "entities")) : null;
+    const rngPois = PC.content.makeRng ? PC.content.makeRng(subSeed(zoneSeed, "pois")) : null;
+    const rngLocations = PC.content.makeRng ? PC.content.makeRng(subSeed(zoneSeed, "locations")) : null;
 
     // Used tile positions across all kinds (no overlap for first pass).
     const used = new Set();
 
-    placeKind(zone, "resourceNodes", "resourceNodes", table.resourceNodes, rng, used);
-    placeKind(zone, "entities", "entities", table.entities, rng, used);
-    placeKind(zone, "pois", "pois", table.pois, rng, used);
-    placeKind(zone, "locations", "locations", table.locations, rng, used);
+    placeKind(zone, "resourceNodes", "resourceNodes", table.resourceNodes, rngResources, used);
+    placeKind(zone, "entities", "entities", table.entities, rngEntities, used);
+    placeKind(zone, "pois", "pois", table.pois, rngPois, used);
+    placeKind(zone, "locations", "locations", table.locations, rngLocations, used);
 
     // Light debug (can be removed later)
     if (PC?.config?.debug?.logContentGen) {
