@@ -636,6 +636,25 @@
   white-space: pre;          /* keeps perfect grid alignment */
 }
 
+/* Zone grid cells (spans). */
+.zone-cell {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Content markers (Phase 6). */
+.zone-cell-content {
+  font-weight: 600;
+}
+
+/* “Done” states (opened/depleted/defeated/discovered) — keep subtle. */
+.zone-cell-content-done {
+  opacity: 0.55;
+}
+
 /* === Messages === */
 #zone-messages-list {
   list-style-type: disc;
