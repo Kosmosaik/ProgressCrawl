@@ -12,7 +12,7 @@
 
     // NOTE: This ID currently includes "d1" due to earlier experiments.
     // Long-term, prefer difficulty-free IDs like "primitive_forest".
-    PRIMITIVE_FOREST: "primitive_forest_d1",
+    PRIMITIVE_FOREST: "primitive_forest",
   };
 
   // Defaults
