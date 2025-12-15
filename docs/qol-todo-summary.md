@@ -67,6 +67,10 @@ These should be handled in future QoL passes or adjacent branches:
 
 10. **Remove the "Zone" menu text in the top and move up the Zone Info field instead. We need to save on UI height in the zone panel.
 
+11. **Randomize min/max width & height and fillChance on zones. Set different min/max and fill values depending on zone type/biome.
+
+12. 
+
 ## IDEAS BELOW ARE NOT TO BE IMPLEMENTED YET. THESE ARE ONLY IDEAS AND NEED TO BE THOUGHT ON FURTHER.
 xx. **Add a "view distance" mechanic (3×3 area around player)**
    - Currently, exploration reveals individual tiles based on exploration logic; there is no concept of **FOV/view distance** beyond “explored vs unexplored”.
@@ -76,7 +80,11 @@ xx. **Add a "view distance" mechanic (3×3 area around player)**
 xx. **Mark all tiles with "?" (including blocked tiles) until explored**
    - Current render logic shows `#` for blocked tiles right away.
    - TODO: change rendering so all tiles initially show as `?` and only reveal their actual type (`#`, `.`, `L`) after being explored (or revealed by view distance).
-   - NOTE: This will only be done if view distance is implemented and increased from one tile as we have today. 
+   - NOTE: This will only be done if view distance is implemented and increased from one tile as we have today.
+
+xx. **Mouse control: Panning around the zone**
+   xx.2 **Follow Character button: Makes zone view follow/focus on player.**
+   When these two functions has been implemented, I think we can remove the ugly scroll bar in the zone view?
 
 ---
 
