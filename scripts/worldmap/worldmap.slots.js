@@ -46,7 +46,7 @@ function initializeWorldSlotMetadata(tile, options) {
     tile.biome = opts.biome || BIOME.TEMPERATE_FOREST;
   }
   if (!tile.templateId) {
-    tile.templateId = opts.templateId || "primitive_forest_easy";
+    tile.templateId = opts.templateId || "primitive_forest_d1";
   }
 
   // Difficulty rating 1–10 — derived from the zone template if available.
