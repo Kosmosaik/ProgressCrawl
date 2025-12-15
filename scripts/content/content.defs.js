@@ -52,7 +52,7 @@
     id: "oak_tree",
     kind: "resourceNode",
     name: "Oak Tree",
-    glyph: "T",
+    glyph: "♣",
     tags: { eras: ["primitive"], biomes: ["temperate_forest"], difficulty: [1, 2, 3] },
     stateDefaults: { depleted: false, chargesLeft: 1 },
     blocksMovement: false,
