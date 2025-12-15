@@ -9,6 +9,12 @@ function addToInventory(inst) {
   inventory[inst.name].items.push(inst);
   renderInventory();
 
+  // Unlock inventory UI the first time any system adds an item
+  // (zone harvesting/kills/POIs as well as the loot button).
+  if (typeof window.ensureInventoryUnlocked === "function") {
+    window.ensureInventoryUnlocked();
+  }
+
   // Auto-save after loot/change (debounced in Phase 8)
   if (typeof requestSaveCurrentGame === "function") {
     requestSaveCurrentGame();
