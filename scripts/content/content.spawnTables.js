@@ -143,10 +143,15 @@
   // Phase 3.1 — Template tables (back-compat + handcrafted exceptions)
   // ---------------------------------------------------------------------------
 
-  // Back-compat template id still used by some world slot templates.
-  // Keep this aligned with ctx range 1-3 for now.
-  // Note: template id is still named "primitive_forest_easy" in world slots.
-  PC.content.SPAWN_TABLES.byTemplate.primitive_forest_easy = {
+  // Template override for the current default procedural template.
+  // Mainly useful for quick testing and special-case templates.
+  // Most spawning should use byContext (biome/era/difficultyRating) instead.
+  const DEFAULT_TEMPLATE_ID =
+    (window.PC && PC.ZONES && PC.ZONES.DEFAULT_PROCEDURAL_TEMPLATE_ID)
+      ? PC.ZONES.DEFAULT_PROCEDURAL_TEMPLATE_ID
+      : "primitive_forest_d1";
+
+  PC.content.SPAWN_TABLES.byTemplate[DEFAULT_TEMPLATE_ID] = {
     resourceNodes: ctx.resourceNodes,
     entities: ctx.entities,
     pois: ctx.pois,
