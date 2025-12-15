@@ -133,7 +133,9 @@
   }
 
   function saveAfterInteraction() {
-    if (typeof window.saveCurrentGame === "function") {
+    if (typeof window.requestSaveCurrentGame === "function") {
+      window.requestSaveCurrentGame();
+    } else if (typeof window.saveCurrentGame === "function") {
       window.saveCurrentGame();
     }
   }
