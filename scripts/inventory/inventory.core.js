@@ -8,13 +8,11 @@ function addToInventory(inst) {
   inventory[inst.name].qty += 1;
   inventory[inst.name].items.push(inst);
   renderInventory();
-  
-  if (typeof window.ensureInventoryUnlocked === "function") {
-  window.ensureInventoryUnlocked();
-}
 
-  // Auto-save after loot/change
-  if (typeof saveCurrentGame === "function") {
+  // Auto-save after loot/change (debounced in Phase 8)
+  if (typeof requestSaveCurrentGame === "function") {
+    requestSaveCurrentGame();
+  } else if (typeof saveCurrentGame === "function") {
     saveCurrentGame();
   }
 }
@@ -37,8 +35,10 @@ function removeOneFromGroup(itemName, quality, stats) {
 
     renderInventory();
 
-    // Auto-save after trashing / removing
-    if (typeof saveCurrentGame === "function") {
+    // Auto-save after trashing / removing (debounced in Phase 8)
+    if (typeof requestSaveCurrentGame === "function") {
+      requestSaveCurrentGame();
+    } else if (typeof saveCurrentGame === "function") {
       saveCurrentGame();
     }
   }
@@ -86,8 +86,10 @@ function equipOneFromGroup(itemName, quality, stats) {
     recomputeCharacterComputedState();
   }
 
-  // Auto-save
-  if (typeof saveCurrentGame === "function") {
+  // Auto-save (debounced in Phase 8)
+  if (typeof requestSaveCurrentGame === "function") {
+    requestSaveCurrentGame();
+  } else if (typeof saveCurrentGame === "function") {
     saveCurrentGame();
   }
 }
