@@ -3,7 +3,7 @@
 This document is meant as a handoff / technical summary for the next GPT assistant and for future maintenance.
 
 ---
-### TODOs made AFTER 0.0.70e (prioritize these first).
+### TODOs written down AFTER 0.0.70e (prioritize these first).
 
 1. **Add resource nodes, entities, POIs and Locations to Discoveries-list.**
    - Currently only Locations are stored in Discoveries after interaction has been made.  
@@ -23,10 +23,12 @@ This document is meant as a handoff / technical summary for the next GPT assista
 
 4. **When playing on phone: For some reason the player icon is not centered in the tile. This is NOT an important QoL change, and I don't want it to mess up anything for PC**
 
-     
+5. **Make so the character have to walk next to the tile before harvesting/killing/interacting with anything. If character is not near a tile when we interact, move him and then trigger loot or whatever.**
+
+6. **Tilemap is not square, but rectangular. Can we make it more square so each tile/symbol is square? **
 
 
-### TODOs created BEFORE 0.0.70e
+### TODOs writtend down BEFORE 0.0.70e
 
 These should be handled in future QoL passes or adjacent branches:
 
