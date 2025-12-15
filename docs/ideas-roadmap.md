@@ -1,13 +1,3 @@
-===== FIXES: =====
-
-
-===== GRAPHICS: =====
-
-
-===== IMPROVEMENTS: =====
-@ Add debug mode (type in like a password in console to activate).
-  Add statistics, loot rate help, timers, speed up time/progress stuff.
-
 ===== TOOLS =====
 @ Item creator (Tool that makes it easy adding items that automcatically adds it to the items.js file
 @ Biome / Location / POI creator: Tool to add new biomes, locations, pois and loot pools
