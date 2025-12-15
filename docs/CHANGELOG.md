@@ -5,7 +5,7 @@ This update improves world generation, zone structure, and difficulty scaling, m
 
 ---
 
-## ✨ Added
+## Added
 - **Distance-Based Zone Difficulty**
   - Zones now receive a difficulty rating based on how far they are from the starting area.
   - Nearby zones are generally safer, while distant zones trend toward higher difficulty.
@@ -17,7 +17,7 @@ This update improves world generation, zone structure, and difficulty scaling, m
 
 ---
 
-## 🔄 Changed
+## Changed
 - **Procedural Zone Generation**
   - Removed special handling for the four zones adjacent to the starting area.
   - All non-starting zones are now generated using the same procedural rules.
@@ -36,14 +36,14 @@ This update improves world generation, zone structure, and difficulty scaling, m
 
 ---
 
-## 🗑️ Removed
+## Removed
 - Hardcoded generation of the four adjacent zones around the starting area.
 - Template-based difficulty overrides for normal procedural zones.
 - Redundant default template spawn overrides.
 
 ---
 
-## 🐛 Fixed
+## Fixed
 - All procedural zones previously spawning at difficulty 1.
 - Inconsistent difficulty behavior when exploring outward from the starting area.
 - Fragile zone template references that made renaming or adding zones error-prone.
