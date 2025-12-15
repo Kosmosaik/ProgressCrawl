@@ -8,3 +8,5 @@
 - Do NOT introduce template IDs with difficulty in the name.
 - All content population must go through initializeZoneContent().
 - Persistence must be delta-based (no regenerating player-changed content).
+
+Tutorial zones are handcrafted exceptions and do not follow normal procedural rules.
