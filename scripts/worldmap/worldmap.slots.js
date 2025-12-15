@@ -21,7 +21,10 @@ const WORLD_SLOT_TEMPLATES = {
   tutorial: {
     era: ERA.PRIMITIVE,
     biome: BIOME.TEMPERATE_FOREST,
-    templateId: "tutorial_cave",
+    // Separate template id for the starting zone.
+    // The actual starting zone uses a static ZONE_DEFINITIONS entry (tutorial_zone),
+    // but keeping a dedicated templateId helps keep metadata intent clear.
+    templateId: "tutorial_start",
   },
   primitive_forest_d1: {
     era: ERA.PRIMITIVE,
