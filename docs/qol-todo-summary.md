@@ -6,9 +6,6 @@ This document is meant as a handoff / technical summary for the next GPT assista
 ### TODOs written down AFTER 0.0.70e (prioritize these first).
 
 1. **Add resource nodes, entities, POIs and Locations to Discoveries-list.**
-   - Currently only Locations are stored in Discoveries after interaction has been made.  
-   - TODO: whenever content is revealed upon "explored" it should be added to the Discoveries list.
-   - Add sorting options (by name, by distance to player, by content/node type"
    - Add interact/move to function. When content is clicked in Discoveries, move player to the tile and then open up the window for harvest/kill etc.
   
 2. **Zone Items and Loot-Button items are not unified and grade system is not implemented**
