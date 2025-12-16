@@ -19,7 +19,8 @@ const zoneMessagesListEl = document.getElementById("zone-messages-list");
 const zoneDiscoveriesListEl = document.getElementById("zone-discoveries-list");
 const zoneDiscoveriesSortEl = document.getElementById("zone-discoveries-sort");
 
-let zoneDiscoveriesSortMode = "distance";
+// UI-only (not saved)
+let zoneDiscoveriesSort = { key: "distance", dir: "asc" };
 
 const zoneFinishMenuEl = document.getElementById("zone-finish-menu");
 const zoneFinishStayBtn = document.getElementById("zone-finish-stay");
@@ -176,6 +177,24 @@ function isTileExplored(zone, x, y) {
   if (!row) return false;
   const tile = row[x];
   return !!tile && tile.explored === true;
+}
+
+function updateZoneDiscoveriesSortBar() {
+  if (!zoneDiscoveriesSortBarEl) return;
+
+  const buttons = zoneDiscoveriesSortBarEl.querySelectorAll("button.sort-btn[data-key]");
+  for (const btn of buttons) {
+    const key = btn.dataset.key;
+    const baseLabel = (key === "distance") ? "Distance" : (key === "name") ? "Name" : "Type";
+
+    if (key === zoneDiscoveriesSort.key) {
+      btn.classList.add("active");
+      btn.textContent = `${baseLabel} ${zoneDiscoveriesSort.dir === "asc" ? "▲" : "▼"}`;
+    } else {
+      btn.classList.remove("active");
+      btn.textContent = baseLabel;
+    }
+  }
 }
 
 function renderZoneDiscoveries(zone) {
@@ -527,11 +546,24 @@ window.addZoneDiscovery = addZoneDiscovery;
 
 // ----- Button wiring -----
 
-// Discoveries sort control (UI-only)
-if (zoneDiscoveriesSortEl) {
-  zoneDiscoveriesSortEl.addEventListener("change", () => {
-    zoneDiscoveriesSortMode = zoneDiscoveriesSortEl.value || "distance";
-    if (typeof renderZoneUI === "function") renderZoneUI();
+// Discoveries sort (inventory-style tabs)
+if (zoneDiscoveriesSortBarEl) {
+  zoneDiscoveriesSortBarEl.addEventListener("click", (e) => {
+    const btn = e.target && e.target.closest ? e.target.closest("button.sort-btn[data-key]") : null;
+    if (!btn) return;
+
+    const key = btn.dataset.key;
+    if (!key) return;
+
+    if (zoneDiscoveriesSort.key === key) {
+      zoneDiscoveriesSort.dir = (zoneDiscoveriesSort.dir === "asc") ? "desc" : "asc";
+    } else {
+      zoneDiscoveriesSort.key = key;
+      zoneDiscoveriesSort.dir = "asc";
+    }
+
+    updateZoneDiscoveriesSortBar();
+    renderZoneUI();
   });
 }
 
