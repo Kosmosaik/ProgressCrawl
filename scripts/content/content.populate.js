@@ -173,7 +173,7 @@
       .filter(Boolean);
   }
 
-  function placeKind(zone, kindKey, kindDefKey, kindCfg, rngObj, used) {
+  function placeKind(zone, worldTile, kindKey, kindDefKey, kindCfg, rngObj, used) {
     if (!zone || !zone.content) return;
     if (!kindCfg) return;
 
@@ -296,10 +296,10 @@
     // Used tile positions across all kinds (no overlap for first pass).
     const used = new Set();
 
-    placeKind(zone, "resourceNodes", "resourceNodes", table.resourceNodes, rngResources, used);
-    placeKind(zone, "entities", "entities", table.entities, rngEntities, used);
-    placeKind(zone, "pois", "pois", table.pois, rngPois, used);
-    placeKind(zone, "locations", "locations", table.locations, rngLocations, used);
+    placeKind(zone, worldTile, "resourceNodes", "resourceNodes", table.resourceNodes, rngResources, used);
+    placeKind(zone, worldTile, "entities", "entities", table.entities, rngEntities, used);
+    placeKind(zone, worldTile, "pois", "pois", table.pois, rngPois, used);
+    placeKind(zone, worldTile, "locations", "locations", table.locations, rngLocations, used);
 
     // Light debug (can be removed later)
     if (PC?.config?.debug?.logContentGen) {
