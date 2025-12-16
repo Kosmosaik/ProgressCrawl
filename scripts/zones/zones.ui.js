@@ -229,6 +229,96 @@ function getZoneStatusText(zone, stats) {
   return "Status: Idle (Ready to explore)";
 }
 
+// ---------------------------------------------------------------------------
+// QoL Step 1 — Discoveries list (state-driven, based on explored tiles)
+// ---------------------------------------------------------------------------
+//
+// Rule:
+// - Discoveries are derived from zone state (zone.tiles explored + zone.content arrays)
+// - No new persistent state is introduced here.
+
+function renderZoneDiscoveries(zone) {
+  if (!zoneDiscoveriesListEl) return;
+
+  // If no zone, clear the list.
+  if (!zone || !zone.tiles) {
+    zoneDiscoveriesListEl.innerHTML = "";
+    return;
+  }
+
+  // Helper: tile explored?
+  function isExploredTile(x, y) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+    if (y < 0 || y >= zone.height || x < 0 || x >= zone.width) return false;
+    const row = zone.tiles[y];
+    if (!row) return false;
+    const tile = row[x];
+    return !!tile && tile.explored === true;
+  }
+
+  // Helper: get display name
+  function getDisplayName(kind, inst) {
+    const def = getContentDef(kind, inst.defId);
+    return (def && def.name) ? def.name : (inst.defId || "Unknown");
+  }
+
+  // Helper: build one <li>
+  function addEntry(kind, inst) {
+    const x = Number(inst.x);
+    const y = Number(inst.y);
+    if (!isExploredTile(x, y)) return;
+
+    const name = getDisplayName(kind, inst);
+    const label = getInstanceStateLabel(kind, inst); // uses inst.state.* in this project
+
+    const li = document.createElement("li");
+    li.textContent = label ? `${name} ${label}` : name;
+
+    // (Future steps will use these for sorting/click-to-move)
+    li.dataset.kind = kind;
+    li.dataset.id = String(inst.id ?? "");
+    li.dataset.x = String(x);
+    li.dataset.y = String(y);
+
+    zoneDiscoveriesListEl.appendChild(li);
+  }
+
+  // Rebuild list from scratch (derived UI).
+  zoneDiscoveriesListEl.innerHTML = "";
+
+  // NOTE: No sorting yet (that’s Step 2 in your QoL list).
+  // We keep stable order by kind, then the array order used by generation.
+  const content = zone.content || {};
+
+  if (Array.isArray(content.resourceNodes)) {
+    for (const inst of content.resourceNodes) {
+      if (!inst) continue;
+      addEntry("resourceNodes", inst);
+    }
+  }
+
+  if (Array.isArray(content.entities)) {
+    for (const inst of content.entities) {
+      if (!inst) continue;
+      addEntry("entities", inst);
+    }
+  }
+
+  if (Array.isArray(content.pois)) {
+    for (const inst of content.pois) {
+      if (!inst) continue;
+      addEntry("pois", inst);
+    }
+  }
+
+  if (Array.isArray(content.locations)) {
+    for (const inst of content.locations) {
+      if (!inst) continue;
+      addEntry("locations", inst);
+    }
+  }
+}
+
 function renderZoneUI() {
   if (!zonePanel) return;
 
@@ -254,6 +344,12 @@ function renderZoneUI() {
     if (zoneExploreNextBtn) zoneExploreNextBtn.disabled = true;
     if (zoneExploreAutoBtn) zoneExploreAutoBtn.disabled = true;
     if (zoneExploreStopBtn) zoneExploreStopBtn.disabled = true;
+
+    // QoL Step 1: clear discoveries UI when not in a zone
+    if (typeof renderZoneDiscoveries === "function") {
+      renderZoneDiscoveries(null);
+    }
+
     return;
   }
 
@@ -310,6 +406,11 @@ function renderZoneUI() {
   }
   if (zoneExploreStopBtn) {
     zoneExploreStopBtn.disabled = !EXP().zoneExplorationActive;
+  }
+
+  // QoL Step 1: rebuild discoveries list from explored+content state
+  if (typeof renderZoneDiscoveries === "function") {
+    renderZoneDiscoveries(zone);
   }
 }
 
