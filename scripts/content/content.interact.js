@@ -106,12 +106,18 @@
 
   // Minimal mapping to inventory item instances.
   // Inventory expects: name, category, rarity, quality, stats, description.
-  function giveLootToInventory(lootRows) {
+  // QoL: quality now derives from the interacted instance's quality.
+  function giveLootToInventory(lootRows, sourceInst) {
     if (!Array.isArray(lootRows) || lootRows.length === 0) return;
     if (typeof window.addToInventory !== "function") {
       console.warn("addToInventory() not found; loot will not be added.");
       return;
     }
+
+    const q =
+      (sourceInst && typeof sourceInst.quality === "string" && sourceInst.quality.length >= 2)
+        ? sourceInst.quality
+        : "F0";
 
     for (const row of lootRows) {
       const qty = Math.max(1, Number(row.qty || 1));
@@ -121,7 +127,7 @@
           category: "Zone Loot",
           description: "",
           rarity: "F",
-          quality: "F0",
+          quality: q,
           stats: {},
           slot: null,
           weaponType: null,
@@ -161,7 +167,7 @@
     const lootTableId = def?.lootTableId;
     if (lootTableId) {
       const loot = rollLoot(lootTableId, `${zone.id}:rn:${inst.id}:loot`);
-      giveLootToInventory(loot);
+      giveLootToInventory(loot, inst);
       if (loot.length > 0) {
         msg(`You harvest ${nm}.`);
         msg(`Loot: ${loot.map(r => `${r.item} x${r.qty}`).join(", ")}`);
@@ -195,7 +201,7 @@
       }
       const lootTableId = def?.lootTableId;
       const loot = lootTableId ? rollLoot(lootTableId, `${zone.id}:poi:${inst.id}:loot`) : [];
-      giveLootToInventory(loot);
+      giveLootToInventory(loot, inst);
       inst.state.opened = true;
       if (PC.content.markOpened) PC.content.markOpened(zone.id, inst.id);
 
@@ -215,7 +221,7 @@
 
       const lootTableId = def?.lootTableId;
       const loot = lootTableId ? rollLoot(lootTableId, `${zone.id}:poi:${inst.id}:loot`) : [];
-      giveLootToInventory(loot);
+      giveLootToInventory(loot, inst);
 
       inst.state.inspected = true;
       inst.state.opened = true;
@@ -254,7 +260,7 @@
     // 0.0.70e: auto-resolve encounter.
     const lootTableId = def?.lootTableId;
     const loot = lootTableId ? rollLoot(lootTableId, `${zone.id}:e:${inst.id}:loot`) : [];
-    giveLootToInventory(loot);
+    giveLootToInventory(loot, inst);
 
     inst.state.defeated = true;
     if (PC.content.markDefeated) PC.content.markDefeated(zone.id, inst.id);
