@@ -127,6 +127,118 @@ function getMarkerGlyph(kind, inst, def) {
   return ".";
 }
 
+// ---------------------------------------------------------------------------
+// QoL — Discoveries list (state-driven, derived from explored + active content)
+// ---------------------------------------------------------------------------
+// Rules:
+// - Only show content on explored tiles.
+// - Remove from list when "done" in the same way the grid stops rendering it:
+//   - resourceNodes: depleted/harvested/chargesLeft<=0 => hidden
+//   - entities: defeated => hidden
+//   - pois: for now, opened/inspected/triggered => hidden (static POIs later)
+//   - locations: always show on explored tiles (discovered label if applicable)
+//
+// NOTE: No new persistent state is introduced here. This is derived UI.
+
+function isInstanceHiddenFromZone(kind, inst) {
+  const s = inst && inst.state ? inst.state : {};
+
+  if (kind === "resourceNodes") {
+    const spent =
+      !!s.depleted ||
+      !!s.harvested ||
+      (typeof s.chargesLeft === "number" && s.chargesLeft <= 0);
+    return spent;
+  }
+
+  if (kind === "entities") {
+    return !!s.defeated;
+  }
+
+  if (kind === "pois") {
+    // For now: remove most POIs when interacted with.
+    // (Later we can introduce "static" POI types that remain.)
+    return !!s.opened || !!s.inspected || !!s.triggered;
+  }
+
+  // locations remain visible
+  return false;
+}
+
+function isTileExplored(zone, x, y) {
+  if (!zone || !zone.tiles) return false;
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+  if (y < 0 || y >= zone.height || x < 0 || x >= zone.width) return false;
+  const row = zone.tiles[y];
+  if (!row) return false;
+  const tile = row[x];
+  return !!tile && tile.explored === true;
+}
+
+function renderZoneDiscoveries(zone) {
+  if (!zoneDiscoveriesListEl) return;
+
+  // No zone => clear list
+  if (!zone) {
+    zoneDiscoveriesListEl.innerHTML = "";
+    return;
+  }
+
+  const content = zone.content || {};
+  zoneDiscoveriesListEl.innerHTML = "";
+
+  function addEntry(kind, inst) {
+    if (!inst) return;
+
+    const x = Number(inst.x);
+    const y = Number(inst.y);
+    if (!isTileExplored(zone, x, y)) return;
+
+    // Hide "done" stuff (matches how the zone map hides nodes/entities etc)
+    if (isInstanceHiddenFromZone(kind, inst)) return;
+
+    const def = getContentDef(kind, inst.defId);
+    const name = def && def.name ? def.name : (inst.defId || "Unknown");
+
+    const glyph = getMarkerGlyph(kind, inst, def);
+    const label = getInstanceStateLabel(kind, inst); // locations may show (discovered)
+
+    const li = document.createElement("li");
+    li.className = "zone-discovery-entry";
+    li.dataset.kind = kind;
+    li.dataset.id = String(inst.id ?? "");
+    li.dataset.x = String(x);
+    li.dataset.y = String(y);
+
+    const glyphEl = document.createElement("span");
+    glyphEl.className = "zone-discovery-glyph";
+    glyphEl.textContent = glyph;
+
+    const textEl = document.createElement("span");
+    textEl.className = "zone-discovery-text";
+    textEl.textContent = label ? `${name} ${label}` : name;
+
+    li.appendChild(glyphEl);
+    li.appendChild(textEl);
+
+    zoneDiscoveriesListEl.appendChild(li);
+  }
+
+  // Keep stable ordering (Step 2 will add sorting later)
+  if (Array.isArray(content.resourceNodes)) {
+    for (const inst of content.resourceNodes) addEntry("resourceNodes", inst);
+  }
+  if (Array.isArray(content.entities)) {
+    for (const inst of content.entities) addEntry("entities", inst);
+  }
+  if (Array.isArray(content.pois)) {
+    for (const inst of content.pois) addEntry("pois", inst);
+  }
+  if (Array.isArray(content.locations)) {
+    for (const inst of content.locations) addEntry("locations", inst);
+  }
+}
+
 // Build an HTML grid from the current zone.
 // # = blocked, ? = unexplored walkable, . = explored walkable, L = locked
 // Each cell is a <span> so we can click on it.
@@ -345,11 +457,10 @@ function renderZoneUI() {
     if (zoneExploreAutoBtn) zoneExploreAutoBtn.disabled = true;
     if (zoneExploreStopBtn) zoneExploreStopBtn.disabled = true;
 
-    // QoL Step 1: clear discoveries UI when not in a zone
+    // QoL: Clear discoveries when not in a zone
     if (typeof renderZoneDiscoveries === "function") {
       renderZoneDiscoveries(null);
     }
-
     return;
   }
 
@@ -408,7 +519,7 @@ function renderZoneUI() {
     zoneExploreStopBtn.disabled = !EXP().zoneExplorationActive;
   }
 
-  // QoL Step 1: rebuild discoveries list from explored+content state
+  // QoL: Discoveries derived from explored tiles + active content
   if (typeof renderZoneDiscoveries === "function") {
     renderZoneDiscoveries(zone);
   }
