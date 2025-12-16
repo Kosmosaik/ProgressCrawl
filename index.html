@@ -151,17 +151,17 @@
         <div id="zone-discoveries-column">
           <div class="zone-section-title">Discoveries</div>
         
-          <div class="zone-discoveries-controls">
-            <label for="zone-discoveries-sort" class="zone-discoveries-sort-label">Sort</label>
-            <select id="zone-discoveries-sort">
-              <option value="distance">Distance</option>
-              <option value="name">Name</option>
-              <option value="type">Type</option>
-            </select>
+          <!-- Inventory-style sort bar -->
+          <div id="zone-discoveries-sort-bar" class="inventory-sort-bar">
+            <span>Sort by:</span>
+            <button type="button" class="sort-btn" data-key="distance">Distance</button>
+            <button type="button" class="sort-btn" data-key="name">Name</button>
+            <button type="button" class="sort-btn" data-key="type">Type</button>
           </div>
         
           <ul id="zone-discoveries-list"></ul>
-        </div>    
+        </div>
+
       </div>
     </div>
 
