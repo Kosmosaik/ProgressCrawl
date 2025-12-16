@@ -277,17 +277,22 @@ function renderZoneDiscoveries(zone) {
     zoneDiscoveriesSortMode ||
     "distance";
 
-  if (mode === "name") {
-    entries.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (mode === "type") {
+  // Sort
+  const key = zoneDiscoveriesSort.key || "distance";
+  const dir = zoneDiscoveriesSort.dir || "asc";
+  const mul = (dir === "asc") ? 1 : -1;
+
+  if (key === "name") {
+    entries.sort((a, b) => mul * a.name.localeCompare(b.name));
+  } else if (key === "type") {
     entries.sort((a, b) => {
-      if (a.kind !== b.kind) return a.kind.localeCompare(b.kind);
-      return a.name.localeCompare(b.name);
+      if (a.kind !== b.kind) return mul * a.kind.localeCompare(b.kind);
+      return mul * a.name.localeCompare(b.name);
     });
   } else {
     // distance default
     entries.sort((a, b) => {
-      if (a.d2 !== b.d2) return a.d2 - b.d2;
+      if (a.d2 !== b.d2) return mul * (a.d2 - b.d2);
       return a.name.localeCompare(b.name);
     });
   }
@@ -508,6 +513,7 @@ function renderZoneUI() {
 
   // QoL: Discoveries derived from explored tiles + active content
   if (typeof renderZoneDiscoveries === "function") {
+    updateZoneDiscoveriesSortBar();
     renderZoneDiscoveries(zone);
   }
 }
