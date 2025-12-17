@@ -68,14 +68,14 @@
   });
 
   PC.content.register("resourceNodes", {
-    id: "stone_cluster",
+    id: "rock_cluster",
     kind: "resourceNode",
-    name: "Stone Cluster",
+    name: "Rock Cluster",
     glyph: "▲",
     tags: { eras: ["primitive"], biomes: ["temperate_forest"], difficulty: [1, 2, 3] },
     stateDefaults: { depleted: false, chargesLeft: 2 },
     blocksMovement: false,
-    lootTableId: "stone_basic",
+    lootTableId: "rock_cluster",
   });
 
   PC.content.register("resourceNodes", {
