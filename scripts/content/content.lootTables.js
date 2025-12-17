@@ -24,7 +24,7 @@
   PC.content.LOOT_TABLES = PC.content.LOOT_TABLES || {};
 
   // --- Resource nodes ---
-  PC.content.LOOT_TABLES.tree_basic = {
+  PC.content.LOOT_TABLES.oak_tree = {
     rolls: 2,
     entries: [
       { item: "Oak Log", w: 80, qty: [1, 2] },
