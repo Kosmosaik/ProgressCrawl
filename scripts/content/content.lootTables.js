@@ -32,7 +32,7 @@
     ],
   };
 
-  PC.content.LOOT_TABLES.stone_basic = {
+  PC.content.LOOT_TABLES.rock_cluster = {
     rolls: 2,
     entries: [
       { item: "Small Stone", w: 85, qty: [1, 2] },
