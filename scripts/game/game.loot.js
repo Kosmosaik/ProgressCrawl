@@ -55,6 +55,7 @@ function startLoot() {
       const stats = template.statRanges ? rollStats(template.statRanges, mult) : {};
 
       const instance = {
+        itemId: template.id || null,
         name: template.name,
         category: template.category,
         description: template.description,

@@ -119,6 +119,7 @@ function groupByIdentical(items = []) {
 // Category label helper for headers
 function categoryHeaderLabel(category = "Other") {
   const map = {
+    "Consumable": "CONSUMABLES",
     "Material": "MATERIALS",
     "Crafting Component": "CRAFTING COMPONENTS",
     "Resource": "RESOURCES",

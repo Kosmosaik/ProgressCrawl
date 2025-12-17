@@ -1,3 +1,28 @@
+## [0.0.70i] — Item Unification & Stable Identity (QoL)
+
+### Added
+- Stable **Item IDs (`itemId`)** to all items in the Item Catalog.
+- Unified item resolution system that supports:
+  - `itemId` (preferred, stable)
+  - `item` name (legacy, back-compatible)
+- Inventory item instances now carry both **`itemId`** (internal identity) and **display name**.
+- Zone loot, entity drops, POIs, and loot button all generate items through the same unified item pipeline.
+- Item grade (F0–S9) is fully preserved and applied consistently across all loot sources.
+
+### Changed
+- Loot tables now support referencing items by **`itemId`** instead of display name.
+- Item resolution prioritizes `itemId` first, with safe fallback to item name.
+- Zone-generated loot now inherits correct item metadata (category, rarity, description) from the Item Catalog instead of placeholder values.
+- Item display names can now be renamed freely without breaking loot tables (when using `itemId`).
+
+### Fixed
+- Eliminated the conceptual split between “Zone Items” and core items.
+- Prevented future breakage caused by item renames in `items.js`.
+- Ensured all loot sources produce consistent, fully-defined inventory items.
+- Maintained grade-separated stacking behavior without modification.
+
+---
+
 # ProgressCrawl — Patch 0.0.70h
 ## QoL Update: Zone Interaction & Discoveries
 

@@ -90,44 +90,78 @@
     const out = [];
     for (let i = 0; i < rolls; i++) {
       const pick = pickWeighted ? pickWeighted(rng, tbl.entries) : tbl.entries[0];
-      if (!pick || !pick.item) continue;
+      if (!pick) continue;
+
       const q = Array.isArray(pick.qty) ? pick.qty : [1, 1];
       const qty = rng.nextInt(q[0], q[1]);
-      out.push({ item: String(pick.item), qty });
+
+      // Support both:
+      // - pick.itemId (preferred)
+      // - pick.item (legacy)
+      const itemId = pick.itemId ? String(pick.itemId) : null;
+      const item = pick.item ? String(pick.item) : null;
+
+      if (!itemId && !item) continue;
+
+      out.push({ itemId, item, qty });
     }
 
-    // Combine duplicates (Wood+Wood => Wood x2)
+    // Combine duplicates:
+    // - Prefer merging by itemId if present, else by item name
     const merged = new Map();
     for (const it of out) {
-      merged.set(it.item, (merged.get(it.item) || 0) + it.qty);
+      const key = it.itemId ? `id:${it.itemId}` : `nm:${it.item}`;
+      const prev = merged.get(key);
+      if (!prev) {
+        merged.set(key, { itemId: it.itemId || null, item: it.item || null, qty: it.qty });
+      } else {
+        prev.qty += it.qty;
+      }
     }
-    return Array.from(merged.entries()).map(([item, qty]) => ({ item, qty }));
+
+    return Array.from(merged.values());
   }
 
-  // Minimal mapping to inventory item instances.
-  // Inventory expects: name, category, rarity, quality, stats, description.
-  function giveLootToInventory(lootRows) {
+  // Item unification:
+  // - Resolve row.item via ItemCatalog (items.js)
+  // - Build inventory instances through PC.api.items.makeInventoryInstanceFromName
+  // - Preserve grade separation (quality stays per-instance and is passed through)
+  function giveLootToInventory(lootRows, sourceInst) {
     if (!Array.isArray(lootRows) || lootRows.length === 0) return;
     if (typeof window.addToInventory !== "function") {
       console.warn("addToInventory() not found; loot will not be added.");
       return;
     }
 
+    const q =
+      (sourceInst && typeof sourceInst.quality === "string" && sourceInst.quality.length >= 2)
+        ? sourceInst.quality
+        : "F0";
+
+    const mk =
+      (PC.api && PC.api.items && typeof PC.api.items.makeInventoryInstance === "function")
+        ? PC.api.items.makeInventoryInstance
+        : null;
+
     for (const row of lootRows) {
       const qty = Math.max(1, Number(row.qty || 1));
       for (let i = 0; i < qty; i++) {
-        window.addToInventory({
-          name: row.item,
-          category: "Zone Loot",
-          description: "",
-          rarity: "F",
-          quality: "F0",
-          stats: {},
-          slot: null,
-          weaponType: null,
-          skillReq: null,
-          attrPerPower: null,
-        });
+        const inst = mk
+          ? mk({ itemId: row.itemId, item: row.item }, q)
+          : {
+              name: row.item,
+              category: "Zone Loot",
+              description: "",
+              rarity: "Common",
+              quality: q,
+              stats: {},
+              slot: null,
+              weaponType: null,
+              skillReq: null,
+              attrPerPower: null,
+            };
+
+        window.addToInventory(inst);
       }
     }
   }
@@ -161,7 +195,7 @@
     const lootTableId = def?.lootTableId;
     if (lootTableId) {
       const loot = rollLoot(lootTableId, `${zone.id}:rn:${inst.id}:loot`);
-      giveLootToInventory(loot);
+      giveLootToInventory(loot, inst);
       if (loot.length > 0) {
         msg(`You harvest ${nm}.`);
         msg(`Loot: ${loot.map(r => `${r.item} x${r.qty}`).join(", ")}`);
@@ -195,7 +229,7 @@
       }
       const lootTableId = def?.lootTableId;
       const loot = lootTableId ? rollLoot(lootTableId, `${zone.id}:poi:${inst.id}:loot`) : [];
-      giveLootToInventory(loot);
+      giveLootToInventory(loot, inst);
       inst.state.opened = true;
       if (PC.content.markOpened) PC.content.markOpened(zone.id, inst.id);
 
@@ -215,7 +249,7 @@
 
       const lootTableId = def?.lootTableId;
       const loot = lootTableId ? rollLoot(lootTableId, `${zone.id}:poi:${inst.id}:loot`) : [];
-      giveLootToInventory(loot);
+      giveLootToInventory(loot, inst);
 
       inst.state.inspected = true;
       inst.state.opened = true;
@@ -254,7 +288,7 @@
     // 0.0.70e: auto-resolve encounter.
     const lootTableId = def?.lootTableId;
     const loot = lootTableId ? rollLoot(lootTableId, `${zone.id}:e:${inst.id}:loot`) : [];
-    giveLootToInventory(loot);
+    giveLootToInventory(loot, inst);
 
     inst.state.defeated = true;
     if (PC.content.markDefeated) PC.content.markDefeated(zone.id, inst.id);

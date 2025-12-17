@@ -4,16 +4,8 @@ This document is meant as a handoff / technical summary for the next GPT assista
 
 ---
 ### TODOs written down AFTER 0.0.70e (prioritize these first).
-  
-1. **Zone Items and Loot-Button items are not unified and grade system is not implemented**
-   - Currently items are separated from zone system and loot button. Zone items are not generated from items.js and they have no properties for future expansion.
-   - Question: Do we remove items.js, or generate ALL items from items.js instead?
-   - Item grades are not generating/randomizing in zones. All items have F0 as grade. The idea is that all resource nodes, entities, POIs etc
-     will roll a random grade upon creation/generation, and the items looted from the node, entity, POI etc will derive from that grade generation.
-     Higher difficulty in zone = higher chance to generate higher grade (F0-S9).
-   - In the future, player will be able to "improve" the grade when harvesting/looting entity etc based on skills, tool handling etc.
 
-2. **Tilemap is not square, but rectangular. Can we make it more square so each tile/symbol is square? **
+1. **Tilemap is not square, but rectangular. Can we make it more square so each tile/symbol is square? **
 
 
 ### TODOs writtend down BEFORE 0.0.70e

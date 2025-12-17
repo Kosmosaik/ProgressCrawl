@@ -105,7 +105,7 @@
     countRange: [14, 22],
     entries: [
       { defId: "oak_tree", w: 70 },
-      { defId: "stone_cluster", w: 20 },
+      { defId: "rock_cluster", w: 20 },
       { defId: "fallen_branches", w: 10 },
     ],
   };
@@ -116,10 +116,10 @@
     baseTiles: 100,
     minCount: 1,
     maxCount: 10,
-    countRange: [2, 5],
+    countRange: [1, 4],
     entries: [
       { defId: "rabbit", w: 85 },
-      { defId: "wolf", w: 15 },
+      { defId: "wolf", w: 10 },
     ],
   };
 
@@ -134,7 +134,6 @@
   ctx.locations = {
     countRange: [0, 1],
     entries: [
-      { defId: "ruined_clearing", w: 70 },
       { defId: "cave_entrance", w: 30 },
     ],
   };
@@ -150,7 +149,7 @@
       countRange: [2, 4],
       entries: [
         { defId: "oak_tree", w: 70 },
-        { defId: "stone_cluster", w: 30 },
+        { defId: "rock_cluster", w: 30 },
       ],
     },
     entities: {

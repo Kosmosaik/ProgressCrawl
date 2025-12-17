@@ -64,18 +64,18 @@
     tags: { eras: ["primitive"], biomes: ["temperate_forest"], difficulty: [1, 2, 3] },
     stateDefaults: { depleted: false, chargesLeft: 1 },
     blocksMovement: false,
-    lootTableId: "tree_basic",
+    lootTableId: "oak_tree",
   });
 
   PC.content.register("resourceNodes", {
-    id: "stone_cluster",
+    id: "rock_cluster",
     kind: "resourceNode",
-    name: "Stone Cluster",
+    name: "Rock Cluster",
     glyph: "▲",
     tags: { eras: ["primitive"], biomes: ["temperate_forest"], difficulty: [1, 2, 3] },
     stateDefaults: { depleted: false, chargesLeft: 2 },
     blocksMovement: false,
-    lootTableId: "stone_basic",
+    lootTableId: "rock_cluster",
   });
 
   PC.content.register("resourceNodes", {
@@ -150,16 +150,6 @@
   });
 
   // Locations (bigger landmarks; still tile-anchored for now)
-  PC.content.register("locations", {
-    id: "ruined_clearing",
-    kind: "location",
-    name: "Ruined Clearing",
-    glyph: "○",
-    tags: { eras: ["primitive"], biomes: ["temperate_forest"], difficulty: [1, 2, 3] },
-    stateDefaults: { discovered: false },
-    blocksMovement: false,
-  });
-
   PC.content.register("locations", {
     id: "cave_entrance",
     kind: "location",
