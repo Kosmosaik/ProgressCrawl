@@ -27,15 +27,15 @@
   PC.content.LOOT_TABLES.tree_basic = {
     rolls: 2,
     entries: [
-      { item: "Oak Log", w: 80, qty: [1, 3] },
-      { item: "Sap", w: 20, qty: [1, 1] },
+      { item: "Oak Log", w: 80, qty: [1, 2] },
+      { item: "Sap", w: 20, qty: [1, 2] },
     ],
   };
 
   PC.content.LOOT_TABLES.stone_basic = {
     rolls: 2,
     entries: [
-      { item: "Small Stone", w: 85, qty: [1, 3] },
+      { item: "Small Stone", w: 85, qty: [1, 2] },
       { item: "Flint", w: 15, qty: [1, 1] },
     ],
   };
@@ -43,7 +43,9 @@
   PC.content.LOOT_TABLES.branches_basic = {
     rolls: 1,
     entries: [
-      { item: "Wood", w: 100, qty: [1, 2] },
+      { item: "Twig", w: 100, qty: [1, 3] },
+      { item: "Dry Leaves", w: 100, qty: [1, 3] },
+      { item: "Wooden Branch", w: 80, qty: [1, 2] },
     ],
   };
 
@@ -58,8 +60,12 @@
   PC.content.LOOT_TABLES.stash_small = {
     rolls: 2,
     entries: [
-      { item: "Coin", w: 70, qty: [3, 12] },
-      { item: "Bandage", w: 30, qty: [1, 2] },
+      { item: "Contaminated Water", w: 100, qty: [1, 2] },
+      { item: "Bandage", w: 50, qty: [1, 2] },
+      { item: "Purified Water", w: 20, qty: [1, 2] },
+      { item: "Digging Stick", w: 10, qty: [1, 2] },
+      { item: "Primitive Pickaxe", w: 10, qty: [1, 2] },
+      { item: "Crude Knife", w: 10, qty: [1, 2] },
     ],
   };
 
@@ -68,8 +74,7 @@
   PC.content.LOOT_TABLES.trap_snare_basic = {
     rolls: 1,
     entries: [
-      { item: "Rope", w: 40, qty: [1, 1] },
-      { item: "Wood", w: 40, qty: [1, 2] },
+      { item: "Rope", w: 80, qty: [1, 1] },
       { item: "Meat", w: 20, qty: [1, 1] },
     ],
   };
@@ -78,16 +83,16 @@
   PC.content.LOOT_TABLES.rabbit_basic = {
     rolls: 1,
     entries: [
-      { item: "Meat", w: 60, qty: [1, 1] },
-      { item: "Hide", w: 40, qty: [1, 1] },
+      { item: "Raw Rabbit Meat", w: 60, qty: [1, 1] },
+      { item: "Animal Hide", w: 40, qty: [1, 1] },
     ],
   };
 
   PC.content.LOOT_TABLES.wolf_basic = {
     rolls: 2,
     entries: [
-      { item: "Meat", w: 60, qty: [1, 2] },
-      { item: "Hide", w: 40, qty: [1, 1] },
+      { item: "Raw Wolf Meat", w: 60, qty: [1, 2] },
+      { item: "Animal Hide", w: 40, qty: [1, 1] },
     ],
   };
 })();
