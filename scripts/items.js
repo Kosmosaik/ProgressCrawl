@@ -140,6 +140,13 @@ const ItemCatalog = [
     rarity: "Common",
     usage: "Restores 10 HP when brewed or eaten raw.",
   },
+  {
+    name: "Rope",
+    category: "Material",
+    description: "A length of rope used for traps, crafting, and bindings.",
+    rarity: "Common",
+    usage: "Crafting, traps",
+  },
   // ========== TOOLS ==========
   {
     name: "Basic Fishing Rod",
@@ -246,13 +253,6 @@ const ItemCatalog = [
     description: "Sticky tree sap used in primitive crafting and adhesives.",
     rarity: "Common",
     usage: "Crafting, adhesive",
-  },
-  {
-    name: "Rope",
-    category: "Resource",
-    description: "A length of rope used for traps, crafting, and bindings.",
-    rarity: "Common",
-    usage: "Crafting, traps",
   },
   {
     name: "Wooden Branch",
