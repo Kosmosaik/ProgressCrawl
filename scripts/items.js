@@ -178,6 +178,13 @@ const ItemCatalog = [
     usage: "Ropes, simple baskets, fire tinder",
   },
   {
+    name: "Oak Log",
+    category: "Resource",
+    description: "Wood material used for crafting and building.",
+    rarity: "Abundant",
+    usage: "Crafting, building, fuel",
+  },
+  {
     name: "Purified Water",
     category: "Resource",
     description: "Treated water. Drinkable and can be used in cooking.",
@@ -215,9 +222,30 @@ const ItemCatalog = [
   {
     name: "Small Stone",
     category: "Resource",
-    description: "Small stone used in primitive crafting.",
+    description: "Basic stone material used for crafting and building.",
     rarity: "Abundant",
     usage: "Craft primitive items",
+  },
+  {
+    name: "Flint",
+    category: "Resource",
+    description: "A hard stone used for primitive tools and fire-starting.",
+    rarity: "Common",
+    usage: "Crafting, fire-starting",
+  },
+  {
+    name: "Sap",
+    category: "Resource",
+    description: "Sticky tree sap used in primitive crafting and adhesives.",
+    rarity: "Common",
+    usage: "Crafting, adhesive",
+  },
+  {
+    name: "Rope",
+    category: "Resource",
+    description: "A length of rope used for traps, crafting, and bindings.",
+    rarity: "Common",
+    usage: "Crafting, traps",
   },
   {
     name: "Wooden Branch",
@@ -254,6 +282,14 @@ const ItemCatalog = [
     description: "Poor thing.",
     rarity: "Common",
     usage: "Eh",
+  },
+// ========== CONSUMABLES ==========
+  {
+    name: "Bandage",
+    category: "Resource",
+    description: "A basic bandage used to treat wounds.",
+    rarity: "Uncommon",
+    usage: "Healing, first aid",
   }
 ];
 
