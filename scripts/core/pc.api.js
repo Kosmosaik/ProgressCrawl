@@ -77,6 +77,74 @@ console.log("pc.api.js loaded");
     return best;
   };
 
+    // QoL: Item unification — resolve zone loot item strings through items.js (ItemCatalog).
+  // This ensures zone loot produces the same "item instance shape" as the loot button.
+  PC.api.items.getTemplateByName = PC.api.items.getTemplateByName || function getTemplateByName(name) {
+    const n = String(name || "").trim();
+    if (!n) return null;
+
+    // items.js defines ItemCatalog in global scope (non-module). Use it directly.
+    if (typeof ItemCatalog === "undefined" || !Array.isArray(ItemCatalog)) return null;
+
+    for (let i = 0; i < ItemCatalog.length; i++) {
+      const it = ItemCatalog[i];
+      if (it && it.name === n) return it;
+    }
+    return null;
+  };
+
+  PC.api.items.makeInventoryInstanceFromName =
+    PC.api.items.makeInventoryInstanceFromName ||
+    function makeInventoryInstanceFromName(name, quality) {
+      const template = PC.api.items.getTemplateByName(name);
+
+      const q = (typeof quality === "string" && quality.length >= 2) ? quality : "F0";
+
+      // If template is missing, still create a usable instance (but warn).
+      if (!template) {
+        console.warn(`[Item Unification] Missing ItemCatalog entry for: "${name}"`);
+        return {
+          name: String(name || "Unknown"),
+          category: "Unknown",
+          description: "",
+          rarity: "Common",
+          quality: q,
+          stats: {},
+          slot: null,
+          weaponType: null,
+          skillReq: null,
+          attrPerPower: null,
+        };
+      }
+
+      // If the item has statRanges, roll stats using existing global helpers (loot button uses these too).
+      let stats = {};
+      try {
+        if (template.statRanges && typeof rollStats === "function" && typeof qualityMultiplier === "function") {
+          const mult = qualityMultiplier(q);
+          stats = rollStats(template.statRanges, mult);
+        }
+      } catch {
+        // Keep stats empty if anything goes wrong; no hard failure.
+        stats = {};
+      }
+
+      return {
+        name: template.name,
+        category: template.category,
+        description: template.description || "",
+        rarity: template.rarity || "Common",
+        quality: q,
+        stats,
+        slot: template.slot || null,
+
+        // Pass through combat metadata if present (same as loot button)
+        weaponType: template.weaponType || null,
+        skillReq: typeof template.skillReq === "number" ? template.skillReq : null,
+        attrPerPower: typeof template.attrPerPower === "number" ? template.attrPerPower : null,
+      };
+    };
+
   // Zone actions (wire to existing functions if present)
   PC.api.zone.exploreOnce = () => {
     if (typeof startZoneManualExploreOnce === "function") startZoneManualExploreOnce();
