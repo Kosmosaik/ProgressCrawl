@@ -105,7 +105,7 @@
     countRange: [14, 22],
     entries: [
       { defId: "oak_tree", w: 70 },
-      { defId: "stone_cluster", w: 20 },
+      { defId: "rock_cluster", w: 20 },
       { defId: "fallen_branches", w: 10 },
     ],
   };
@@ -150,7 +150,7 @@
       countRange: [2, 4],
       entries: [
         { defId: "oak_tree", w: 70 },
-        { defId: "stone_cluster", w: 30 },
+        { defId: "rock_cluster", w: 30 },
       ],
     },
     entities: {
