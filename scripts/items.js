@@ -171,6 +171,13 @@ const ItemCatalog = [
   },
   // ========== RESOURCES ==========
   {
+    name: "Animal Hide",
+    category: "Resource",
+    description: "Animal hide used for leatherworking and basic armor.",
+    rarity: "Common",
+    usage: "Crafting, armor",
+  },
+  {
     name: "Contaminated Water",
     category: "Resource",
     description: "Untreated water. Drinking is not recommended.",
@@ -282,6 +289,20 @@ const ItemCatalog = [
     description: "Poor thing.",
     rarity: "Common",
     usage: "Eh",
+  },
+  {
+    name: "Raw Wolf Meat",
+    category: "Food",
+    description: "Raw Meat. Can be cooked for better effects.",
+    rarity: "Common",
+    usage: "Food, cooking",
+  },
+  {
+    name: "Raw Rabbit Meat",
+    category: "Food",
+    description: "Raw Meat. Can be cooked for better effects.",
+    rarity: "Common",
+    usage: "Food, cooking",
   },
 // ========== CONSUMABLES ==========
   {
