@@ -60,7 +60,7 @@ const ZONE_TEMPLATES = {
     difficulty: 1,
     generator: "cellular_automata",
     generatorConfig: {
-      width: 44,
+      width: 46,
       height: 20,
       fillChance: 0.47,
       smoothIterations: 4,
