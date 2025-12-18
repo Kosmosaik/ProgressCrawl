@@ -62,7 +62,7 @@ const ZONE_TEMPLATES = {
     generatorConfig: {
       width: 46,
       height: 20,
-      fillChance: 0.47,
+      fillChance: 0.49,
       smoothIterations: 4,
       borderIsWall: true,
     },
