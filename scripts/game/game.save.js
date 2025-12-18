@@ -111,6 +111,9 @@ function saveCurrentGame() {
       equipmentUnlocked: equipmentUnlocked,
     },
 
+    // QoL — Persist player HP (stored in PC.state)
+    currentHP: (typeof STATE === "function" ? (STATE().currentHP ?? 0) : 0),
+
     // 0.0.70c+ — persist world map (owned by PC.state, not a global)
     worldMap: (typeof STATE === "function" ? STATE().worldMap : null),
 
@@ -143,6 +146,14 @@ function loadSave(id) {
       : createDefaultSkills(), // fallback for old saves
   };
   currentSaveId = save.id;
+
+  // QoL — Restore player HP (backward compatible)
+  const savedHP = (typeof save.currentHP === "number") ? save.currentHP : 0;
+  if (typeof setCurrentHP === "function") {
+    setCurrentHP(savedHP);
+  } else if (typeof STATE === "function") {
+    STATE().currentHP = savedHP;
+  }
 
   loadInventoryFromSnapshot(save.inventory || {});
 
