@@ -825,4 +825,25 @@
   100% { color: #ffffff; }
 }
 
+/* -------------------------------------------------------------------------
+   QoL — Locked Gate lockpick UI
+   ------------------------------------------------------------------------- */
+
+.lockpick-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.lockpick-ui .lockpick-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  opacity: 0.95;
+}
+
+.lockpick-ui input[type="range"] {
+  width: 100%;
+}
 
