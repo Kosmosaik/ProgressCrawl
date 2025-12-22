@@ -12,7 +12,7 @@ Accuracy, verification, and architectural stability are more important than spee
    - Do **not** rely on memory from previous chats.
 
 2. **Read the authoritative project summary first**
-   - One `.md` file (`qol-todo-summary.md`) is the **authoritative overview** of the project.
+   - One `.md` file (`ROADMAP.md`) is the **authoritative overview** of the project.
    - Read it **before** doing any analysis.
    - Treat it as ground truth over assumptions or conventions.
 
