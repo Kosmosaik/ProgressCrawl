@@ -340,22 +340,26 @@ window.openLockedGateModalAt = function openLockedGateModalAt(x, y) {
             unlockZoneLockedRegion(zone, tile.lockedRegionId);
           }
 
-          // Persist unlock into zoneDeltas
-          try {
+        // Persist unlock into zoneDeltas (use normalized delta object)
+        try {
+          const zid = String(zone.id);
+          const rid = String(tile.lockedRegionId);
+        
+          if (window.PC?.content && typeof PC.content.getZoneDelta === "function") {
+            const d = PC.content.getZoneDelta(zid);
+            d.unlockedRegions = d.unlockedRegions || {};
+            d.unlockedRegions[rid] = true;
+          } else {
+            // Fallback (shouldn't happen in this project, but safe)
             const st = STATE();
-            const zid = zone.id;
-            const rid = tile.lockedRegionId;
-
-            if (!st.zoneDeltas) st.zoneDeltas = {};
-            if (!st.zoneDeltas[zid]) st.zoneDeltas[zid] = {};
-            if (!st.zoneDeltas[zid].unlockedRegions) {
-              st.zoneDeltas[zid].unlockedRegions = {};
-            }
-
+            st.zoneDeltas = st.zoneDeltas || {};
+            st.zoneDeltas[zid] = st.zoneDeltas[zid] || {};
+            st.zoneDeltas[zid].unlockedRegions = st.zoneDeltas[zid].unlockedRegions || {};
             st.zoneDeltas[zid].unlockedRegions[rid] = true;
-          } catch (e) {
-            console.warn("Failed to persist unlocked region", e);
           }
+        } catch (e) {
+          console.warn("Failed to persist unlocked region", e);
+        }
 
           if (typeof requestSaveCurrentGame === "function") {
             requestSaveCurrentGame();
