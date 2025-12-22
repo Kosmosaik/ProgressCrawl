@@ -9,7 +9,7 @@
 <body>
 <div id="game-header">
   <span class="game-header-text">
-    ProgressCrawl — v0.0.70i-dev : QoL Part 4 v5
+    ProgressCrawl — v0.0.71-stable : QoL Update
   </span>
   <button id="patch-notes-btn" type="button">Patch Notes</button>
 </div>
@@ -82,16 +82,13 @@
 
   <!-- MAIN GAME SCREEN -->
   <section id="screen-game" hidden>
-    <!-- Character summary -->
-    <div id="character-summary">
-      <span id="char-summary-name"></span>
-      <span id="char-summary-stats"></span>
-    </div>
-
-    <div id="menu-bar">
-      <button id="inventory-btn" style="display:none;">Inventory</button>
-      <button id="equipment-btn" style="display:none;">Equipment</button>
-      <button id="skills-btn" class="menu-btn">Skills</button>
+    <div id="top-bar">
+      <!-- Menu buttons (Inventory / Equipment / Skills) -->
+      <div id="menu-bar">
+        <button id="inventory-btn" style="display:none;">Inventory</button>
+        <button id="equipment-btn" style="display:none;">Equipment</button>
+        <button id="skills-btn" class="menu-btn">Skills</button>
+      </div>
     </div>
 
     <div id="zone-panel" class="panel">
@@ -118,7 +115,7 @@
             <div id="zone-actions">
               <button id="zone-explore-next" type="button">Explore Next Tile</button>
               <button id="zone-explore-auto" type="button">Explore Auto</button>
-              <button id="zone-explore-stop" type="button">Stop Exploring</button>
+              <button id="zone-leave-zone" type="button">Leave Zone</button>
             </div>
           </div>
     
@@ -128,13 +125,6 @@
             <div id="zone-grid-container">
               <pre id="zone-grid-view" class="zone-grid-view">(No active zone)</pre>
             </div>
-          </div>
-          
-          <!-- Finish Zone -->
-          <div class="zone-section" id="zone-finish-menu" style="display:none;">
-            <div class="zone-section-title">Zone Completed</div>
-            <button id="zone-finish-stay" type="button">STAY</button>
-            <button id="zone-finish-leave" type="button">LEAVE ZONE</button>
           </div>
           
           <!-- Messages -->

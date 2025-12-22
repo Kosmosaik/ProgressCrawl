@@ -12,8 +12,8 @@ const zoneStatsEl = document.getElementById("zone-exploration-stats");
 const zoneGridEl = document.getElementById("zone-grid-view");
 
 const zoneExploreNextBtn = document.getElementById("zone-explore-next");
-const zoneExploreAutoBtn = document.getElementById("zone-explore-auto");
-const zoneExploreStopBtn = document.getElementById("zone-explore-stop");
+const zoneExploreAutoBtn = document.getElementById("zone-explore-auto"); // now a toggle (auto/stop)
+const zoneLeaveZoneBtn = document.getElementById("zone-leave-zone");
 
 const zoneMessagesListEl = document.getElementById("zone-messages-list");
 const zoneDiscoveriesListEl = document.getElementById("zone-discoveries-list");
@@ -21,10 +21,6 @@ const zoneDiscoveriesSortBarEl = document.getElementById("zone-discoveries-sort-
 
 // UI-only (not saved)
 let zoneDiscoveriesSort = { key: "distance", dir: "asc" };
-
-const zoneFinishMenuEl = document.getElementById("zone-finish-menu");
-const zoneFinishStayBtn = document.getElementById("zone-finish-stay");
-const zoneFinishLeaveBtn = document.getElementById("zone-finish-leave");
 
 function getZone() {
   return STATE().currentZone;
@@ -179,6 +175,223 @@ function isTileExplored(zone, x, y) {
   return !!tile && tile.explored === true;
 }
 
+function isLockedGateTile(tile) {
+  return !!tile && tile.kind === "locked" && tile.lockedRegionId != null;
+}
+
+// Gate becomes "discovered" when any cardinal neighbor is explored.
+function isLockedGateDiscovered(zone, x, y) {
+  if (!zone || !zone.tiles) return false;
+  if (y < 0 || y >= zone.height || x < 0 || x >= zone.width) return false;
+
+  const tile = zone.tiles[y]?.[x];
+  if (!isLockedGateTile(tile)) return false;
+
+  const dirs = [
+    { dx: 1, dy: 0 },
+    { dx: -1, dy: 0 },
+    { dx: 0, dy: 1 },
+    { dx: 0, dy: -1 },
+  ];
+
+  for (const d of dirs) {
+    const nx = x + d.dx;
+    const ny = y + d.dy;
+    if (ny < 0 || ny >= zone.height || nx < 0 || nx >= zone.width) continue;
+    if (isTileExplored(zone, nx, ny)) return true;
+  }
+  return false;
+}
+
+function isZoneIdleForInteraction() {
+  if (EXP().zoneExplorationActive) return false;
+  if (EXP().zoneManualExplorationActive) return false;
+  if (MOV().zoneMovementActive) return false;
+  return true;
+}
+
+// ---- Locked Gate Modal + Lockpick flow ----
+let __lockpickTimerId = null;
+let __lockpickStartedAt = 0;
+
+function clearLockpickTimer() {
+  if (__lockpickTimerId != null) {
+    clearInterval(__lockpickTimerId);
+    __lockpickTimerId = null;
+  }
+  __lockpickStartedAt = 0;
+}
+
+function applyTrapDamage(amount) {
+  const dmg = Math.max(0, Number(amount || 0));
+  if (dmg <= 0) return;
+
+  if (typeof getCurrentHP === "function" && typeof setCurrentHP === "function") {
+    const cur = Number(getCurrentHP() || 0);
+    const next = Math.max(0, cur - dmg);
+    setCurrentHP(next);
+  } else {
+    // Fallback: direct state, only if helpers missing
+    try {
+      const st = STATE();
+      st.currentHP = Math.max(0, Number(st.currentHP || 0) - dmg);
+    } catch {}
+  }
+
+  if (typeof updateHPBar === "function") {
+    updateHPBar();
+  }
+}
+
+// Exposed so pc.api.js can call it after moving adjacent.
+window.openLockedGateModalAt = function openLockedGateModalAt(x, y) {
+  const zone = getZone();
+  if (!zone) return;
+
+  const tx = Number(x);
+  const ty = Number(y);
+  if (!Number.isFinite(tx) || !Number.isFinite(ty)) return;
+
+  const tile = zone.tiles?.[ty]?.[tx];
+  if (!isLockedGateTile(tile)) return;
+
+  // Must be discovered
+  if (!isLockedGateDiscovered(zone, tx, ty)) return;
+
+  // Must be idle
+  if (!isZoneIdleForInteraction()) return;
+
+  // Must be adjacent (movement system should ensure this)
+  // If not adjacent for any reason, route through move helper.
+  let px = null, py = null;
+  for (let yy = 0; yy < zone.height; yy++) {
+    const row = zone.tiles[yy];
+    if (!row) continue;
+    for (let xx = 0; xx < zone.width; xx++) {
+      const t = row[xx];
+      if (t && t.hasPlayer) { px = xx; py = yy; break; }
+    }
+    if (px != null) break;
+  }
+  if (px == null || py == null || (Math.abs(px - tx) + Math.abs(py - ty)) !== 1) {
+    if (window.PC?.api?.zone && typeof PC.api.zone.moveToAndOpenGateAt === "function") {
+      PC.api.zone.moveToAndOpenGateAt(tx, ty);
+    }
+    return;
+  }
+
+  clearLockpickTimer();
+
+  const showModal = typeof window.showChoiceModal === "function" ? window.showChoiceModal : null;
+  if (!showModal) return;
+
+  const bodyHtml =
+    `<div>Locked Gate</div>` +
+    `<div class="lockpick-ui">` +
+    `  <div class="lockpick-row"><span>Lockpicking</span><span id="lockpick-time">3.0s</span></div>` +
+    `  <input id="lockpick-progress" type="range" min="0" max="3000" value="0" disabled />` +
+    `</div>`;
+
+  showModal({
+    title: "Locked Gate",
+    bodyHtml,
+    primaryText: "Lockpick",
+
+    secondaryText: "Leave",
+    keepOpenOnPrimary: true,
+    onSecondary: () => {
+      clearLockpickTimer();
+    },
+    onPrimary: () => {
+      // Start lockpick attempt (3 seconds)
+      const primaryBtn = document.getElementById("modal-primary");
+      const secondaryBtn = document.getElementById("modal-secondary");
+      const prog = document.getElementById("lockpick-progress");
+      const timeEl = document.getElementById("lockpick-time");
+
+      if (!primaryBtn || !secondaryBtn || !prog || !timeEl) return;
+
+      // Prevent re-click / closing during attempt
+      primaryBtn.disabled = true;
+      secondaryBtn.disabled = true;
+
+      __lockpickStartedAt = Date.now();
+      const duration = 3000;
+
+      __lockpickTimerId = setInterval(() => {
+        const elapsed = Date.now() - __lockpickStartedAt;
+        const clamped = Math.max(0, Math.min(duration, elapsed));
+        prog.value = String(clamped);
+
+        const remainingMs = Math.max(0, duration - clamped);
+        timeEl.textContent = `${(remainingMs / 1000).toFixed(1)}s`;
+
+        if (elapsed < duration) return;
+
+        // Finish attempt
+        clearLockpickTimer();
+
+        // Roll 50/50
+        const success = Math.random() < 0.5;
+
+        if (success) {
+          // Unlock region (runtime)
+          if (typeof unlockZoneLockedRegion === "function") {
+            unlockZoneLockedRegion(zone, tile.lockedRegionId);
+          }
+
+        // Persist unlock into zoneDeltas (use normalized delta object)
+        try {
+          const zid = String(zone.id);
+          const rid = String(tile.lockedRegionId);
+        
+          if (window.PC?.content && typeof PC.content.getZoneDelta === "function") {
+            const d = PC.content.getZoneDelta(zid);
+            d.unlockedRegions = d.unlockedRegions || {};
+            d.unlockedRegions[rid] = true;
+          } else {
+            // Fallback (shouldn't happen in this project, but safe)
+            const st = STATE();
+            st.zoneDeltas = st.zoneDeltas || {};
+            st.zoneDeltas[zid] = st.zoneDeltas[zid] || {};
+            st.zoneDeltas[zid].unlockedRegions = st.zoneDeltas[zid].unlockedRegions || {};
+            st.zoneDeltas[zid].unlockedRegions[rid] = true;
+          }
+        } catch (e) {
+          console.warn("Failed to persist unlocked region", e);
+        }
+
+          if (typeof requestSaveCurrentGame === "function") {
+            requestSaveCurrentGame();
+          }
+
+          if (typeof addZoneMessage === "function") {
+            addZoneMessage("You successfully pick the lock.");
+          }
+
+          if (typeof window.hideChoiceModal === "function") window.hideChoiceModal();
+          if (typeof renderZoneUI === "function") renderZoneUI();
+          return;
+        }
+
+        // Failure -> trap
+        applyTrapDamage(20);
+
+        if (typeof requestSaveCurrentGame === "function") {
+          requestSaveCurrentGame();
+        }
+
+        if (typeof addZoneMessage === "function") {
+          addZoneMessage("The lock snaps shut and a trap injures you! (-20 HP)");
+        }
+
+        if (typeof window.hideChoiceModal === "function") window.hideChoiceModal();
+        if (typeof renderZoneUI === "function") renderZoneUI();
+      }, 50);
+    },
+  });
+};
+
 function updateZoneDiscoveriesSortBar() {
   if (!zoneDiscoveriesSortBarEl) return;
 
@@ -237,6 +450,29 @@ function renderZoneDiscoveries(zone) {
 
   const entries = [];
 
+  // Collect discovered locked gates (treat as POI-like interactable)
+  // NOTE: This block MUST live after `entries` is initialized (and after `distSq` exists).
+  for (let yy = 0; yy < zone.height; yy++) {
+    for (let xx = 0; xx < zone.width; xx++) {
+      const t = zone.tiles?.[yy]?.[xx];
+      if (!isLockedGateTile(t)) continue;
+
+      // Gate must be discovered to appear in Discoveries
+      if (!isLockedGateDiscovered(zone, xx, yy)) continue;
+
+      entries.push({
+        kind: "gates",
+        id: `gate:${xx},${yy}`,
+        x: xx,
+        y: yy,
+        name: "Locked Gate",
+        glyph: "L",
+        label: "",
+        d2: distSq(xx, yy),
+      });
+    }
+  }
+  
   function collect(kind, inst) {
     if (!inst) return;
 
@@ -325,40 +561,39 @@ function buildZoneGridString(zone) {
   if (!zone) return "(No active zone)";
 
   const contentIndex = buildContentIndex(zone);
-
   let html = "";
 
   for (let y = 0; y < zone.height; y++) {
     for (let x = 0; x < zone.width; x++) {
       const tile = zone.tiles[y][x];
 
-      // --- 1) Base character based on tile kind + explored ---
       let ch;
       if (tile.kind === "blocked") {
         ch = "#";
       } else if (tile.kind === "locked") {
-        ch = "L"; // lock gate
+        // Hide gate until discovered
+        ch = isLockedGateDiscovered(zone, x, y) ? "L" : "?";
       } else {
-        // walkable
         ch = tile.explored ? "." : "?";
       }
 
-      // --- 2) Base CSS class for the cell ---
       let classes = "zone-cell";
 
-      // --- 3) Blinking for the tile that WILL be explored next ---
-      // This is the "pending" tile (during the delay) and should:
-      // - show as "?"
-      // - have a special CSS class so it can blink
-      if (tile.isActiveExplore && !tile.explored) {
+      if (tile.kind === "locked") {
+        classes += " zone-cell-gate";
+        if (!isLockedGateDiscovered(zone, x, y)) {
+          classes += " zone-cell-gate-hidden";
+        }
+      }
+
+      if (tile.isActiveExplore && !tile.explored && tile.kind !== "locked") {
         ch = "?";
         classes += " zone-cell-exploring";
       }
 
-      // --- 4) Content markers (only on explored tiles) ---
-      // Priorities: entity > POI > node > location.
-      // NOTE: We only show markers for explored walkable tiles.
       let title = "";
+
+      // Content markers (only on explored walkable tiles)
       if (tile.kind !== "blocked" && tile.kind !== "locked" && tile.explored) {
         const top = getTopTileContent(zone, contentIndex, x, y);
         if (top && top.inst) {
@@ -367,18 +602,16 @@ function buildZoneGridString(zone) {
           ch = getMarkerGlyph(top.kind, top.inst, def);
           classes += " zone-cell-content";
           classes += ` zone-cell-content-${top.kind}`;
-          // Phase 9:
-          // - Nodes/entities that are "done" are not rendered at all.
-          // - POIs keep a "done" style when opened.
-          // - Locations remain visible without a "done" style.
           if (label && top.kind !== "locations") classes += " zone-cell-content-done";
           const nm = def && def.name ? def.name : top.inst.defId;
           title = `${nm} ${label}`.trim();
         }
       }
 
-      // --- 5) Player marker ☻ on the latest explored tile ---
-      // We now track the player directly on the tile as tile.hasPlayer.
+      if (tile.kind === "locked" && isLockedGateDiscovered(zone, x, y)) {
+        title = "Locked Gate";
+      }
+
       if (tile.hasPlayer) {
         ch = "☻";
       }
@@ -424,24 +657,17 @@ function renderZoneUI() {
 
   // No zone at all
   if (!zone) {
-    if (zoneNameEl) {
-      zoneNameEl.textContent = "Zone: (none)";
-    }
-    if (zoneStatusEl) {
-      zoneStatusEl.textContent = "Status: Not in a zone";
-    }
-    if (zoneStatsEl) {
-      zoneStatsEl.textContent = "Explored: 0% (0 / 0 tiles)";
-    }
-    if (zoneGridEl) {
-      zoneGridEl.textContent = "(No active zone)";
-    }
-    if (zoneFinishMenuEl) {
-      zoneFinishMenuEl.style.display = "none";
-    }
+    if (zoneNameEl) zoneNameEl.textContent = "Zone: (none)";
+    if (zoneStatusEl) zoneStatusEl.textContent = "Status: Not in a zone";
+    if (zoneStatsEl) zoneStatsEl.textContent = "Explored: 0% (0 / 0 tiles)";
+    if (zoneGridEl) zoneGridEl.textContent = "(No active zone)";
+
     if (zoneExploreNextBtn) zoneExploreNextBtn.disabled = true;
     if (zoneExploreAutoBtn) zoneExploreAutoBtn.disabled = true;
-    if (zoneExploreStopBtn) zoneExploreStopBtn.disabled = true;
+    if (zoneLeaveZoneBtn) zoneLeaveZoneBtn.disabled = true;
+
+    // Ensure toggle label resets when leaving a zone
+    if (zoneExploreAutoBtn) zoneExploreAutoBtn.textContent = "Explore Auto";
 
     // QoL: Clear discoveries when not in a zone
     if (typeof renderZoneDiscoveries === "function") {
@@ -479,12 +705,7 @@ function renderZoneUI() {
     zoneGridEl.innerHTML = buildZoneGridString(zone);
   }
 
-  // Finish menu: always visible while in a zone
-  if (zoneFinishMenuEl) {
-    zoneFinishMenuEl.style.display = "block";
-  }
-
-  // Button states
+  // Can we start exploring?
   const canExplore =
     inZone() &&
     !MOV().zoneMovementActive &&
@@ -495,14 +716,25 @@ function renderZoneUI() {
   const anyExploreInProgress =
     EXP().zoneExplorationActive || EXP().zoneManualExplorationActive;
 
+  // Explore Next: only when idle + canExplore
   if (zoneExploreNextBtn) {
     zoneExploreNextBtn.disabled = !canExplore || anyExploreInProgress;
   }
+
+  // Explore Auto: toggle button (start/stop)
   if (zoneExploreAutoBtn) {
-    zoneExploreAutoBtn.disabled = !canExplore || anyExploreInProgress;
+    const autoActive = !!EXP().zoneExplorationActive;
+
+    zoneExploreAutoBtn.textContent = autoActive ? "Stop Exploring" : "Explore Auto";
+
+    // If auto is running, we always allow stopping.
+    // If auto is NOT running, we require canExplore + idle.
+    zoneExploreAutoBtn.disabled = autoActive ? false : (!canExplore || anyExploreInProgress);
   }
-  if (zoneExploreStopBtn) {
-    zoneExploreStopBtn.disabled = !EXP().zoneExplorationActive;
+
+  // Leave Zone: available while in a zone (even if completed)
+  if (zoneLeaveZoneBtn) {
+    zoneLeaveZoneBtn.disabled = !inZone();
   }
 
   // QoL: Discoveries derived from explored tiles + active content
@@ -577,26 +809,31 @@ if (zoneExploreNextBtn) {
 }
 
 
-// Explore Auto (start tick-based exploring)
+// Explore Auto (toggle start/stop)
 if (zoneExploreAutoBtn) {
   zoneExploreAutoBtn.addEventListener("click", () => {
     if (!getZone() || !inZone()) return;
-    if (EXP().zoneExplorationActive) return; // already exploring
-    if (typeof startZoneExplorationTicks === "function") {
-      PC.api.zone.startAutoExplore();
-    }
-    renderZoneUI();
-  });
-}
 
-// Stop Exploring (stop tick-based exploring)
-if (zoneExploreStopBtn) {
-  zoneExploreStopBtn.addEventListener("click", () => {
-    if (!EXP().zoneExplorationActive) return;
-    if (typeof stopZoneExplorationTicks === "function") {
-      PC.api.zone.stopAutoExplore();
+    // If currently running -> stop
+    if (EXP().zoneExplorationActive) {
+      if (window.PC?.api?.zone && typeof PC.api.zone.stopAutoExplore === "function") {
+        PC.api.zone.stopAutoExplore();
+      } else if (typeof stopZoneExplorationTicks === "function") {
+        stopZoneExplorationTicks();
+      }
+      addZoneMessage("You stop to catch your breath and look around.");
+      renderZoneUI();
+      return;
     }
-    addZoneMessage("You stop to catch your breath and look around.");
+
+    // Otherwise start
+    if (typeof startZoneExplorationTicks === "function" || (window.PC?.api?.zone && typeof PC.api.zone.startAutoExplore === "function")) {
+      if (window.PC?.api?.zone && typeof PC.api.zone.startAutoExplore === "function") {
+        PC.api.zone.startAutoExplore();
+      } else {
+        startZoneExplorationTicks();
+      }
+    }
     renderZoneUI();
   });
 }
@@ -607,96 +844,58 @@ if (zoneExploreStopBtn) {
 if (zoneGridEl) {
   zoneGridEl.addEventListener("click", (event) => {
     const target = event.target;
-    if (!target || !target.classList || !target.classList.contains("zone-cell")) {
-      return;
-    }
+    if (!target || !target.classList || !target.classList.contains("zone-cell")) return;
 
     const x = parseInt(target.getAttribute("data-x"), 10);
     const y = parseInt(target.getAttribute("data-y"), 10);
     if (Number.isNaN(x) || Number.isNaN(y)) return;
+
     const zone = getZone();
     if (!zone) return;
-    
-    const tile = zone.tiles[y][x];
-    
+
+    const tile = zone.tiles?.[y]?.[x];
     if (!tile) return;
 
-    // Only handle clicks on locked gate tiles that belong to a locked region.
-    if (tile.kind !== "locked" || tile.lockedRegionId == null) {
-      // Phase 6.3 — Click routing for content interactions.
-      // UI does not decide the interaction type; it only routes the click.
-      // Only allow interaction on explored, walkable tiles.
-      if (tile.kind === "blocked") return;
-      if (!tile.explored) return;
+    // Locked gate click routing
+    if (isLockedGateTile(tile)) {
+      // Must be discovered
+      if (!isLockedGateDiscovered(zone, x, y)) return;
 
-      if (window.PC?.api?.zone && typeof PC.api.zone.moveToAndInteractAt === "function") {
-        PC.api.zone.moveToAndInteractAt(x, y);
-      }
+      // Must be idle
+      if (!isZoneIdleForInteraction()) return;
 
-      // Even if no handler exists yet, we still refresh to keep tooltips/markers correct.
-      if (typeof renderZoneUI === "function") {
-        renderZoneUI();
+      // Move adjacent then open modal
+      if (window.PC?.api?.zone && typeof PC.api.zone.moveToAndOpenGateAt === "function") {
+        PC.api.zone.moveToAndOpenGateAt(x, y);
       }
       return;
     }
 
-    console.log(
-      "Clicked locked gate at",
-      x,
-      y,
-      "for lockedRegionId=",
-      tile.lockedRegionId
-    );
+    // Normal content interaction routing (unchanged rules)
+    if (tile.kind === "blocked") return;
+    if (!tile.explored) return;
 
-    if (typeof unlockZoneLockedRegion === "function") {
-      unlockZoneLockedRegion(zone, tile.lockedRegionId);
+    if (window.PC?.api?.zone && typeof PC.api.zone.moveToAndInteractAt === "function") {
+      PC.api.zone.moveToAndInteractAt(x, y);
     }
 
-    // Mark the gate tile itself as explored so it no longer shows as '?'.
-    tile.explored = true;
-
-    // 0.0.70e — persist explored tiles so gate doesn't reset on reload.
-    try {
-      if (window.PC?.content && typeof PC.content.markTileExplored === "function") {
-        PC.content.markTileExplored(zone.id, x, y);
-      }
-    } catch {}
-
-    // Debounced autosave: unlocking/ exploring should persist.
-    if (typeof requestSaveCurrentGame === "function") {
-      requestSaveCurrentGame();
-    }
-
-    if (typeof addZoneMessage === "function") {
-      addZoneMessage("You unlock a hidden passage leading deeper into the area.");
-    }
-
-    if (typeof renderZoneUI === "function") {
-      renderZoneUI();
-    }
+    if (typeof renderZoneUI === "function") renderZoneUI();
   });
 }
 
-// Finish menu: STAY
-if (zoneFinishStayBtn) {
-  zoneFinishStayBtn.addEventListener("click", () => {
-    console.log("Player chose to STAY in the zone.");
-    // No special behavior yet; they just remain in the completed zone.
-  });
-}
-
-// Finish menu: LEAVE ZONE
-if (zoneFinishLeaveBtn) {
-  zoneFinishLeaveBtn.addEventListener("click", () => {
+// Leave Zone (now in main Controls row)
+if (zoneLeaveZoneBtn) {
+  zoneLeaveZoneBtn.addEventListener("click", () => {
     console.log("Player chose to LEAVE the zone.");
 
     // 1) Stop any ongoing auto exploration
-    if (typeof stopZoneExplorationTicks === "function") {
+    if (window.PC?.api?.zone && typeof PC.api.zone.stopAutoExplore === "function") {
+      PC.api.zone.stopAutoExplore();
+    } else if (typeof stopZoneExplorationTicks === "function") {
       stopZoneExplorationTicks();
     }
 
-    // 2) Mark the world map tile for this zone as VISITED and update currentX/currentY
-    //    (only if we have both worldMap and currentZone and the helper exists)
+    // 2) Mark the world map tile for this zone as VISITED
     if (STATE().worldMap && getZone() && typeof markWorldTileVisited === "function") {
       markWorldTileVisited(STATE().worldMap, getZone().id);
     }
@@ -705,20 +904,18 @@ if (zoneFinishLeaveBtn) {
     STATE().isInZone = false;
     STATE().currentZone = null;
 
-    // 4) Add a message (while the zone panel is still visible)
+    // 4) Add a message
     addZoneMessage("You leave the area behind.");
 
-    // 5) Switch to the world map view if available
+    // 5) Switch to world map view
     if (typeof switchToWorldMapView === "function") {
       switchToWorldMapView();
     } else {
-      // Fallback: at least refresh the zone UI if something is missing
       renderZoneUI();
     }
   });
 }
 
-// Discoveries click -> move adjacent -> interact (same as map click)
 if (zoneDiscoveriesListEl) {
   zoneDiscoveriesListEl.addEventListener("click", (e) => {
     const li = e.target && e.target.closest ? e.target.closest("li.zone-discovery-entry") : null;
@@ -728,6 +925,18 @@ if (zoneDiscoveriesListEl) {
     const y = parseInt(li.dataset.y, 10);
     if (Number.isNaN(x) || Number.isNaN(y)) return;
 
+    const kind = li.dataset.kind || "";
+
+    // Gate interaction from Discoveries
+    if (kind === "gates") {
+      if (!isZoneIdleForInteraction()) return;
+      if (window.PC?.api?.zone && typeof PC.api.zone.moveToAndOpenGateAt === "function") {
+        PC.api.zone.moveToAndOpenGateAt(x, y);
+      }
+      return;
+    }
+
+    // Default: same as before
     if (window.PC?.api?.zone && typeof PC.api.zone.moveToAndInteractAt === "function") {
       PC.api.zone.moveToAndInteractAt(x, y);
     }

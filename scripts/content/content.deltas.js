@@ -35,7 +35,7 @@
     const store = ensureDeltaStore();
     if (!store || !zoneId) return null;
     const id = String(zoneId);
-
+    
     store[id] = store[id] || {
       _v: PC.content.DELTAS_VERSION,
       harvested: {},
@@ -44,9 +44,12 @@
       inspected: {},
       discoveredLocations: {},
       exploredTiles: {},
-
+    
       // QoL: persistent instance quality map
       qualities: {},
+    
+      // QoL: unlocked locked-subregions (gates)
+      unlockedRegions: {},
     };
 
     // Back-compat: ensure keys exist
@@ -58,6 +61,8 @@
     store[id].discoveredLocations = store[id].discoveredLocations || {};
     store[id].exploredTiles = store[id].exploredTiles || {};
     store[id].qualities = store[id].qualities || {};
+    store[id].unlockedRegions = store[id].unlockedRegions || {};
+
 
     return store[id];
   }
@@ -197,6 +202,7 @@
       d.discoveredLocations = d.discoveredLocations && typeof d.discoveredLocations === "object" ? d.discoveredLocations : {};
       d.exploredTiles = d.exploredTiles && typeof d.exploredTiles === "object" ? d.exploredTiles : {};
       d.qualities = d.qualities && typeof d.qualities === "object" ? d.qualities : {};
+      d.unlockedRegions = d.unlockedRegions && typeof d.unlockedRegions === "object" ? d.unlockedRegions : {};
     }
 
     return st;

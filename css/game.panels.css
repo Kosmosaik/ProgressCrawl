@@ -233,16 +233,21 @@
 #skills-panel {
   position: fixed;
   top: 70px;
-  right: 10px;           /* stick to right edge */
+
+  /* Pop from the left (stacked with other panels) */
+  left: 10px;
+  right: auto;
+
   display: none;
   background: #111;
   border: 1px solid #555;
   padding: 10px;
   border-radius: 8px;
-  width: 220px;
+
+  width: 320px;
   max-height: 70vh;
   overflow: auto;
-  z-index: 1000;         /* make sure it's above inventory/equipment */
+  z-index: 1000;
 }
 
 #skills-panel h2 {
@@ -524,27 +529,6 @@
   100% { opacity: 0; transform: scale(1.15); }
 }
 
-/* === Game screen – character summary bar (text only part) === */
-
-#character-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.35rem 0.8rem;
-  font-size: 0.85rem;
-  border-bottom: 1px solid #2a2a2a;
-  background: #151515;
-}
-
-#char-summary-name {
-  font-weight: 600;
-}
-
-#char-summary-stats {
-  opacity: 0.85;
-}
-
 /* === Zone main panel === */
 #zone-panel,
 #worldmap-panel {
@@ -602,9 +586,9 @@
 /* === Controls (buttons) === */
 #zone-actions button {
   margin-right: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 0px;
   padding: 4px 8px;
-  font-size: 0.85rem;
+  font-size: 0.80rem;
   background: #222;
   border: 1px solid #444;
   color: #eee;
@@ -630,7 +614,7 @@
   border: 1px solid #333;
   padding: 8px;
   border-radius: 4px;
-  max-height: 280px;
+  max-height: 348px;
   overflow: auto;
   text-align: left;
   white-space: pre;          /* keeps perfect grid alignment */
@@ -823,6 +807,69 @@
   0%   { color: #ffffff; }
   50%  { color: #000000; }
   100% { color: #ffffff; }
+}
+
+/* -------------------------------------------------------------------------
+   QoL — Locked Gate lockpick UI
+   ------------------------------------------------------------------------- */
+
+.lockpick-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.lockpick-ui .lockpick-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  opacity: 0.95;
+}
+
+.lockpick-ui input[type="range"] {
+  width: 100%;
+}
+
+/* -------------------------------------------------------------------------
+   Phase D — Top menu bar (menus only, left-aligned)
+   ------------------------------------------------------------------------- */
+
+#top-bar {
+  /* Keep it tight and centered like zone/world panels */
+  margin: 8px auto 10px auto;
+  max-width: 850px;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  background: #111;
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+/* Menu buttons container */
+#menu-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Make these buttons match your zone button sizing */
+#menu-bar button {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  background: #222;
+  border: 1px solid #444;
+  color: #eee;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#menu-bar button:hover {
+  background: #262626;
 }
 
 

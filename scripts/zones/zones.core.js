@@ -243,11 +243,14 @@ function createZoneFromDefinition(zoneId) {
     }
     
     // 0.0.70c+ — pick an entry spawn tile for this static zone.
-    pickZoneEntrySpawn(zone, def);  
-    
+    pickZoneEntrySpawn(zone, def);
+
     // After building tiles, prepare content scaffolding.
     initializeZoneContent(zone, def);
-    
+
+    // FIX 2 — Reapply persisted unlocks (safe no-op unless the zone has locked regions)
+    applyPersistedZoneUnlocks(zone);
+
     return zone;
   }
 
@@ -301,10 +304,13 @@ function createZoneFromDefinition(zoneId) {
     if (typeof markZoneLockedSubregionsFromLayout === "function") {
       markZoneLockedSubregionsFromLayout(zone);
     }
-
+    
+    // FIX — reapply persisted unlocked regions (re-enter/reload keeps subareas unlocked)
+    applyPersistedZoneUnlocks(zone);
+    
     // 0.0.70c+ — choose a spawn tile near the border, away from the L gate.
     pickZoneEntrySpawn(zone, def);
-
+    
     // 0.0.70d — content scaffolding
     initializeZoneContent(zone, def);
     
@@ -529,6 +535,26 @@ function unlockZoneLockedRegion(zone, regionId) {
         tile.kind = restoredKind;
       }
     }
+  }
+}
+
+// Reapply persisted locked-region unlocks from STATE().zoneDeltas.
+// IMPORTANT: region ids in objects are string keys, so we must coerce to Number
+// because unlockZoneLockedRegion compares with strict equality (===) to numeric ids.
+function applyPersistedZoneUnlocks(zone) {
+  if (!zone || !zone.id) return;
+
+  const dz = STATE().zoneDeltas?.[String(zone.id)];
+  const unlocked = dz?.unlockedRegions;
+  if (!unlocked || typeof unlocked !== "object") return;
+
+  for (const key of Object.keys(unlocked)) {
+    if (unlocked[key] !== true) continue;
+
+    const rid = Number(key);
+    if (!Number.isFinite(rid)) continue;
+
+    unlockZoneLockedRegion(zone, rid);
   }
 }
 

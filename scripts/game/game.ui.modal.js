@@ -2,7 +2,7 @@
 // Phase 9 — Small modal used for zone-content interactions.
 //
 // Contract:
-// - window.showChoiceModal({ title, body, primaryText, onPrimary, secondaryText, onSecondary })
+// - window.showChoiceModal({ title, body, bodyHtml, primaryText, onPrimary, secondaryText, onSecondary, keepOpenOnPrimary })
 // - window.hideChoiceModal()
 //
 // Notes:
@@ -41,22 +41,36 @@
     if (!hasDom()) return;
 
     const t = (opts && opts.title) ? String(opts.title) : "";
-    const b = (opts && opts.body) ? String(opts.body) : "";
     const pText = (opts && opts.primaryText) ? String(opts.primaryText) : "OK";
     const sText = (opts && opts.secondaryText) ? String(opts.secondaryText) : "Cancel";
+
+    const keepOpenOnPrimary = !!(opts && opts.keepOpenOnPrimary);
+
+    const bodyHtml = (opts && typeof opts.bodyHtml === "string") ? opts.bodyHtml : null;
+    const bodyText = (opts && opts.body != null) ? String(opts.body) : "";
 
     onPrimary = (opts && typeof opts.onPrimary === "function") ? opts.onPrimary : null;
     onSecondary = (opts && typeof opts.onSecondary === "function") ? opts.onSecondary : null;
 
     titleEl.textContent = t;
-    bodyEl.textContent = b;
+
+    if (bodyHtml != null) {
+      bodyEl.innerHTML = bodyHtml;
+    } else {
+      bodyEl.textContent = bodyText;
+    }
+
     primaryBtn.textContent = pText;
     secondaryBtn.textContent = sText;
 
+    primaryBtn.disabled = false;
+    secondaryBtn.disabled = false;
+
     primaryBtn.onclick = () => {
-      // IMPORTANT: hideChoiceModal() calls cleanup(), so we must capture handlers first.
       const handler = onPrimary;
-      window.hideChoiceModal();
+      if (!keepOpenOnPrimary) {
+        window.hideChoiceModal();
+      }
       if (handler) {
         try { handler(); } catch {}
       }
@@ -71,7 +85,6 @@
     };
 
     overlay.classList.remove("hidden");
-    // Focus primary for keyboard.
     setTimeout(() => {
       try { primaryBtn.focus(); } catch {}
     }, 0);
