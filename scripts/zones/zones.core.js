@@ -532,15 +532,16 @@ function unlockZoneLockedRegion(zone, regionId) {
   }
 }
 
+// Reapply persisted locked-region unlocks for this zone (from STATE().zoneDeltas).
 function applyPersistedZoneUnlocks(zone) {
   if (!zone || !zone.id) return;
 
   const dz = STATE().zoneDeltas?.[zone.id];
-  if (!dz || !dz.unlockedRegions) return;
+  const unlocked = dz?.unlockedRegions;
+  if (!unlocked) return;
 
-  for (const regionId of Object.keys(dz.unlockedRegions)) {
-    if (dz.unlockedRegions[regionId] !== true) continue;
-
+  for (const regionId of Object.keys(unlocked)) {
+    if (unlocked[regionId] !== true) continue;
     if (typeof unlockZoneLockedRegion === "function") {
       unlockZoneLockedRegion(zone, regionId);
     }
