@@ -524,29 +524,6 @@
   100% { opacity: 0; transform: scale(1.15); }
 }
 
-/* === Game screen – character summary bar (text only part) === */
-
-#character-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.35rem 0.8rem;
-  font-size: 0.85rem;
-
-  /* Phase D: top bar owns the background/border now */
-  border-bottom: none;
-  background: transparent;
-}
-
-#char-summary-name {
-  font-weight: 600;
-}
-
-#char-summary-stats {
-  opacity: 0.85;
-}
-
 /* === Zone main panel === */
 #zone-panel,
 #worldmap-panel {
