@@ -101,7 +101,14 @@ function renderWorldMapTileInfo() {
   panel.classList.remove("hidden");
 
   const lines = [];
-  lines.push(`<strong>Coordinates:</strong> (${selectedWorldTileX}, ${selectedWorldTileY})`);
+  // Show logical coordinates (tutorial = 0,0, north = +Y)
+  let coordText = `(${selectedWorldTileX}, ${selectedWorldTileY})`;
+  if (typeof worldToLogical === "function") {
+    const logical = worldToLogical(wm, selectedWorldTileX, selectedWorldTileY);
+    coordText = `(${logical.x}, ${logical.y})`;
+  }
+  lines.push(`<strong>Coordinates:</strong> ${coordText}`);
+
   if (tile.zoneId) lines.push(`<strong>Zone ID:</strong> ${tile.zoneId}`);
   if (tile.era) lines.push(`<strong>Era:</strong> ${tile.era}`);
   if (tile.biome) lines.push(`<strong>Biome:</strong> ${tile.biome}`);
