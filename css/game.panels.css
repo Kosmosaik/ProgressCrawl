@@ -831,3 +831,45 @@
   width: 100%;
 }
 
+/* -------------------------------------------------------------------------
+   Phase D — Top menu bar (menus only, left-aligned)
+   ------------------------------------------------------------------------- */
+
+#top-bar {
+  /* Keep it tight and centered like zone/world panels */
+  margin: 8px auto 10px auto;
+  max-width: 850px;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  background: #111;
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+/* Menu buttons container */
+#menu-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Make these buttons match your zone button sizing */
+#menu-bar button {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  background: #222;
+  border: 1px solid #444;
+  color: #eee;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#menu-bar button:hover {
+  background: #262626;
+}
+
+
