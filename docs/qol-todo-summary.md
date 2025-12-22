@@ -2,56 +2,22 @@
 
 This document is meant as a handoff / technical summary for the next GPT assistant and for future maintenance.
 
----
-### TODOs written down AFTER 0.0.70e (prioritize these first).
 
-1. **Tilemap is not square, but rectangular. Can we make it more square so each tile/symbol is square? **
-
-
-### TODOs writtend down BEFORE 0.0.70e
+### TODOs
 
 These should be handled in future QoL passes or adjacent branches:
-
-1. **Remove the STAY button in the zone view and move LEAVE ZONE to "Explore Next Tile" & "Explore Auto" buttons**
-   - Currently STAY logs to console and otherwise does nothing.  
-   - TODO: remove and adjust layout accordingly.
-
-2. **Make the "L" tile invisible until at least one adjacent tile has been explored**
-   - Currently, `L` tiles are shown directly based on layout.
-   - TODO: hide `L` behind a "?" until an adjacent tile is explored, then reveal it.
-
-3. **Remove Zone Completed text under map **
-   - Original request: remove "Zone Completed" text under the map and tighten area between zone and messages to save pixel height.
-   - Check current UI behavior and adjust/remove if necessary.
-
-4. **Make the "L" tile only clickable after it has been discovered AND exploration is idle AND character position is adjacent to the "L" tile**
-   - UI currently allows clicking `L` if visible and belonging to a locked region.  
-   - TODO: add checks so the click is respected only when:
-     - tile is “discovered” (whatever final definition is), and
-     - no exploration (auto or manual) is currently in progress, and
-     - player sprite/object is near the "L", otherwise the player will move automatically to the "L" and then trigger the unlock.
-
-6. **World map coordinate system change**
-   - Original objective: set tutorial zone to `(0, 0)` and use:
-     - North: `Y + or -1 depending on what makes sense`
-     - East: `X + 1`
-     - South: `Y - or +1`
-     - West: `X - 1`
-   - TODO: update world map generation, movement, and UI representation accordingly.
   
-7. **Move the Inventory/Equipment/Skills menu bar up on top header so we don't have two top panels. The name (on the top left) can be removed for now.
+1. **Move the Inventory/Equipment/Skills menu bar up on top header so we don't have two top panels. The name (on the top left) can be removed for now.
 
-8. **Remove the "Overview World map ready (Tutorial Zone + adjacent placeholders)" text/field**
+2. **Remove the "Overview World map ready (Tutorial Zone + adjacent placeholders)" text/field**
 
-9. **Remove the "Zone" menu text in the top and move up the Zone Info field instead. We need to save on UI height in the zone panel.
+3. **Remove the "Zone" menu text in the top and move up the Zone Info field instead. We need to save on UI height in the zone panel.
 
-10. **Randomize min/max width & height and fillChance on zones. Set different min/max and fill values depending on zone type/biome.
+4. **Randomize min/max width & height and fillChance on zones. Set different min/max and fill values depending on zone type/biome.
 
-11. **Make "Explore Auto" and "Stop Exploring" the same button. When clicking "Explore Auto" it just turns to "Stop Exploring".
+5. **Make Zone Info more player friendly by removing Zone ID and adding Zone Name instead.**
 
-12. **Make Zone Info more player friendly by removing Zone ID and adding Zone Name instead.**
-
-13. **Add Completed as state to zone so when viewing Zone Info on a zone in world map, it should say "Discovered" = Not Explored, "Visited" = Entered but not fully explored, "Completed" = Fully completed (100% tiles explored). In the future there will be a different calculation based on POIs, Locations and subareas.
+6. **Add Completed as state to zone so when viewing Zone Info on a zone in world map, it should say "Discovered" = Not Explored, "Visited" = Entered but not fully explored, "Completed" = Fully completed (100% tiles explored). In the future there will be a different calculation based on POIs, Locations and subareas.
 
 14. Remove messages when there's nothing of interest in the tile, and instead add messages for finding resources, entities, POIs etc.
 
