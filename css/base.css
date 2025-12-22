@@ -223,13 +223,28 @@ section[hidden] {
 
 /* === GAME MENU BAR (Inventory, Equipment, Crafting, etc.) === */
 
+/* Phase D — One consolidated top bar (character summary + menu buttons) */
+#top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: #151515;
+  border-bottom: 1px solid #2a2a2a;
+
+  /* Matches your existing bar padding style */
+  padding: 0;
+}
+
 #menu-bar {
   display: flex;
   gap: 0.5rem;
-  padding: 0.2rem 0.5rem;
-  background: #151515;
-  border-bottom: 1px solid #2a2a2a;
-  margin-top: 0.2rem;
+
+  /* Phase D: inline inside #top-bar */
+  padding: 0.2rem 0.8rem;
+  background: transparent;
+  border-bottom: none;
+  margin-top: 0;
 }
 
 #menu-bar button {
