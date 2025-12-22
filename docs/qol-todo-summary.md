@@ -6,20 +6,18 @@ This document is meant as a handoff / technical summary for the next GPT assista
 ### TODOs
 
 These should be handled in future QoL passes or adjacent branches:
-  
-1. **Move the Inventory/Equipment/Skills menu bar up on top header so we don't have two top panels. The name (on the top left) can be removed for now.
 
-2. **Remove the "Overview World map ready (Tutorial Zone + adjacent placeholders)" text/field**
+1. **Remove the "Overview World map ready (Tutorial Zone + adjacent placeholders)" text/field**
 
-3. **Remove the "Zone" menu text in the top and move up the Zone Info field instead. We need to save on UI height in the zone panel.
+2. **Remove the "Zone" menu text in the top and move up the Zone Info field instead. We need to save on UI height in the zone panel.
 
-4. **Randomize min/max width & height and fillChance on zones. Set different min/max and fill values depending on zone type/biome.
+3. **Randomize min/max width & height and fillChance on zones. Set different min/max and fill values depending on zone type/biome.
 
-5. **Make Zone Info more player friendly by removing Zone ID and adding Zone Name instead.**
+4. **Make Zone Info more player friendly by removing Zone ID and adding Zone Name instead.**
 
-6. **Add Completed as state to zone so when viewing Zone Info on a zone in world map, it should say "Discovered" = Not Explored, "Visited" = Entered but not fully explored, "Completed" = Fully completed (100% tiles explored). In the future there will be a different calculation based on POIs, Locations and subareas.
+5. **Add Completed as state to zone so when viewing Zone Info on a zone in world map, it should say "Discovered" = Not Explored, "Visited" = Entered but not fully explored, "Completed" = Fully completed (100% tiles explored). In the future there will be a different calculation based on POIs, Locations and subareas.
 
-14. Remove messages when there's nothing of interest in the tile, and instead add messages for finding resources, entities, POIs etc.
+6. Remove messages when there's nothing of interest in the tile, and instead add messages for finding resources, entities, POIs etc.
 
 ---
 
