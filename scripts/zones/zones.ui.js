@@ -332,32 +332,47 @@ window.openLockedGateModalAt = function openLockedGateModalAt(x, y) {
           // Roll 50/50
           const success = Math.random() < 0.5;
 
+        if (elapsed >= duration) {
+          clearLockpickTimer();
+
+          // Roll 50/50
+          const success = Math.random() < 0.5;
+
           if (success) {
             // Unlock region (runtime)
             if (typeof unlockZoneLockedRegion === "function") {
               unlockZoneLockedRegion(zone, tile.lockedRegionId);
             }
-            
+
             // Persist unlock into zoneDeltas
             try {
               const st = STATE();
               const zid = zone.id;
               const rid = tile.lockedRegionId;
-            
+
               if (!st.zoneDeltas) st.zoneDeltas = {};
               if (!st.zoneDeltas[zid]) st.zoneDeltas[zid] = {};
               if (!st.zoneDeltas[zid].unlockedRegions) {
                 st.zoneDeltas[zid].unlockedRegions = {};
               }
-            
+
               st.zoneDeltas[zid].unlockedRegions[rid] = true;
             } catch (e) {
               console.warn("Failed to persist unlocked region", e);
             }
-            
+
             if (typeof requestSaveCurrentGame === "function") {
               requestSaveCurrentGame();
             }
+
+            if (typeof addZoneMessage === "function") {
+              addZoneMessage("You successfully pick the lock.");
+            }
+
+            if (typeof window.hideChoiceModal === "function") window.hideChoiceModal();
+            if (typeof renderZoneUI === "function") renderZoneUI();
+            return;
+          }
 
           // Failure -> trap
           applyTrapDamage(20);
