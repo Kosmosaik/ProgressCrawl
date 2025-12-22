@@ -243,11 +243,14 @@ function createZoneFromDefinition(zoneId) {
     }
     
     // 0.0.70c+ — pick an entry spawn tile for this static zone.
-    pickZoneEntrySpawn(zone, def);  
-    
+    pickZoneEntrySpawn(zone, def);
+
     // After building tiles, prepare content scaffolding.
     initializeZoneContent(zone, def);
-    
+
+    // FIX 2 — Reapply persisted unlocks (safe no-op unless the zone has locked regions)
+    applyPersistedZoneUnlocks(zone);
+
     return zone;
   }
 
@@ -307,7 +310,10 @@ function createZoneFromDefinition(zoneId) {
 
     // 0.0.70d — content scaffolding
     initializeZoneContent(zone, def);
-    
+
+    // FIX 2 — Reapply persisted unlocks (so re-enter/reload keeps subareas unlocked)
+    applyPersistedZoneUnlocks(zone);
+
     return zone;
   }
 
