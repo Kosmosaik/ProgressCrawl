@@ -532,6 +532,21 @@ function unlockZoneLockedRegion(zone, regionId) {
   }
 }
 
+function applyPersistedZoneUnlocks(zone) {
+  if (!zone || !zone.id) return;
+
+  const dz = STATE().zoneDeltas?.[zone.id];
+  if (!dz || !dz.unlockedRegions) return;
+
+  for (const regionId of Object.keys(dz.unlockedRegions)) {
+    if (dz.unlockedRegions[regionId] !== true) continue;
+
+    if (typeof unlockZoneLockedRegion === "function") {
+      unlockZoneLockedRegion(zone, regionId);
+    }
+  }
+}
+
 // Simple debug zone now created from data definition.
 function createDebugZone() {
   return createZoneFromDefinition("tutorial_zone");
