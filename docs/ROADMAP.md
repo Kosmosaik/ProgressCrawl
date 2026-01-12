@@ -22,7 +22,8 @@ This roadmap is flexible and will evolve as development continues.
 - Add defense values and other stats to armor/equipment.
 - Add all variables, properties/values etc on all items/equipment/character stats in preparation for crafting/gathering and exploring updates. Armor/PDEF, crafting modifier attributes/stats and more.
 - Skinning / Butcher and maybe more. Separate resources looted from entities by introducing different skills to get different resources. Skinning = Animal Hide, Butchering = Meat, Bones, Tendons, Teeth or whatever.
-  Add these skills as Skills in skill window and separate combat skills from other skills (categorization). 
+  Add these skills as Skills in skill window and separate combat skills from other skills (categorization).
+  Later we will implement a "roll system" to increase the grades on the items we will get from performing a skill or do a loot, but for now, let's just roll it randomly directly.
 ## Skill Leveling System
 - Add exp for Skinning, Gathering, Butchering and whatever skills we have implemented.
 
