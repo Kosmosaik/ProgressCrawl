@@ -13,23 +13,16 @@ This roadmap is flexible and will evolve as development continues.
 - Add more Biomes and content (resource nodes, pois, entities etc) & expand existing biome (Temperate Forest).
 - Add a "Left Hand / Right Hand" system that acts like an early inventory system where the player can only carry
   a limited amount of items until the player has found or crafted a backpack/bag of some sort that unlocks the real inventory.
-- Interact / Use system: Combine items and do basic tasks that's not really a separate crafting system task:
-  (Right click a branch -> Make Lean-To Shelter (blueprint)), (Right Click Campfire -> Add Items -> Raw Meat to cook or wood to make fire), (Right click cooked meat -> Eat, or Drink if water container etc).
-  These small interactions will complete predefined tasks/quests later.
+- Interact / Use system: Combine items and do basic tasks that's not really a fully separate crafting system task:
+  (Right click a branch -> Make Lean-To Shelter (blueprint)), (Right Click branch or sticks -> Create Campfire -> Build -> Right click to Add Items -> Raw Meat to cook or wood to make fire), (Right click cooked meat -> Eat, or Drink if water container etc).
+  These small interactions will be needed to complete predefined tasks/quests later to introduce the player to the game mechanics.
 - Blueprint system for Lean-To Shelter and upcoming camps/constructions. Adds a blueprint to tile/tiles in the zone. When clicking on blueprint you'll see a small window with required items to complete the shelter.
 - Hunger & Thirst System
 - Eat / Drink System
 - Add defense values and other stats to armor/equipment.
 - Add all variables, properties/values etc on all items/equipment/character stats in preparation for crafting/gathering and exploring updates. Armor/PDEF, crafting modifier attributes/stats and more.
-- Skinning / Butcher and maybe more. Separate resources looted from entities by introducing different skills to get different resources. Skinning = Animal Skin, Butchering = Meat, Bones, Tendons or whatever.
+- Skinning / Butcher and maybe more. Separate resources looted from entities by introducing different skills to get different resources. Skinning = Animal Hide, Butchering = Meat, Bones, Tendons, Teeth or whatever.
   Add these skills as Skills in skill window and separate combat skills from other skills (categorization). 
-## Level / Experience System
-- Add Level stat and experience points.
-- Make a temporary easy exp formula for exp to next level etc (Maybe increase EXP required by 12% per level or something).
-- Add a "Give EXP" button for testing purposes
-- Add a text field to input how much exp to give character per click
-- Add a "Give level" button for testing purposes
-- Give character 3 attribute points to distribute on level up.
 ## Skill Leveling System
 - Add exp for Skinning, Gathering, Butchering and whatever skills we have implemented.
 
@@ -40,10 +33,13 @@ This roadmap is flexible and will evolve as development continues.
 ### Planned:
 - Quest system that first and foremosts define the exploration progress in the Starting Zone. This quests system should be built so it can be reused for randomly generated quests later in other zones.
 - Collect x item - Complete - Progress exploration x %
-- Add tutorial quests
+- Add tutorial quests (more predefined)
 
 ## v0.0.80 — Combat v1
-The first real combat mechanics and enemies appear.
+- Add stats and behavior to entities (HP, Attack, Aggressive/Neutral etc).
+- Add a simple combat mechanic/transition (Timer based attacks based on stats).
+- Win/Lose mechanics
+- Connect Harvest / Loot / Skinning etc
 
 ### Planned:
 - Basic enemy system
