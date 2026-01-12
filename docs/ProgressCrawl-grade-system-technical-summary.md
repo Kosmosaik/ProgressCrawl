@@ -50,13 +50,14 @@ Grade defines the *quality level* of those items after extraction, subject to th
 ## 3) Player-facing Flow (High Level)
 
 ### 3.1 Entity example (Rabbit)
-1. **Spawn:** Rabbit spawns with baseline grade `F4`.
+1. **Spawn:** Rabbit spawns with baseline grade `F4 -> E3`.
 2. **Kill:** Rabbit becomes “defeated/lootable”.
 3. **Loot process:** Player starts a “Loot Session”.
 4. Player performs improvement attempts (e.g., skinning/butchering) that may raise the grade.
 5. After:
    - the player finalizes, or
-   - the attempt limit is reached (e.g., 3 fails max),
+   - the attempt limit is reached (e.g., 3 fails max), or
+   - the maximum grade has been reached
    the game awards items at the **best grade achieved**, or baseline grade if no improvements succeeded.
 
 ### 3.2 Resource node example (Tree)
@@ -75,7 +76,7 @@ A **session** is a temporary state machine that:
 - Tracks baseline grade, current improved grade, attempt counters.
 - Decides final grade and commits resulting items to inventory.
 
-### 4.2 Session fields (suggested)
+### 4.2 Session fields (suggested) (NOTE: WE HAVE NOT ADDED MAXIMUM GRADE HERE YET. WE NEED TO DO THAT"
 ```js
 {
   sessionId,
