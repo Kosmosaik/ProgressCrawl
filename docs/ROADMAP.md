@@ -43,14 +43,12 @@ This roadmap is flexible and will evolve as development continues.
 - Connect Harvest / Loot / Skinning etc
 
 ### Planned:
-- Basic enemy system
-- Entity spawning system (enemies or passive entities).
 - Simulation-style combat:
   - Player Attack vs Enemy Defense
   - Enemy Attack vs Player HP
   - Attack Speed calculations
   - Sliders for counting down to attack etc
-- Loot obtained from defeating enemies
+- Loot obtained from defeating enemies, skinning, butchering etc.
 - Weapon damage and skill levels fully matter
 - Give EXP and skills to weapon, survival and what not.
 
