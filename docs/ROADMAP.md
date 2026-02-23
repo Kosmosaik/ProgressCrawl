@@ -250,7 +250,9 @@ M0 is complete when:
 -   No legacy CTGL naming remains.
 -   No new persistent globals are introduced.
 
-Only after this may new gameplay systems be developed.
+-   Only after this may new gameplay systems be developed.
+
+---
 
 ## M1 — Zone UI & Presentation (Camera, Responsive Panels)
 
