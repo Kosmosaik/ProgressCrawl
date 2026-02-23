@@ -29,38 +29,162 @@
 
 # Milestones (Dependency-Ordered)
 
-## M0 — Foundations: Identity, Save, and One Interaction Pipeline
+------------------------------------------------------------------------
 
-### Goal
-Make future systems stable and prevent duplicated mechanics.
+# M0 --- State, Save & Architecture Consolidation (Hard Requirement Before New Systems)
 
-### Includes (must-have)
-- Stable IDs for:
-  - items, zones, tiles, POIs, resource nodes, entities
-- Central persistent world state:
-  - discovered things
-  - locked/unlocked interactions (ex: gates)
-  - dead/alive entities
-  - depletion/regeneration state for nodes
-- Save versioning + forward migration rules (minimum viable: version number + migration function map)
-- A universal interaction pipeline (single model for actions), ex:
-  - Inspecting...
-  - Traveling to...
-  - Harvesting...
-  - Engaging...
-  - Crafting...
-- Message queue / log output for interactions (player feedback)
+## Purpose
 
-### Important decision
-- The roadmap wants to remove “Loot button” eventually.
-- Do NOT remove it until interaction pipeline covers the same gameplay loop.
+ProgressCrawl already has: - Deterministic content instance IDs -
+Per-zone delta persistence - A central `PC.state` container
 
-### Done when
-- You can save + reload and:
-  - locked gates stay locked/unlocked correctly
-  - depleted nodes remain depleted
-  - entity death persists
-- New interactables can be added without inventing a new UI/action method.
+However: - Persistent state is split between `PC.state` and global
+variables - Save schema has no explicit versioning/migration system -
+Interaction logic is partially duplicated - Save key and naming still
+reference "ClickToGetLoot"
+
+This milestone consolidates and stabilizes the foundation so all future
+systems (combat, survival, crafting, quests) do not require rewrites.
+
+No new gameplay systems may be added until this milestone is complete.
+
+------------------------------------------------------------------------
+
+## M0.1 --- Save System Versioning & Migration
+
+### Current Issues
+
+-   Save key: `"CTGL_SAVES_V1"`
+-   Snapshot has no `schemaVersion`
+-   Backwards compatibility handled via fallbacks, not migrations
+
+### Required Changes
+
+1.  Rename save key: `"CTGL_SAVES_V1"` → `"PROGRESSCRAWL_SAVES_V1"`
+
+2.  Add to snapshot root: schemaVersion: 1
+
+3.  Implement: migrateSave(saveObj)
+
+4.  All future save changes MUST:
+
+    -   Increment schemaVersion
+    -   Add migration case
+
+### Done When
+
+-   Loading older saves does not produce undefined state.
+-   Snapshot clearly contains `schemaVersion`.
+
+------------------------------------------------------------------------
+
+## M0.2 --- Single Source of Persistent Truth
+
+### Rule
+
+All persistent gameplay data must live inside `PC.state`.
+
+No new persistent globals are allowed.
+
+### Must Be Migrated Into PC.state
+
+-   `currentCharacter`
+-   `inventoryUnlocked`
+-   `equipmentUnlocked`
+-   Any persistent combat/stat data outside PC.state
+
+### Target Structure
+
+PC.state = { character: { name, level, stats, equipment, hp }, features:
+{ inventoryUnlocked, equipmentUnlocked }, world: { currentZone,
+zoneDeltas, worldMap } }
+
+### Done When
+
+-   Save snapshot is generated almost entirely from `PC.state`.
+-   Removing a global does not break persistence.
+
+------------------------------------------------------------------------
+
+## M0.3 --- Deterministic ID Strategy
+
+### Rules
+
+1.  Deterministic IDs must be used for:
+    -   Resource nodes
+    -   Entities
+    -   POIs
+    -   Locations
+    -   Persistent zone tiles
+2.  Random IDs allowed only for:
+    -   Save slots
+    -   Temporary combat instances
+    -   Non-persistent UI
+3.  Add helpers: PC.util.makeDeterministicId(type, parts...)
+    PC.util.makeRandomId(prefix)
+
+### Done When
+
+-   No persistent object relies on random IDs.
+-   All world objects follow a documented ID pattern.
+
+------------------------------------------------------------------------
+
+## M0.4 --- Unified Interaction Pipeline
+
+### Required Standard
+
+All interactions must:
+
+1.  Identify target type (entity / poi / resource / location)
+2.  Return standardized result object: type: "message" \| "timer" \|
+    "combat" \| "panel" \| "stateChange"
+3.  Persist state via delta helpers
+
+### Locked Gates Refactor
+
+-   Must behave like POI interaction
+-   Must persist via delta system
+-   Must not contain UI-only hardcoded logic
+
+### Done When
+
+-   Adding a new interaction does not require new architecture.
+-   Interaction behavior is consistent across systems.
+
+------------------------------------------------------------------------
+
+# M0.5 --- Codebase Hygiene & Structural Rules
+
+## M0.5.1 --- Remove Legacy Naming
+
+-   Remove all "ClickToGetLoot" references
+-   Replace `CTGL_` prefixes
+
+## M0.5.2 --- No New Globals Rule
+
+-   All persistent gameplay state must be inside `PC.state`
+
+## M0.5.3 --- Debug Hooks
+
+Add minimal debug utilities: - Toggle verbose interaction logging -
+Display current zone ID - Display delta counts - Display schema version
+
+------------------------------------------------------------------------
+
+# Acceptance Criteria
+
+M0 is complete when:
+
+-   Save system is versioned and migratable
+-   All persistent state lives in `PC.state`
+-   Deterministic ID rules are enforced
+-   Interactions use standardized contract
+-   No legacy CTGL naming remains
+-   No new persistent globals are introduced
+
+Only after this may new gameplay systems be developed.
+
 
 ---
 
