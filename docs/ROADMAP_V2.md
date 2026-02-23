@@ -56,6 +56,7 @@ The focus is long-term stability, clear system dependencies, and minimizing rewo
 
   * Pauses exploration
   * Warns player of hostile presence
+  * Visualize danger with "!" icons near the entity/danger.
 
 ---
 
