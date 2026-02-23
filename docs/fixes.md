@@ -19,10 +19,6 @@ When reaching > 10 damage it should only show one decimal, and over 100 it shoul
 
 @ Max character length on character name (2 Words max and 20 total characters?)
 
-@ Required Skill on equipped weapon shows 0 value in tooltip. Tooltip on inventory item hover works as intended
-
-@ Move Qty so it's right after Item Name in both inventory views.
+@ Required Skill (or rather, current skill) on equipped weapon shows 0 value in tooltip (Like this: Axe: 3 (0) even if I have 10 in Axe Skill Level). Tooltip on inventory item hover works as intended so it's only in equipment view.
 
 @ The Leet Power Sword of Doom weapon is not increasing DPS when I increase STR or DEX. Why?
-
-@ When equipping items, the gap/margins between each row of item increases a bit compared with when it just says <empty>.
