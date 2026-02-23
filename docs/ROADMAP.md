@@ -35,13 +35,18 @@
 
 ## Purpose
 
-ProgressCrawl already has: - Deterministic content instance IDs -
-Per-zone delta persistence - A central `PC.state` container
+ProgressCrawl already has:
 
-However: - Persistent state is split between `PC.state` and global
-variables - Save schema has no explicit versioning/migration system -
-Interaction logic is partially duplicated - Save key and naming still
-reference "ClickToGetLoot"
+-   Deterministic content instance IDs
+-   Per-zone delta persistence
+-   A central `PC.state` container
+
+However:
+
+-   Persistent state is split between `PC.state` and global variables
+-   Save schema has no explicit versioning/migration system
+-   Interaction logic is partially duplicated
+-   Save key and naming still reference "ClickToGetLoot"
 
 This milestone consolidates and stabilizes the foundation so all future
 systems (combat, survival, crafting, quests) do not require rewrites.
@@ -60,21 +65,31 @@ No new gameplay systems may be added until this milestone is complete.
 
 ### Required Changes
 
-1.  Rename save key: `"CTGL_SAVES_V1"` → `"PROGRESSCRAWL_SAVES_V1"`
+1.  Rename save key:
 
-2.  Add to snapshot root: schemaVersion: 1
+    `"CTGL_SAVES_V1"` → `"PROGRESSCRAWL_SAVES_V1"`
 
-3.  Implement: migrateSave(saveObj)
+2.  Add to snapshot root:
+
+    `schemaVersion: 1`
+
+3.  Implement:
+
+    `migrateSave(saveObj)`
+
+    -   Must upgrade older schema versions to the latest schema.
+    -   Must run before snapshot is applied to game state.
 
 4.  All future save changes MUST:
 
-    -   Increment schemaVersion
-    -   Add migration case
+    -   Increment `schemaVersion`
+    -   Add a corresponding migration case
 
-### Done When
+### Done when
 
--   Loading older saves does not produce undefined state.
+-   Loading older saves does not produce undefined or broken state.
 -   Snapshot clearly contains `schemaVersion`.
+-   Save system no longer references ClickToGetLoot.
 
 ------------------------------------------------------------------------
 
@@ -91,18 +106,37 @@ No new persistent globals are allowed.
 -   `currentCharacter`
 -   `inventoryUnlocked`
 -   `equipmentUnlocked`
--   Any persistent combat/stat data outside PC.state
+-   Any persistent combat or stat data outside `PC.state`
 
 ### Target Structure
 
-PC.state = { character: { name, level, stats, equipment, hp }, features:
-{ inventoryUnlocked, equipmentUnlocked }, world: { currentZone,
-zoneDeltas, worldMap } }
+PC.state = {
+character: {
+name,
+level,
+stats,
+equipment,
+hp
+},
+features: {
+inventoryUnlocked,
+equipmentUnlocked
+},
+world: {
+currentZone,
+zoneDeltas,
+worldMap
+}
+}
 
-### Done When
+UI convenience variables may exist, but persistent gameplay data must
+not exist outside `PC.state`.
+
+### Done when
 
 -   Save snapshot is generated almost entirely from `PC.state`.
--   Removing a global does not break persistence.
+-   Removing old globals does not break persistence.
+-   All new systems attach state under `PC.state`.
 
 ------------------------------------------------------------------------
 
@@ -111,22 +145,31 @@ zoneDeltas, worldMap } }
 ### Rules
 
 1.  Deterministic IDs must be used for:
+
     -   Resource nodes
     -   Entities
     -   POIs
     -   Locations
     -   Persistent zone tiles
+
 2.  Random IDs allowed only for:
+
     -   Save slots
     -   Temporary combat instances
-    -   Non-persistent UI
-3.  Add helpers: PC.util.makeDeterministicId(type, parts...)
-    PC.util.makeRandomId(prefix)
+    -   Non-persistent UI elements
 
-### Done When
+3.  Add utility helpers:
 
--   No persistent object relies on random IDs.
--   All world objects follow a documented ID pattern.
+    -   `PC.util.makeDeterministicId(type, parts...)`
+    -   `PC.util.makeRandomId(prefix)`
+
+No future system may invent ad-hoc ID formats.
+
+### Done when
+
+-   No persistent world object relies on random ID generation.
+-   All persistent instance IDs follow a documented deterministic pattern.
+-   ID creation is centralized in helper utilities.
 
 ------------------------------------------------------------------------
 
@@ -137,20 +180,31 @@ zoneDeltas, worldMap } }
 All interactions must:
 
 1.  Identify target type (entity / poi / resource / location)
-2.  Return standardized result object: type: "message" \| "timer" \|
-    "combat" \| "panel" \| "stateChange"
-3.  Persist state via delta helpers
+
+2.  Return a standardized result object, for example:
+
+    -   type: "message"
+    -   type: "timer"
+    -   type: "combat"
+    -   type: "panel"
+    -   type: "stateChange"
+
+3.  Persist state changes via approved delta helpers.
 
 ### Locked Gates Refactor
 
--   Must behave like POI interaction
--   Must persist via delta system
--   Must not contain UI-only hardcoded logic
+-   Must behave like a POI-style interaction.
+-   Must persist state through the delta system.
+-   Must not contain UI-only hardcoded logic.
 
-### Done When
+Future interactables (traps, crafting stations, quest objects, etc.)
+must plug into the same interaction contract.
+
+### Done when
 
 -   Adding a new interaction does not require new architecture.
--   Interaction behavior is consistent across systems.
+-   No interaction logic is duplicated between zone UI and content systems.
+-   All persistent interaction effects are stored via deltas.
 
 ------------------------------------------------------------------------
 
@@ -158,17 +212,30 @@ All interactions must:
 
 ## M0.5.1 --- Remove Legacy Naming
 
--   Remove all "ClickToGetLoot" references
--   Replace `CTGL_` prefixes
+-   Remove all "ClickToGetLoot" references.
+-   Replace all `CTGL_` prefixes with ProgressCrawl equivalents.
+-   Update comments that reference previous project names.
+
+------------------------------------------------------------------------
 
 ## M0.5.2 --- No New Globals Rule
 
--   All persistent gameplay state must be inside `PC.state`
+-   All persistent gameplay state must exist inside `PC.state`.
+-   New systems must attach under the `PC` namespace.
+-   Temporary UI variables are allowed, but not persistent gameplay state.
 
-## M0.5.3 --- Debug Hooks
+------------------------------------------------------------------------
 
-Add minimal debug utilities: - Toggle verbose interaction logging -
-Display current zone ID - Display delta counts - Display schema version
+## M0.5.3 --- Debug Hooks & Inspection Utilities
+
+Add minimal debugging utilities:
+
+-   Toggle verbose interaction logging.
+-   Display current zone ID.
+-   Display delta counts.
+-   Display current save `schemaVersion`.
+
+These tools are required to safely expand systems later.
 
 ------------------------------------------------------------------------
 
@@ -176,17 +243,14 @@ Display current zone ID - Display delta counts - Display schema version
 
 M0 is complete when:
 
--   Save system is versioned and migratable
--   All persistent state lives in `PC.state`
--   Deterministic ID rules are enforced
--   Interactions use standardized contract
--   No legacy CTGL naming remains
--   No new persistent globals are introduced
+-   Save system is versioned and migratable.
+-   All persistent state lives inside `PC.state`.
+-   Deterministic ID rules are enforced and centralized.
+-   Interactions use a standardized contract.
+-   No legacy CTGL naming remains.
+-   No new persistent globals are introduced.
 
 Only after this may new gameplay systems be developed.
-
-
----
 
 ## M1 — Zone UI & Presentation (Camera, Responsive Panels)
 
