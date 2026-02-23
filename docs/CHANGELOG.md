@@ -1,4 +1,4 @@
-# v0.0.71-dev — QoL Update (Phase D)
+## v0.0.71 — QoL Update (Phase D)
 
 ## Added
 - Locked gates can now be interacted with directly, both on the map and from the Discoveries list.
