@@ -1,383 +1,256 @@
-# ProgressCrawl – Technical Summary for Version 0.0.70e
-### World Content Generation Systems + Initial Content Population
+# ProgressCrawl --- Technical Summary (Current)
 
----
+*Last Updated: 2026-02-23*
 
-## 0. Overview
+------------------------------------------------------------------------
 
-This document guides the next GPT assistant in implementing **ProgressCrawl v0.0.70d**, following directly after 0.0.70c.
+# Overview
 
-# Project Purpose & Vision
+This document describes the CURRENT technical architecture of
+ProgressCrawl. It reflects the state of the project after
+v0.0.71-stable.
 
-ProgressCrawl is a long-term survival RPG project that blends:
+This is not a design document. This is a structural reference for
+developers and future GPT assistants.
 
-- Procedural exploration  
-- Zone-based progression  
-- Crafting / resource systems (future expansions)
-- Survival Mechanics (hunger, thirst, disease, injuries)
-- Combat / Looting
-- Life Skills
-- World map navigation  
-- Era-based advancement (primitive → fantasy → industrial → sci-fi (by looting puzzle pieces to complete puzzles that unlocks new eras and biomes)  
+------------------------------------------------------------------------
 
-The player journey is built around **zones**—self-contained maps with unique layouts, challenges, and hidden areas—progressed one tile at a time. The world map ties zones together and represents the player's overland exploration.
+# Current Versioning
 
-The 0.0.70 milestone focuses heavily on **zone exploration**, **procedural generation**, and **locked subregion mechanics**, forming the backbone of future gameplay.
-**0.0.70c introduced:**
-- World slot templates
-- ERA / BIOME / TEMPLATE metadata
-- Difficulty system
-- Fully deterministic zone generation (seeded CA)
-- Adjacency-based world expansion
-- Zone Info panel
-- Persistence of worldMap
-- Zone content scaffolding (`zone.content = { resourceNodes, entities, pois }`)
+Version is defined in:
 
-**0.0.70e’s mission:**
+-   scripts/config.js → GAME_CONFIG.version
+-   Displayed in index.html header
+-   Patch notes pulled from docs/CHANGELOG.md
 
-> **Build the Zone Content Generation System AND add the first real content (entities, resource nodes, POIs) across selected biomes/templates.**
+Patch Notes Loader: - scripts/game/game.patchnotes.js - Expects
+changelog entries to begin with: \## vX.X.X
 
-This patch is foundational for future world interaction, resource systems, combat, and exploration depth.
+------------------------------------------------------------------------
 
----
+# Core Architecture
 
-# 1. Goals of 0.0.70e
+## Global Namespace
 
-0.0.70d has two main components:
+Primary namespace: - PC
 
----
+All major systems attach to PC.\*
 
-## 1A — Build the Zone Content Generation System
+Example: - PC.state - PC.content - PC.worldMap - PC.util
 
-The goal is to evolve the scaffolding created in 0.0.70c into a functioning system capable of populating zones with interactive content.
+No new persistent systems should exist outside PC.
 
-### Required Features
+------------------------------------------------------------------------
 
----
+# State Management
 
-### **1. Add Spawn Table Definitions to ZONE_TEMPLATES**
+## Central State Container
 
-Templates must support:
+Persistent gameplay state is stored in:
 
-```js
-entities: {
-  common: [...],
-  uncommon: [...],
-  rare: [...],
-}
+PC.state
 
-resourceNodes: {
-  common: [...],
-  uncommon: [...],
-}
+Current major properties include:
 
+-   character (stats, level, HP, etc.)
+-   worldMap
+-   zoneDeltas
+-   currentZone
+-   exploration state (timers, flags)
 
-pois: {
-  rare: [...],
-  ultraRare: [...],
-}
+Rule: All persistent gameplay state must eventually live inside
+PC.state.
 
-// Comment from developer: Entities, resources and POI loot table will also make use of the grade systems for items looted (F0 -> S9).
-Grades till be low in difficulty 0 and also depending on biome/era type. There will be different rarities to POIs. Some will be commonly spawned in zones, and some will be rare.
-```
+------------------------------------------------------------------------
 
-Templates will later include:
-- biome  
-- era  
-- future difficulty / spawn scaling rules
-- Locations (interactable objects that will transition the player to a smaller zone inside the zone).
+# Save System
 
----
+Location: - scripts/game/game.save.js
 
-### **2. Build Content Population Pipeline**
+Current Characteristics:
 
-Implement:
+-   Uses localStorage
+-   Save key still contains legacy naming (CTGL_SAVES_V1) --- scheduled
+    for replacement
+-   Snapshot includes:
+    -   Character data
+    -   World map state
+    -   Zone deltas
+    -   HP and exploration state
 
-```js
-populateZoneContent(zone, template, rand)
-```
+Current Limitation: - No explicit schemaVersion yet (planned in M0
+roadmap milestone) - Migration system not yet formalized
 
-Responsibilities:
+------------------------------------------------------------------------
 
-- Read template spawn tables  
-- Use deterministic seed-derived RNG (`tile.seed + "_content"`)  
-- Scatter content across valid tiles  
-- Respect rarity, weighted tables, biome rules, difficulty  
-- Insert final results into:
+# World & Zones
 
-```js
-zone.content.resourceNodes[]
-zone.content.entities[]
-zone.content.pois[]
-```
+## Zones
 
-Each content entry structure:
+Zone generation and management:
 
-```js
-{
-  id: "wild_boar",
-  x: 12,
-  y: 7,
-  rarity: "common",
-  state: {}
-}
-```
-// Comment from developer: Entities needs a loot table too (not sure if this is mentioned anywhere).
----
+-   scripts/zones/zones.generator.js
+-   scripts/zones/zones.core.js
+-   scripts/zones/zones.ui.js
 
-### **3. Modify Zone Creation Flow**
+Zones contain: - Grid-based tiles - Entities - Resource nodes - POIs -
+Locations
 
-After layout is generated:
+Exploration progress is tracked. Locked gates exist and persist through
+deltas.
 
-**For generated zones:**
-- Create layout  
-- Mark locked regions  
-- Initialize zone content structure  
-- Populate content from template  
+------------------------------------------------------------------------
 
-**For static zones:**
-- Build tiles  
-- Initialize zone content  
-- Populate template-based content  
+# Deterministic Instance System
 
----
+Content instances use deterministic IDs such as:
 
-### **4. Deterministic Placement Rules**
+resourceNodes\_`<defId>`{=html}*`<x>`{=html}*`<y>`{=html}
 
-Content generation must be deterministic across:
+This allows: - Regeneration of zones from seed - Persistence via delta
+tracking - Stable references across saves
 
-- saves/loads  
-- revisits  
-- same world seed  
+This is a foundational system and must not be replaced.
 
-Use:
+------------------------------------------------------------------------
 
-```js
-const rand = createSeededRandom(tile.seed + "_content");
-```
+# Delta System (World Persistence)
 
-This ensures layout and content use separate random streams.
+Location: - scripts/content/content.deltas.js
 
----
+Tracks per-zone changes including:
 
-### **5. Spawn Constraints**
+-   harvested nodes
+-   defeated entities
+-   opened POIs
+-   inspected objects
+-   discovered locations
+-   explored tiles
+-   unlocked regions
 
-Rules for content placement:
+Each zone has its own delta object. This prevents needing full world
+snapshots.
 
-#### **Resource Nodes**
-- Only on walkable tiles  
-- Avoid locked region tiles  
-- Don’t overlap with POIs or entities  
+------------------------------------------------------------------------
 
-#### **Entities**
-- Use rarity-weighted selection  
-- Difficulty scaling affects which entities appear  
+# Content System
 
-#### **POIs**
-- Common to Very rare  
-- Avoid spawning near zone entrance  
+Location: - scripts/content/
 
-These layers will grow in future patches.
+Handles:
 
----
+-   Populating entities, nodes, POIs
+-   Interaction routing
+-   Delta persistence
 
-## 1B — Populate Zones with FIRST CONTENT
+Interaction entry point: - content.interact.js
 
-0.0.70d must also include a small, usable content pack so the system can be tested in-game.
+Current Limitation: - Some interaction logic (e.g., locked gates) still
+partially handled in zone UI - Scheduled for unification under roadmap
+M0
 
-Only **Primitive Era + Temperate Forest / Cave / Whatever** biomes need content initially.
+------------------------------------------------------------------------
 
----
+# Combat
 
-### **1. Resource Nodes (Primitive Temperate Forest)**
+Minimal combat structure exists but is not fully systemized yet. Future
+milestones will formalize:
 
-Examples:
-- Berry Bush  
-- Fallen Branch Pile  
-- Stone Shard Deposit  
+-   Combat loop
+-   Stats scaling
+-   Enemy behaviors
 
-Each defines:
-- rarity  
-- interaction placeholder  
-- tile footprint (1x1)
-- grade (This will determine what grade the items will have that you get from the nodes). 
-  Later on we will develop a formula and success/fail system for improvement of the node that will
-  determine the item grade, but for now in short term we will just roll it randomly, with low grade
-  being more likely to generate in low difficulty zones, and higher grades in higher difficulty zones.
+------------------------------------------------------------------------
 
----
+# UI Structure
 
-### **2. Entities**
+Primary UI defined in:
 
-#### Passive creatures:
-- Deer  
-- Forest Hare
-- Squirrel 
+-   index.html
+-   scripts/ui/\*
+-   scripts/zones/zones.ui.js
 
-#### Aggressive creatures:
-- Wild Boar  
-- Cave Spider
-- Wolf 
+Current limitations:
 
-Each should define:
-- aggression flag (0 = Completely neutral (not able to attack) -> 10 (Super aggressive, will attack on sight). 
-- placeholder stats (HP, damage)  
-- spawn rarity  
-- biome + difficulty gating  
+-   Entire grid renders at once
+-   Panels may move off-screen on resize
+-   Camera/viewport system not yet implemented
 
----
+Planned improvements in M1.
 
-### **3. POIs**
+------------------------------------------------------------------------
 
-**Primitive Forest POIs:**
-- Mossy Shrine  
-- Broken Obelisk  
-- Abandoned Camp  
+# World Map
 
-**Primitive Cave POIs:**
-- Collapsed Tunnel  
-- Old Lantern Circle  
+Location: - scripts/worldmap/
 
-POIs will become the foundation for quests, lore, puzzles later.
+Tracks unlocked regions and travel state. Persisted via
+PC.state.worldMap.
 
----
+------------------------------------------------------------------------
 
-# 2. Technical Implementation Requirements
+# Patch Notes System
 
----
+Location: - scripts/game/game.patchnotes.js
 
-## **2.1 Extend ZONE_TEMPLATES (zones.data.js)**
+Fetches: - /docs/CHANGELOG.md
 
-Templates must define:
+Important Rule: Changelog entries MUST use:
 
-```js
-difficulty
-entities: { common, uncommon, rare }
-resourceNodes: { common, uncommon }
-pois: { rare, ultraRare }
-```
+## vX.X.X
 
-Later additions:
+Otherwise patch notes UI will not parse correctly.
 
-- biome  
-- era  
-- environmental conditions  
-- loot tables  
+------------------------------------------------------------------------
 
----
+# Architectural Strengths
 
-## **2.2 Extend initializeZoneContent (zones.core.js)**
+-   Deterministic instance IDs
+-   Delta-based world persistence
+-   Central state container (PC.state)
+-   Modular content generation
 
-Responsibilities:
+------------------------------------------------------------------------
 
-- Ensure `zone.content` exists  
-- Derive zone template from `def.templateId`  
-- Create deterministic RNG  
-- Call `populateZoneContent(zone, template, rand)`  
+# Architectural Weaknesses (Planned Fixes)
 
----
+-   Legacy save key naming
+-   No explicit save schema versioning
+-   Some globals still exist outside PC.state
+-   Interaction pipeline not fully unified
 
-## **2.3 Create zones.content.js**
+These are addressed in ROADMAP M0.
 
-Create new file:
+------------------------------------------------------------------------
 
-```
-scripts/zones/zones.content.js
-```
+# Development Rules
 
-Contains:
+1.  No new persistent globals.
+2.  All persistent data must attach to PC.state.
+3.  All world changes must persist via delta helpers.
+4.  Do not bypass deterministic ID system.
+5.  Do not add interaction logic directly inside UI without routing
+    through content layer.
 
-- rarity weighting helpers  
-- deterministic random utilities  
-- tile filtering helpers (walkable tiles, avoid entry tile, etc.)  
-- entity/node/POI placement functions  
-- main dispatcher: `populateZoneContent(zone, template, rand)`  
+------------------------------------------------------------------------
 
-This keeps the code modular and prevents `zones.core.js` from becoming bloated.
+# Recommended Reading Order
 
----
+For new contributors:
 
-## **2.4 Integrate Into Zone Creation Pipeline**
+1.  scripts/core/pc.core.js
+2.  scripts/content/content.populate.js
+3.  scripts/content/content.deltas.js
+4.  scripts/content/content.interact.js
+5.  scripts/zones/zones.generator.js
+6.  scripts/game/game.save.js
 
----
+------------------------------------------------------------------------
 
-### Generated zones:
+# Relationship to ROADMAP
 
-```js
-zone = createZone(...)
-markZoneLockedSubregionsFromLayout(zone)
-initializeZoneContent(zone, def)
-populateZoneContent(zone, template, rand)
-```
+This document describes current reality. ROADMAP.md describes planned
+evolution.
 
-### Static zones:
-
-```js
-zone = createZone(...)
-initializeZoneContent(zone, def)
-populateZoneContent(zone, template, rand)
-```
-
----
-
-# 3. Deliverables for 0.0.70e
-
----
-
-## **Code Deliverables**
-- Extended `ZONE_TEMPLATES`  
-- New `zones.content.js` module  
-- `populateZoneContent` pipeline  
-- Updated zone creation pipeline  
-- Biome + difficulty-aware spawn logic  
-- Deterministic content generation  
-
----
-
-## **Content Deliverables**
-
-### Primitive Temperate Forest:
-- 3 resource nodes  
-- 4 starter entities  
-- 2–3 POIs  
-
-### Primitive Cave:
-- 2 resource nodes  
-- 3 cave creatures  
-- 1–2 cave POIs  
-
-These are placeholders but fully functional within the system.
-
----
-
-# 4. Non-Goals (Explicitly Not in 0.0.70e)
-
-- Combat  
-- AI  
-- Harvesting / interaction mechanics  
-- POI mechanics  
-- Respawn rules  
-- Loot tables  
-- Saving per-zone state  
-- Pathfinding  
-
-These will come later.
-
----
-
-# 5. Summary
-
-Version **0.0.70c** established the world-slot + template generation foundation.  
-Version **0.0.70e** builds the **content ecosystem layer** and populates the first zones.
-
-This patch transitions ProgressCrawl from generating “empty caves” into generating **living ecosystems** with entities, resources, and landmarks.
-
-EXTRA NOTES FROM DEVELOPER:
-- We need to add randomized min/max width and height and randomized fillChance in Zone Templates for variations.
-  In the future we will revise this depending on what type of zone it is (Caves should be more pathway-like while plains should be more open etc).
-- Resource Nodes, Entities etc will spawn with a random grade system (F0 -> S9). This grade system will determine the grade on the items/loot the player will get from the node/entity.
-  In the future, we will implement a system where the player can "improve" the node/loot before adding it to the inventory. There will be a "roll" function and then success/fail will
-  be determined based on the characters skills and knowledge in the entity, resource type, life skill (mining, foraging, skinning whatever) and tool qualities etc. We need to
-  keep this in mind when we're developing so we don't add other stuff that contradicts/collide with this vision.
-
-**END OF DOCUMENT**
+If this document and the roadmap conflict, this document represents
+current implementation truth.
