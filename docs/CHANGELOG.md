@@ -23,7 +23,7 @@
 
 ---
 
-## [0.0.70i] — Item Unification & Stable Identity (QoL)
+## 0.0.70i — Item Unification & Stable Identity (QoL)
 
 ### Added
 - Stable **Item IDs (`itemId`)** to all items in the Item Catalog.
@@ -48,12 +48,7 @@
 
 ---
 
-# ProgressCrawl — Patch 0.0.70h
-## QoL Update: Zone Interaction & Discoveries
-
-This update improves **how you interact with zones and discoveries**, making movement and interaction feel more natural, consistent, and intuitive.
-
----
+## Patch 0.0.70h - Zone Interaction & Discoveries
 
 ## Added
 
