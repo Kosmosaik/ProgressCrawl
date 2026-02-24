@@ -546,7 +546,7 @@ Layer combat onto survival foundation.
 ### Includes
 
 -   Engage / Attack / Defend / Flee
--   Basic stats
+-   Basic stats (Physical Def/Armor etc)
 -   Combat log
 -   Victory rewards
 
