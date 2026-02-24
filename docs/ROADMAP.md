@@ -4,6 +4,7 @@
 - This file is the ONLY roadmap for ProgressCrawl.
 - It merges all roadmap/ideas/fixes into a dependency-ordered plan to avoid rebuilds.
 - Versions are assigned at release time (CHANGELOG), not planned in advance.
+- Survival-first design: combat is layered on top of survival foundations.
 
 **How to use this roadmap**
 - Work from Milestone M0 upward.
@@ -18,12 +19,10 @@
 
 ## Reality Check (Shipped / Exists Today)
 
-> Keep this section short and update when major systems land.
-- Zones exploration exists + discovery list UI exists.
-- Locked gate + lockpicking interaction exists.
-- Patch notes UI pulls from `/docs/CHANGELOG.md`.
-
-(If this section grows too big, create a TECHNICAL_SUMMARY.md and keep this to 5–10 bullets.)
+-   Zones exploration exists.
+-   Discovery list UI exists.
+-   Locked gate + lockpicking interaction exists.
+-   Patch notes UI pulls from `/docs/CHANGELOG.md`.
 
 ---
 
@@ -254,369 +253,321 @@ M0 is complete when:
 
 ---
 
-## M1 — Zone UI & Presentation (Camera, Responsive Panels)
+# M1 --- Zone UI & Presentation (Camera + Responsive Panels)
 
 ### Goal
+
 Make zones scalable and UI usable on different screen sizes.
 
-### Includes (must-have)
-- Zone view does NOT require rendering the full grid at large sizes:
-  - implement a “camera/viewport” approach (only render visible area)
-- UI panels stay on-screen when window resizes:
-  - panels clamp to viewport bounds
-  - panel sizing adapts to smaller aspect ratios
-- Exploration UI still works with camera view.
+### Includes
 
-### Pulled from fixes.md
-- “Don’t show full grid size later” → camera/viewport
-- “Panels go off-screen on resize” → clamp + responsive sizing
+-   Camera/viewport system (no full-grid rendering requirement)
+-   Responsive/clamped draggable panels
+-   Stable rendering at 32x32+ grids
 
 ### Done when
-- A large zone (ex: 32x32) is playable without UI lag or visual overload.
-- Inventory/skills/equipment panels never end up unreachable after resize.
 
----
+-   Large zones are playable without UI lag.
+-   Panels cannot move off-screen.
 
-## M2 — World Structure: Sub-zones / Locations / POIs
+------------------------------------------------------------------------
+
+# M2 --- World Structure: Sub-Zones / Locations / POIs
 
 ### Goal
-Make exploration spatially meaningful, not flat lists.
 
-### Includes (must-have)
-- Zones can contain:
-  - tiles
-  - mini-locations (sub-zones / dungeons / pockets)
-  - POIs (small interactables)
-- Transition system:
-  - zone tile → location instance → exit back
-- POI interaction framework:
-  - rewards/loot
-  - traps
-  - puzzles (simple first)
+Make exploration spatial and meaningful.
 
-### From ideas-roadmap.md
-- “locations spawn during exploration and appear in a list”
-- “teleport to location = pause zone progress and run location progress”
+### Includes
+
+-   Enterable locations (mini-zones)
+-   Persistent POIs (opened = opened)
+-   Transition system (zone ↔ location)
 
 ### Done when
-- A location can be entered, explored, exited, and the zone continues.
-- POIs are persistable (opened chest stays opened, etc).
 
----
+-   Player can enter and exit locations without breaking exploration
+    flow.
 
-## M3 — Difficulty Integration (World Scaling Rules)
+------------------------------------------------------------------------
+
+# M3 --- Difficulty Integration
 
 ### Goal
-Stop hand-waving balance: difficulty should drive content.
 
-### Includes (must-have)
-- Difficulty rating affects:
-  - entity variants
-  - resource quality
-  - loot tables
-- Some things exist only at certain difficulty
+Difficulty affects the world structurally.
+
+### Includes
+
+-   Enemy variants scale with difficulty
+-   Resource quality scales with difficulty
+-   Loot tables vary by difficulty
 
 ### Done when
-- Increasing difficulty visibly changes:
-  - enemy toughness
-  - loot quality/rarity opportunities
-  - resource grades
 
----
+-   Raising difficulty visibly changes content and rewards.
 
-## M4 — Entities v1: Behavior + Danger + Combat Trigger Rules
+------------------------------------------------------------------------
+
+# M4 --- Unified Time & Action System
 
 ### Goal
-Entities become “world actors,” not loot containers.
 
-### Includes (must-have)
-- Entity behavior states:
-  - passive / aggressive / territorial
-  - roaming vs stationary
-  - awareness radius + threat evaluation
-- Danger indicator:
-  - warns about hostile presence
-  - can pause exploration or force choice (engage/flee)
-- Rules for:
-  - visible enemy in list (player chooses)
-  - forced combat events (ambush)
+Create a single timing framework for all actions.
+
+### Includes
+
+-   Standard action durations
+-   Interrupt logic
+-   Cancel rules
+-   Pause rules
+-   Shared system for:
+    -   Exploration ticks
+    -   Eating
+    -   Crafting
+    -   Harvesting
+    -   Lockpicking
 
 ### Done when
-- You can add an enemy type and set its behavior without rewriting combat logic later.
 
----
+-   No gameplay system uses isolated `setTimeout` logic independently.
 
-## M5 — Combat v1 (Minimal & Stat-Driven)
+------------------------------------------------------------------------
+
+# M5 --- Survival Core (Hunger, Thirst, Basic Regen)
 
 ### Goal
-A reliable combat loop that later systems can plug into.
 
-### Includes (must-have)
-- Combat loop:
-  - Engage → Attack/Defend/Flee
-- Stats:
-  - HP, Attack, Defense
-  - Attack speed (timer/slider based)
-- Combat UI:
-  - combat log
-  - enemy card with HP/stats
-  - victory reward screen
-- Loot on defeat integrates with loot tables
-- Player death state (minimum: fail screen + consequence rule)
+Establish survival pressure before combat exists.
 
-### From ideas-roadmap.md
-- timer based attacks + log
-- later: ranged distance/slider can come later
+### Includes
+
+-   Hunger drain over time
+-   Thirst drain over time
+-   Eating/drinking interactions
+-   Starvation/dehydration penalties
+-   Basic HP regen rules
 
 ### Done when
-- Basic enemy can kill player and player can recover/reset by defined rules.
-- Combat is stable enough for “skinning/butchering” to hook in later.
 
----
+-   Player must gather food/water to survive.
+-   Survival pressure feels meaningful but not punishing.
 
-## M6 — Survival v1 (Hunger, Thirst, Stamina)
+------------------------------------------------------------------------
+
+# M6 --- Hands & Item Use System
 
 ### Goal
-Survival pressures that make exploration meaningful.
 
-### Includes (must-have)
-- Hunger/thirst drains over time
-- Eat/drink interactions:
-  - raw food, berries/mushrooms, water sources
-- Simple penalties first (no complex status web yet)
+Define physical interaction with the world.
+
+### Includes
+
+-   Left/right hand equipment slots
+-   Use item in hand
+-   Combine two items
+-   Use item on tile (water, fire, etc.)
+-   Simple crafting combinations
+-   Basic item durability system
 
 ### Done when
-- Survival needs create decisions but do not overwhelm.
-- You can survive in starting zone with basic actions.
 
----
+-   Player can equip tools, use them, and combine items without
+    inventory UI hacks.
+-   Durability decreases on use.
 
-## M7 — Carrying & Inventory Progression (Hands → Bags → Encumbrance)
+------------------------------------------------------------------------
+
+# M7 --- Carrying & Encumbrance
 
 ### Goal
-One unified carry system (no parallel inventories).
 
-### Includes (must-have)
-- Start without full inventory:
-  - limited “hands” carry (count + weight)
-- Backpacks/satchels unlock inventory
-- Encumbrance:
-  - item weight
-  - STR affects carry
-  - penalties when overweight
+Inventory progression tied to survival.
 
-### From ROADMAP.md + ROADMAP_V2.md
-- Left hand/right hand early carry
-- then backpack unlocks real inventory
+### Includes
+
+-   Limited hands-only carry at start
+-   Backpack unlocks inventory
+-   Weight system
+-   Encumbrance penalties (movement/survival impact)
 
 ### Done when
-- Inventory progression feels like an unlock, not a UI toggle.
-- Weight/encumbrance ties into survival and combat pacing.
 
----
+-   Carry capacity affects player decisions.
 
-## M8 — Items & Equipment Model v1 (Stats, Slots, Tooltips)
+------------------------------------------------------------------------
+
+# M8 --- Gathering v1
 
 ### Goal
-Make equipment and stats consistent so crafting and combat can rely on it.
 
-### Includes (must-have)
-- Equipment slots expansion:
-  - chest/head/legs, rings, off-hand etc (incrementally)
-- Defensive stats:
-  - armor/defense
-- Core combat stat completeness:
-  - critical damage multiplier
-  - accuracy/hit chance (can be simple first)
-  - dodge/evasion (optional in v1)
-- Ensure stats scale correctly (STR/DEX etc affect DPS)
+Turn resources into systems.
 
-### Pulled from fixes.md
-- “Required skill shows 0 in equipment tooltip” → fix here
-- “Leet Power Sword of Doom not increasing DPS with STR/DEX” → fix here
-- “Damage display formatting decimals rules” → fix here
+### Includes
+
+-   Tool requirements
+-   Node depletion/regeneration
+-   Node grades (F0 → S9)
+-   Timed harvesting
 
 ### Done when
-- Tooltip values match actual computed combat output.
-- DPS changes when expected when stats change.
 
----
+-   Resource collection feels intentional and tool-dependent.
 
-## M9 — Gathering v1 (Nodes, Tools, Grades, Timers)
+------------------------------------------------------------------------
+
+# M9 --- Processing (Skinning / Butchering)
 
 ### Goal
-Gathering becomes a game system, not instant loot.
 
-### Includes (must-have)
-- Resource nodes:
-  - tool requirements (axe, pick, etc)
-  - depletion + regeneration
-  - node grades F0 → S9
-- Timed interactions:
-  - “Walking to...”, “Harvesting...”, etc
-- Discovered nodes UI list and state
+Harvest meaningfully from world entities.
 
-### From ROADMAP.md
-- node loot tables
-- grade influences resource quality instead of random rolling
+### Includes
+
+-   Skinning → hides
+-   Butchering → meat/bones/sinew
+-   Skill XP gain
+-   Sinew processing chain
 
 ### Done when
-- A node can be interacted with, timed, depleted, and restored later.
-- Grade affects output in a visible way.
 
----
+-   Resource chain feeds crafting loop.
 
-## M10 — Processing v1: Skinning & Butchering + Sinew Chain
+------------------------------------------------------------------------
+
+# M10 --- Primitive Crafting
 
 ### Goal
-Make creature harvesting meaningful and expandable.
 
-### Includes (must-have)
-- Separate post-combat harvesting actions:
-  - Skinning → hides
-  - Butchering → meat/bones/teeth/sinew
-- Skill EXP for these actions
-- Sinew processing chain (v1):
-  - harvest → dry → process → twist into bowstring
-  - tougher creatures → better modifiers
+Establish survival crafting loop.
+
+### Includes
+
+-   Simple recipes
+-   Fire/camp interactions
+-   Blueprint placement (lean-to, fire pit)
+-   Craft timers integrated with time system
 
 ### Done when
-- Killing animals feeds survival/crafting loops, not just loot dopamine.
 
----
+-   Player gathers → crafts → survives longer.
 
-## M11 — Professions / Life Skills v1
+------------------------------------------------------------------------
+
+# M11 --- Entity Behavior (Non-Combat First)
 
 ### Goal
-Formalize skill progression for gathering and crafting.
 
-### Includes (must-have)
-- Profession EXP:
-  - mining, woodcutting, herbalism, foraging
-- Tool gating + bonuses
-- “Action speed / gathering speed” concept can start here or in gathering milestone.
+Make world feel alive before combat.
+
+### Includes
+
+-   Passive/territorial behaviors
+-   Roaming logic
+-   Flee behavior
+-   Awareness system
 
 ### Done when
-- Professions meaningfully change efficiency/output.
 
----
+-   Entities feel alive without requiring combat system.
 
-## M12 — Crafting v1 (Primitive)
+------------------------------------------------------------------------
+
+# M12 --- Combat v1
 
 ### Goal
-First real crafting loop that uses gathered resources.
 
-### Includes (must-have)
-- Crafting menu + recipe list
-- Primitive recipes:
-  - fire drill
-  - stone tools
-  - spears/clubs
-- Blueprint system for simple constructions:
-  - lean-to shelter
-  - campfire build flow
+Layer combat on top of survival.
 
-### From ROADMAP.md
-- “Interact/Use system” + blueprint completion window
-- campfire interactions (cook, add fuel)
+### Includes
+
+-   Engage → Attack / Defend / Flee loop
+-   Basic stats (HP, ATK, DEF)
+-   Combat log
+-   Victory rewards
+-   Basic death condition
 
 ### Done when
-- Player can gather → craft → survive longer → explore farther.
 
----
+-   Combat integrates with hunger, tools, durability, and time system.
 
-## M13 — Quest/Task System (Tutorial-Driven)
+------------------------------------------------------------------------
+
+# M13 --- Failure & Recovery System
 
 ### Goal
-Guide the player through your systems in correct order.
 
-### Includes (must-have)
-- Task types:
-  - collect X
-  - perform action X
-  - explore location X
-- Tutorial path in starting zone
-- Optional procedural tasks later
+Define loss consequences.
+
+### Includes
+
+-   Death penalties
+-   Respawn rules
+-   Item loss or durability penalties
+-   Recovery options
 
 ### Done when
-- A new player can learn the game without external docs.
 
----
+-   Losing has defined consequences that reinforce survival loop.
 
-## M14 — Economy v1 (Optional after core loop is fun)
+------------------------------------------------------------------------
 
-### Includes (optional)
-- NPC vendors with inventories
-- buy/sell
-- basic currency OR barter
+# M14 --- Quests / Tutorial Tasks
 
----
+### Goal
 
-## M15+ — Meta & Long-Term Expansion Pool
+Guide players through systems.
 
-- Achievements, leaderboards
-- Camp/base/housing
-- Farming/fishing/beekeeping etc
-- Pets/companions
-- Magic, alchemy, cooking, enchanting
-- Medicine/first aid
-- Weather/world events
-- Biome-specific recipes/merchant items
-- Rare fragment unlocks, fame/infamy
-- Classes/traits/races (later)
+### Includes
 
----
+-   Task tracking
+-   Survival tutorial path
+-   Optional procedural tasks
 
-# Cross-Cutting Fixes / Known Issues (Slot into milestones)
+### Done when
 
-These must be fixed in the milestone where they belong:
+-   New players learn core systems without external docs.
 
-## UI/Zone Presentation (M1)
-- Camera/viewport for large zones
-- Panels clamped to screen on resize
+------------------------------------------------------------------------
 
-## Inventory UX (M7)
-- If a stack was expanded and goes to 0, re-looting that item should create a minimized stack
+# M15 --- Economy v1
 
-## Display/Validation (M8)
-- Damage formatting:
-  - <10: 2 decimals
-  - 10–99: 1 decimal
-  - >=100: integer
-- Character name limit:
-  - max 2 words
-  - max 20 chars total
+### Includes
 
-## Equipment/Stats correctness (M8)
-- Required skill tooltip shows incorrect value in equipment view
-- Weapon scaling bug (Leet Power Sword of Doom not scaling DPS with STR/DEX)
+-   Vendors
+-   Buy/sell
+-   Barter or currency
 
----
+------------------------------------------------------------------------
 
-# Tooling Ideas (Non-Gameplay, Do Later)
+# Long-Term Expansion (Post-Core Loop)
 
-These are not core gameplay systems, but can speed content creation:
+-   Advanced crafting
+-   Professions depth
+-   Enchanting
+-   Biome-specific systems
+-   Meta progression
+-   Achievements
+-   Advanced AI behaviors
+-   Weather systems
+-   Ranged combat layer
 
-- Item Creator tool (auto-adds items into items data file)
-- Biome/Location/POI creator tool (auto-adds content + loot pools)
-- Debug stats:
-  - Total items looted (prepping for leaderboards later)
-  - weight drop table display in debug mode
+------------------------------------------------------------------------
 
----
+# Cross-Cutting Fixes
 
-# Backlog Pool (Captured Ideas Not Yet Scheduled)
+-   UI camera (M1)
+-   Inventory stack collapse (M7)
+-   Tooltip stat accuracy (M8)
+-   Damage formatting rules (M12)
+-   Character name validation (M12)
 
-## Stat Expansion (Later)
-- armor penetration, lifesteal, resistances, tenacity
-- mana systems
-- gold find, luck systems
-- movement speed, action speed, gathering speed
-- reflect, thorns, life on hit/kill
+------------------------------------------------------------------------
 
-## Systems (Later)
-- ranged combat distance mechanics
-- enchant/enhance system (poison tip etc)
-- recipe unlocks via books/merchants/experimentation
-- random events
-- biome specific recipes and merchants
+# Core Identity
+
+ProgressCrawl is now structured as:
+
+**Explore → Survive → Gather → Craft → Adapt → (Then) Fight**
+
+Combat enhances survival --- it does not replace it.
