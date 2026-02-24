@@ -490,6 +490,7 @@ Establish survival crafting loop.
 -   Fire/camp interactions
 -   Blueprint placement (lean-to, fire pit)
 -   Craft timers integrated with time system
+-   Separate crafting areas by different skills depending on recipe.
 
 ### Done when
 
