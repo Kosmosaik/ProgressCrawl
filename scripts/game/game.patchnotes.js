@@ -19,9 +19,14 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
-// Minimal markdown renderer for CHANGELOG-style notes:
-// Supports: ### headings, - lists, blank lines, plain paragraphs.
-// (Intentionally limited + safe)
+// Minimal markdown renderer for CHANGELOG-style notes.
+// Supports:
+// - ### Heading  -> <h3>
+// - #### Heading -> <h4>
+// - - list item  -> <ul><li>
+// - blank lines  -> spacing
+// - everything else -> <p>
+// Intentionally limited and HTML-escaped for safety.
 function renderChangelogMarkdown(md) {
   const lines = String(md || "").split("\n");
   let html = "";
@@ -40,7 +45,7 @@ function renderChangelogMarkdown(md) {
     // Blank line
     if (!line.trim()) {
       closeList();
-      html += "<div class='pn-spacer'></div>";
+      html += "<div class=\"pn-spacer\"></div>";
       continue;
     }
 
@@ -71,7 +76,7 @@ function renderChangelogMarkdown(md) {
       continue;
     }
 
-    // Default paragraph line
+    // Default paragraph
     closeList();
     html += `<p>${escapeHtml(line.trim())}</p>`;
   }
@@ -84,10 +89,6 @@ function renderChangelogMarkdown(md) {
 // - locally (file server / localhost)
 // - GitHub Pages project subpaths (/REPO_NAME/...)
 function getChangelogUrl() {
-  // Use window.location.href as the base so "docs/CHANGELOG.md" resolves under the current directory.
-  // Example:
-  //   https://user.github.io/ProgressCrawl/  -> https://user.github.io/ProgressCrawl/docs/CHANGELOG.md
-  //   http://localhost:8080/               -> http://localhost:8080/docs/CHANGELOG.md
   return new URL("docs/CHANGELOG.md", window.location.href).toString();
 }
 
@@ -100,7 +101,7 @@ async function loadPatchNotesFromChangelog() {
     const res = await fetch(url, { cache: "no-store" });
 
     if (!res.ok) {
-      // If we get HTML 404 pages from hosting, show a clear message.
+      // Always show errors as plain text (not HTML).
       patchNotesContent.textContent = `Failed to load patch notes (${res.status} ${res.statusText}).`;
       if (patchNotesTitle) patchNotesTitle.textContent = "Patch Notes";
       return;
@@ -130,7 +131,13 @@ async function loadPatchNotesFromChangelog() {
       patchNotesTitle.textContent = `Patch Notes — ${heading || "Latest"}`;
     }
 
-    patchNotesContent.textContent = body || "No details found for the latest entry.";
+    // ✅ Render markdown into HTML for a "patch notes-ish" look.
+    if (!body) {
+      patchNotesContent.textContent = "No details found for the latest entry.";
+    } else {
+      patchNotesContent.innerHTML = renderChangelogMarkdown(body);
+    }
+
     patchNotesLoaded = true;
   } catch (err) {
     console.warn("Failed to load CHANGELOG.md", err);
