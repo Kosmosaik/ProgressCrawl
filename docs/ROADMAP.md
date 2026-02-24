@@ -292,13 +292,14 @@ Make zones scalable and UI usable on different screen sizes.
 
 ### Goal
 
-Make exploration spatial and meaningful.
+Make exploration spatial and meaningful and more varied.
 
 ### Includes
 
--   Enterable locations (mini-zones)
+-   Enterable locations (mini-zones / zones in zone)
 -   Persistent POIs (opened = opened)
 -   Transition system (zone ↔ location)
+-   New biome type with its own spawn tables and terrain generation (not decided which biome yet).
 
 ### Done when
 
