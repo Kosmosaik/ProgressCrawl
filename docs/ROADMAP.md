@@ -451,7 +451,8 @@ Turn resources into systems.
 -   Tool requirements
 -   Node depletion/regeneration
 -   Node grades (F0 → S9)
--   Timed harvesting
+-   Timed harvesting / Roll system based on skills
+-   Add gathering related skills (Woodcutting, skills for collecting rocks/stones etc).
 
 ### Done when
 
