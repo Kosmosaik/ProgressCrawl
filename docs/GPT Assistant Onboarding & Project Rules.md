@@ -11,10 +11,7 @@ Accuracy, verification, and architectural stability are more important than spee
    - Recursively open and read **all `.js`, `.md`, and `.css` files** in all folders and subfolders.
    - Do **not** rely on memory from previous chats.
 
-2. **Read the authoritative project summary first**
-   - One `.md` file (`ROADMAP.md`) is the **authoritative overview** of the project.
-   - Read it **before** doing any analysis.
-   - Treat it as ground truth over assumptions or conventions.
+2. **Identify the current active milestone from ROADMAP.md.**
 
 3. **Identify and confirm entry points**
    Before proposing any change, explicitly identify:
@@ -23,8 +20,11 @@ Accuracy, verification, and architectural stability are more important than spee
    - State initialization
    - Screen switching logic
    - Save / load logic
+   - Whether WORKING_RULES are currently being followed
 
-   List these back to the user before making changes.
+
+   Do NOT implement anything yet.
+   Summarize your findings first.
 
 ---
 
