@@ -318,6 +318,7 @@ Difficulty affects the world structurally.
 -   Enemy variants scale with difficulty
 -   Resource quality scales with difficulty
 -   Loot tables vary by difficulty
+-   Modify difficulty scaling/range on world map (make harder zones more rare than current).
 
 ### Done when
 
