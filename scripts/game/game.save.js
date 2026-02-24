@@ -177,14 +177,32 @@ function renderSaveList(saves = loadAllSaves()) {
   saveListContainer.appendChild(list);
 }
 
+function generateId() {
+  try {
+    if (window.crypto && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+  } catch (_) {
+    // ignore and fall back
+  }
+  return `save-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+}
+
 function saveCurrentGame() {
   if (!currentCharacter) return;
 
   const saves = loadAllSaves();
 
+  // Always produce a valid ID (prevents crashes if generateId is missing for any reason).
+  const id =
+    currentSaveId ||
+    (typeof generateId === "function"
+      ? generateId()
+      : `save-${Date.now()}-${Math.floor(Math.random() * 1e6)}`);
+
   const snapshot = {
     schemaVersion: LATEST_SCHEMA_VERSION,
-    id: currentSaveId || generateId(),
+    id,
     name: currentCharacter.name,
     stats: { ...currentCharacter.stats },
     skills: cloneSkills(currentCharacter.skills),
