@@ -355,6 +355,50 @@ section[hidden] {
   border-color: #4f8cff;
 }
 
+/* === Patch notes content formatting (renders markdown-ish HTML) === */
+#patch-notes-content {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  max-height: 55vh;
+  overflow: auto;
+}
+
+#patch-notes-content h3 {
+  margin: 10px 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+#patch-notes-content h4 {
+  margin: 10px 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+#patch-notes-content p {
+  margin: 6px 0;
+  opacity: 0.95;
+}
+
+#patch-notes-content ul {
+  margin: 6px 0 10px 18px;
+  padding: 0;
+}
+
+#patch-notes-content li {
+  margin: 4px 0;
+}
+
+#patch-notes-content .pn-spacer {
+  height: 8px;
+}
+
 /* Floating tooltip (used everywhere) */
 #tooltip {
   position: fixed;
