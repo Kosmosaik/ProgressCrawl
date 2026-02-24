@@ -409,6 +409,7 @@ Define physical interaction with the world.
 -   Use item on tile (water, fire, etc.)
 -   Simple crafting combinations
 -   Basic item durability system
+-   Modify weapons/tools to use left/right hand slots instead of weapon slot (current state).
 
 ### Done when
 
