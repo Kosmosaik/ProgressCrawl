@@ -1,4 +1,4 @@
-## 0.0.72-qol2
+## 0.0.72-QoL (M0.1)
 
 ### M0.1 — Save System Versioning & Migration (Completed)
 
