@@ -551,6 +551,7 @@ Layer combat onto survival foundation.
 -   Basic stats (Physical Def/Armor etc)
 -   Combat log
 -   Victory rewards
+-   Experience / Level system (gain xp by killing entities)
 
 ### Done when
 
