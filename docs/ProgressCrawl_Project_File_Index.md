@@ -41,8 +41,8 @@ It is meant as a navigation aid for development and for future GPT assistants.
   - ## Purpose of These Rules
   - ## Note on Project Summaries
 
-### `docs/ProgressCrawl_Technical_Summary_0.0.70e.md`
-- **Top heading:** # ProgressCrawl – Technical Summary for Version 0.0.70e
+### `docs/ProgressCrawl_Technical_Summary.md`
+- **Top heading:** # ProgressCrawl – Technical Summary
 - **Purpose:** Technical architecture summary (current reality).
 - **Key sections:**
   - ### World Content Generation Systems + Initial Content Population
