@@ -1,7 +1,66 @@
 // scripts/game/game.save.js
-// Save/load system for ClickToGetLoot.
+// Save/load system for ProgressCrawl.
 
-const SAVE_KEY = "CTGL_SAVES_V1";
+// NOTE: M0.1 (Roadmap) — Save System Versioning & Migration
+// - New key: PROGRESSCRAWL_SAVES_V1
+// - Snapshot root includes schemaVersion
+// - All loads run through migrateSave() before applying
+
+const SAVE_KEY = "PROGRESSCRAWL_SAVES_V1";
+const LEGACY_SAVE_KEY = "CTGL_SAVES_V1";
+const LATEST_SCHEMA_VERSION = 1;
+
+function migrateSave(saveObj) {
+  // Defensive: never mutate the original object in-place.
+  const s = saveObj ? JSON.parse(JSON.stringify(saveObj)) : null;
+  if (!s || typeof s !== "object") return null;
+
+  // Treat missing schemaVersion as v0.
+  let v = (typeof s.schemaVersion === "number") ? s.schemaVersion : 0;
+
+  // v0 -> v1
+  if (v < 1) {
+    // Ensure required root shape.
+    s.schemaVersion = 1;
+
+    // Core identity
+    if (typeof s.id !== "string") s.id = null;
+    if (typeof s.name !== "string") s.name = "Unnamed";
+
+    // Stats
+    if (!s.stats || typeof s.stats !== "object") s.stats = {};
+    s.stats.str = (typeof s.stats.str === "number") ? s.stats.str : 0;
+    s.stats.dex = (typeof s.stats.dex === "number") ? s.stats.dex : 0;
+    s.stats.int = (typeof s.stats.int === "number") ? s.stats.int : 0;
+    s.stats.vit = (typeof s.stats.vit === "number") ? s.stats.vit : 0;
+
+    // Skills
+    if (!s.skills) s.skills = null;
+
+    // Inventory / equipment snapshots
+    if (!s.inventory || typeof s.inventory !== "object") s.inventory = {};
+    if (!s.equipped || typeof s.equipped !== "object") s.equipped = null;
+
+    // Feature unlocks
+    if (!s.features || typeof s.features !== "object") s.features = {};
+    if (typeof s.features.inventoryUnlocked !== "boolean") s.features.inventoryUnlocked = false;
+    if (typeof s.features.equipmentUnlocked !== "boolean") s.features.equipmentUnlocked = false;
+
+    // QoL state (PC.state-owned)
+    if (typeof s.currentHP !== "number") s.currentHP = 0;
+    if (!s.worldMap) s.worldMap = null;
+    if (!s.zoneDeltas || typeof s.zoneDeltas !== "object") s.zoneDeltas = {};
+
+    v = 1;
+  }
+
+  // Future migrations go here:
+  // if (v < 2) { ...; v = 2; }
+
+  // Always end with the latest schemaVersion.
+  s.schemaVersion = LATEST_SCHEMA_VERSION;
+  return s;
+}
 
 // Phase 8 — coalesce frequent save requests (e.g. multi-item loot) into a single write.
 let _saveScheduled = false;
@@ -21,7 +80,21 @@ function requestSaveCurrentGame() {
 
 function loadAllSaves() {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    // Prefer new key.
+    let raw = localStorage.getItem(SAVE_KEY);
+
+    // Backward compat: if new key is empty, try legacy key and migrate storage.
+    if (!raw) {
+      const legacyRaw = localStorage.getItem(LEGACY_SAVE_KEY);
+      if (legacyRaw) {
+        raw = legacyRaw;
+        // Copy legacy saves into new key so we stop depending on CTGL naming.
+        localStorage.setItem(SAVE_KEY, legacyRaw);
+        // Keep legacy key in place (non-destructive). If you want to remove it later:
+        // localStorage.removeItem(LEGACY_SAVE_KEY);
+      }
+    }
+
     if (!raw) return [];
     const arr = JSON.parse(raw);
     return Array.isArray(arr) ? arr : [];
@@ -100,6 +173,7 @@ function saveCurrentGame() {
   const saves = loadAllSaves();
 
   const snapshot = {
+    schemaVersion: LATEST_SCHEMA_VERSION,
     id: currentSaveId || generateId(),
     name: currentCharacter.name,
     stats: { ...currentCharacter.stats },
@@ -135,9 +209,21 @@ function saveCurrentGame() {
 
 function loadSave(id) {
   const saves = loadAllSaves();
-  const save = saves.find(s => s.id === id);
+  const rawSave = saves.find(s => s.id === id);
+  if (!rawSave) return;
+
+  const save = migrateSave(rawSave);
   if (!save) return;
 
+  currentCharacter = {
+    name: save.name,
+    stats: { ...save.stats },
+    skills: save.skills
+      ? cloneSkills(save.skills)
+      : createDefaultSkills(), // fallback for old saves
+  };
+  currentSaveId = save.id;
+  
   currentCharacter = {
     name: save.name,
     stats: { ...save.stats },
