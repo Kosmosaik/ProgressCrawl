@@ -7,7 +7,7 @@
 # Overview
 
 This document describes the CURRENT technical architecture of ProgressCrawl.
-It reflects the current state of the project on the v0.0.72-dev / QoL 2 branch.
+It reflects the current state of the project on the M0.1 branch.
 
 This is not a design document. This is a structural reference for developers
 and future GPT assistants.
