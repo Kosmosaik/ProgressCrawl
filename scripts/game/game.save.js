@@ -24,8 +24,11 @@ function migrateSave(saveObj) {
     s.schemaVersion = 1;
 
     // Core identity
-    if (typeof s.id !== "string") s.id = null;
-    if (typeof s.name !== "string") s.name = "Unnamed";
+    if (typeof s.id !== "string" || !s.id) {
+      // Never allow null IDs (breaks save selection). Use a safe migrated ID.
+      s.id = `migrated-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+    }
+    if (typeof s.name !== "string" || !s.name.trim()) s.name = "Unnamed";
 
     // Stats
     if (!s.stats || typeof s.stats !== "object") s.stats = {};
@@ -35,11 +38,11 @@ function migrateSave(saveObj) {
     s.stats.vit = (typeof s.stats.vit === "number") ? s.stats.vit : 0;
 
     // Skills
-    if (!s.skills) s.skills = null;
+    if (!("skills" in s)) s.skills = null;
 
     // Inventory / equipment snapshots
     if (!s.inventory || typeof s.inventory !== "object") s.inventory = {};
-    if (!s.equipped || typeof s.equipped !== "object") s.equipped = null;
+    if (!("equipped" in s) || (s.equipped && typeof s.equipped !== "object")) s.equipped = null;
 
     // Feature unlocks
     if (!s.features || typeof s.features !== "object") s.features = {};
@@ -48,7 +51,7 @@ function migrateSave(saveObj) {
 
     // QoL state (PC.state-owned)
     if (typeof s.currentHP !== "number") s.currentHP = 0;
-    if (!s.worldMap) s.worldMap = null;
+    if (!("worldMap" in s)) s.worldMap = null;
     if (!s.zoneDeltas || typeof s.zoneDeltas !== "object") s.zoneDeltas = {};
 
     v = 1;
@@ -118,7 +121,7 @@ function renderSaveList(saves = loadAllSaves()) {
 
   saveListContainer.innerHTML = "";
 
-  if (!saves.length) {
+  if (!Array.isArray(saves) || saves.length === 0) {
     const p = document.createElement("p");
     p.textContent = "No saved characters yet.";
     saveListContainer.appendChild(p);
@@ -128,20 +131,32 @@ function renderSaveList(saves = loadAllSaves()) {
   const list = document.createElement("div");
   list.className = "save-list";
 
-  saves.forEach(save => {
+  saves.forEach(rawSave => {
+    // Migrate for display (non-destructive). If migration fails, fall back to raw.
+    const save = migrateSave(rawSave) || rawSave;
+
     const row = document.createElement("div");
     row.className = "save-row";
 
     const label = document.createElement("span");
-    const st = save.stats || {};
-    label.textContent =
-      `${save.name} — STR ${st.str} | DEX ${st.dex} | INT ${st.int} | VIT ${st.vit}`;
+
+    const name = (typeof save.name === "string" && save.name.trim()) ? save.name : "Unnamed";
+    const st = (save.stats && typeof save.stats === "object") ? save.stats : {};
+
+    const str = (typeof st.str === "number") ? st.str : 0;
+    const dex = (typeof st.dex === "number") ? st.dex : 0;
+    const intv = (typeof st.int === "number") ? st.int : 0;
+    const vit = (typeof st.vit === "number") ? st.vit : 0;
+
+    label.textContent = `${name} — STR ${str} | DEX ${dex} | INT ${intv} | VIT ${vit}`;
     row.appendChild(label);
 
     const loadBtn = document.createElement("button");
     loadBtn.type = "button";
     loadBtn.textContent = "Load";
+    loadBtn.disabled = !(typeof save.id === "string" && save.id.length > 0);
     loadBtn.addEventListener("click", () => {
+      if (typeof save.id !== "string" || !save.id) return;
       loadSave(save.id);
     });
     row.appendChild(loadBtn);
@@ -149,7 +164,9 @@ function renderSaveList(saves = loadAllSaves()) {
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.textContent = "Delete";
+    deleteBtn.disabled = !(typeof save.id === "string" && save.id.length > 0);
     deleteBtn.addEventListener("click", () => {
+      if (typeof save.id !== "string" || !save.id) return;
       deleteSave(save.id);
     });
     row.appendChild(deleteBtn);
@@ -158,13 +175,6 @@ function renderSaveList(saves = loadAllSaves()) {
   });
 
   saveListContainer.appendChild(list);
-}
-
-function generateId() {
-  if (window.crypto && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return `save-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
 
 function saveCurrentGame() {
@@ -215,15 +225,6 @@ function loadSave(id) {
   const save = migrateSave(rawSave);
   if (!save) return;
 
-  currentCharacter = {
-    name: save.name,
-    stats: { ...save.stats },
-    skills: save.skills
-      ? cloneSkills(save.skills)
-      : createDefaultSkills(), // fallback for old saves
-  };
-  currentSaveId = save.id;
-  
   currentCharacter = {
     name: save.name,
     stats: { ...save.stats },
