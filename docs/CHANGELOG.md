@@ -1,3 +1,15 @@
+## 0.0.72-qol2
+
+### M0.1 — Save System Versioning & Migration (Completed)
+
+- Renamed save key to PROGRESSCRAWL_SAVES_V1
+- Added schemaVersion to save snapshots
+- Implemented migrateSave(saveObj)
+- Added backward compatibility for legacy CTGL saves
+- Hardened save ID generation
+
+---
+
 ## v0.0.71 — QoL Update (Phase D)
 
 ### Added
