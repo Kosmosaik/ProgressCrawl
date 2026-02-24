@@ -21,6 +21,8 @@ Accuracy, verification, and architectural stability are more important than spee
    - Screen switching logic
    - Save / load logic
    - Whether WORKING_RULES are currently being followed
+  
+4. Also read /docs/WORKING_RULES.md and confirm compliance.
 
 
    Do NOT implement anything yet.
