@@ -71,6 +71,7 @@ No new gameplay systems may be added until this milestone is complete.
 ------------------------------------------------------------------------
 
 ## M0.1 --- Save System Versioning & Migration
+Status: ✅ COMPLETE (0.0.72-qol2)
 
 ### Current Issues
 
