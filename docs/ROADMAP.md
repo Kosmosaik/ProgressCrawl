@@ -1,10 +1,13 @@
 # ProgressCrawl — Unified Roadmap (Single Source of Truth)
 
-**Purpose**
+**Purpose** 
 - This file is the ONLY roadmap for ProgressCrawl.
-- It merges all roadmap/ideas/fixes into a dependency-ordered plan to avoid rebuilds.
-- Versions are assigned at release time (CHANGELOG), not planned in advance.
-- Survival-first design: combat is layered on top of survival foundations.
+- It merges planning into a dependency-ordered system to avoid rebuilds.
+- Versions are assigned at release time (CHANGELOG), not pre-planned.
+- Survival-first design: combat is layered on top of survival
+foundations.
+- The game is long-term persistent survival RPG (not
+run-based).
 
 **How to use this roadmap**
 - Work from Milestone M0 upward.
@@ -15,7 +18,20 @@
   - “Done when” checklist
 - Anything not in milestones goes in the Backlog Pool section at the end.
 
----
+------------------------------------------------------------------------
+
+# Core Design Decisions (Locked)
+
+-   Long-term persistent world progression.
+-   Death causes setbacks, not run reset or permadeath.
+-   Durability system applies to all usable items (tools, weapons,
+    armor, stations).
+-   Two durability stats:
+    -   Durability → current usability (0 = unusable until repaired).
+    -   Integrity/Condition → lifetime cap (reduced on repair; 0 =
+        salvage only).
+
+------------------------------------------------------------------------
 
 ## Reality Check (Shipped / Exists Today)
 
@@ -26,7 +42,7 @@
 
 ---
 
-# Milestones (Dependency-Ordered)
+# Milestones (Dependency-Ordered --- Survival First)
 
 ------------------------------------------------------------------------
 
@@ -309,6 +325,30 @@ Difficulty affects the world structurally.
 
 ------------------------------------------------------------------------
 
+# M3.5 --- Core Game Loop Documentation (Design Milestone)
+
+### Goal
+
+Document and lock the long-term gameplay loop.
+
+### Intended Loop
+
+Explore → Survive → Gather → Craft → Improve → Expand → Adapt → Repeat
+
+### Documentation Must Define
+
+-   Long-term progression systems (skills, equipment, zones).
+-   Nature of setbacks (death, durability decay).
+-   Power growth curve.
+-   How survival pressure scales.
+-   Expansion mechanics (unlocking zones, tools, professions).
+
+### Done when
+
+-   The loop is clearly written and aligned with all future systems.
+
+------------------------------------------------------------------------
+
 # M4 --- Unified Time & Action System
 
 ### Goal
@@ -473,60 +513,51 @@ Make world feel alive before combat.
 
 ------------------------------------------------------------------------
 
-# M12 --- Combat v1
+# M12 --- Failure & Recovery System
 
 ### Goal
 
-Layer combat on top of survival.
+Define meaningful setbacks.
 
 ### Includes
 
--   Engage → Attack / Defend / Flee loop
--   Basic stats (HP, ATK, DEF)
+-   Death causes:
+    -   Loss of backpack inventory (full or partial)
+    -   Durability penalties
+    -   Optional XP penalty (future)
+-   Respawn rules
+-   Future optional corpse retrieval system
+
+### Done when
+
+-   Death reinforces survival without stopping progression.
+
+------------------------------------------------------------------------
+
+# M13 --- Combat v1
+
+### Goal
+
+Layer combat onto survival foundation.
+
+### Includes
+
+-   Engage / Attack / Defend / Flee
+-   Basic stats
 -   Combat log
 -   Victory rewards
--   Basic death condition
 
 ### Done when
 
--   Combat integrates with hunger, tools, durability, and time system.
+-   Combat integrates with durability and survival systems.
 
 ------------------------------------------------------------------------
 
-# M13 --- Failure & Recovery System
-
-### Goal
-
-Define loss consequences.
-
-### Includes
-
--   Death penalties
--   Respawn rules
--   Item loss or durability penalties
--   Recovery options
-
-### Done when
-
--   Losing has defined consequences that reinforce survival loop.
-
-------------------------------------------------------------------------
-
-# M14 --- Quests / Tutorial Tasks
+# M14 --- Quests / Tutorial
 
 ### Goal
 
 Guide players through systems.
-
-### Includes
-
--   Task tracking
--   Survival tutorial path
--   Optional procedural tasks
-
-### Done when
-
--   New players learn core systems without external docs.
 
 ------------------------------------------------------------------------
 
@@ -535,39 +566,25 @@ Guide players through systems.
 ### Includes
 
 -   Vendors
--   Buy/sell
--   Barter or currency
+-   Buy/sell or barter
 
 ------------------------------------------------------------------------
 
-# Long-Term Expansion (Post-Core Loop)
+# Long-Term Expansion
 
--   Advanced crafting
--   Professions depth
+-   Advanced professions
 -   Enchanting
--   Biome-specific systems
--   Meta progression
--   Achievements
--   Advanced AI behaviors
 -   Weather systems
--   Ranged combat layer
-
-------------------------------------------------------------------------
-
-# Cross-Cutting Fixes
-
--   UI camera (M1)
--   Inventory stack collapse (M7)
--   Tooltip stat accuracy (M8)
--   Damage formatting rules (M12)
--   Character name validation (M12)
+-   Ranged combat
+-   Meta progression
+-   Advanced AI
 
 ------------------------------------------------------------------------
 
 # Core Identity
 
-ProgressCrawl is now structured as:
+Explore → Survive → Gather → Craft → Improve → Expand → Adapt → Fight →
+Repeat
 
-**Explore → Survive → Gather → Craft → Adapt → (Then) Fight**
+Combat supports survival, not the other way around.
 
-Combat enhances survival --- it does not replace it.
