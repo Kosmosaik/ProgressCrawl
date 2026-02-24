@@ -1,4 +1,5 @@
 # ProgressCrawl — Unified Roadmap (Single Source of Truth)
+Current Active Milestone: M0.2 — Single Source of Persistent Truth
 
 **Purpose** 
 - This file is the ONLY roadmap for ProgressCrawl.
