@@ -110,7 +110,7 @@ Status: ✅ COMPLETE (0.0.72-qol2)
 
 ------------------------------------------------------------------------
 
-## M0.2 --- Single Source of Persistent Truth
+## M0.2 --- Single Source of Persistent Truth (ACTIVE)
 
 ### Rule
 
