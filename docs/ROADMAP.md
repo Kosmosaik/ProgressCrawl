@@ -281,7 +281,7 @@ Make zones scalable and UI usable on different screen sizes.
 
 -   Camera/viewport system (no full-grid rendering requirement)
 -   Responsive/clamped draggable panels
--   Stable rendering at 32x32+ grids
+-   Stable rendering at different grid sizes
 
 ### Done when
 
