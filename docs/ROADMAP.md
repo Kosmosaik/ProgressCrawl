@@ -240,6 +240,7 @@ Make resource collection intentional.
 -   Node regeneration on refresh
 -   Gathering skills (woodcutting, mining, herbalism)
 -   Connect quality "improvement" system to gathering skills and actions/interactions
+-   Define minimal skill structure before connecting quality success rolls
 
 ## Done When
 
@@ -319,6 +320,7 @@ Make world feel alive.
         -   Nodes regenerate (deterministic positions)
         -   Entities reroll within spawn range
         -   POIs remain completed
+-    Entity sets are stored per refresh cycle and persist across reloads (no reroll on save reload).
 
 ## Done When
 
@@ -379,7 +381,7 @@ Layer combat on survival.
 
 ## Includes
 
--   Engage / Attack / Defend / Flee
+-   Engage / Attack (auto-attack) / Flee
 -   Combat UI transition (Zone → Combat screen)
 -   Auto-attack loop
 -   Basic stats & combat log
@@ -474,7 +476,7 @@ Layer combat on survival.
 -   Races
 -   Factions
 -   Reputation
--   Autcion House / Marketplace
+-   Auction House / Marketplace
 -   Leaderboards
 -   Achievements
 
