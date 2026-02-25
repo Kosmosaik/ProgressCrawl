@@ -1,5 +1,4 @@
 # ProgressCrawl — Unified Roadmap (Single Source of Truth)
-Current Active Milestone: M0.2 — Single Source of Persistent Truth
 
 **Purpose** 
 - This file is the ONLY roadmap for ProgressCrawl.
@@ -72,7 +71,6 @@ No new gameplay systems may be added until this milestone is complete.
 ------------------------------------------------------------------------
 
 ## M0.1 --- Save System Versioning & Migration
-Status: ✅ COMPLETE (0.0.72-qol2)
 
 ### Current Issues
 
@@ -110,7 +108,7 @@ Status: ✅ COMPLETE (0.0.72-qol2)
 
 ------------------------------------------------------------------------
 
-## M0.2 --- Single Source of Persistent Truth (ACTIVE)
+## M0.2 --- Single Source of Persistent Truth
 
 ### Rule
 
@@ -281,7 +279,7 @@ Make zones scalable and UI usable on different screen sizes.
 
 -   Camera/viewport system (no full-grid rendering requirement)
 -   Responsive/clamped draggable panels
--   Stable rendering at different grid sizes
+-   Stable rendering at different grid sizes.
 
 ### Done when
 
@@ -301,6 +299,7 @@ Make exploration spatial and meaningful and more varied.
 -   Enterable locations (mini-zones / zones in zone)
 -   Persistent POIs (opened = opened)
 -   Transition system (zone ↔ location)
+-   POI interactions: Rewards/Loot, puzzles, traps, unlocking new regions in the zone.
 -   New biome type with its own spawn tables and terrain generation (not decided which biome yet).
 
 ### Done when
@@ -321,11 +320,82 @@ Difficulty affects the world structurally.
 -   Enemy variants scale with difficulty
 -   Resource quality scales with difficulty
 -   Loot tables vary by difficulty
+-   Spawn entities that only exist at certain difficulty thresholds.
 -   Modify difficulty scaling/range on world map (make harder zones more rare than current).
 
 ### Done when
 
 -   Raising difficulty visibly changes content and rewards.
+
+------------------------------------------------------------------------
+
+# M3.25 --- Grade System v1 (Source Quality + Improvement Sessions)
+
+### Purpose
+
+Implement the Grade system consistently across:
+- Entities
+- Resource nodes
+- POIs
+- Other loot sources later
+
+**Important rule:** Grade does NOT control loot rarity/weights.  
+Loot tables choose *what* drops. Grade defines *the quality of the source* and the resulting items after extraction/improvement.
+
+### Includes (must-have)
+
+**Grade Model**
+- Grade ladder: `F0..F9, E0..E9, ... A0..A9, S0..S9`
+- Internal representation: `{ tierIndex, step }`
+- Helpers:
+  - `toLabel()` / `fromLabel()`
+  - `compareGrades()`
+  - `incrementGrade()` (rollover F9 → E0 etc.)
+
+**Grade Lives on Spawned Source Instances**
+- Every spawned entity/node/poi gets:
+  - `baselineGrade`
+  - `maxGrade` (range cap)
+- Baseline + max range roll depends on difficulty rating (but does NOT affect loot table weights).
+- Grade must be deterministic for seeded content.
+
+**Loot / Harvest Session System**
+A short-lived “session” system that:
+- References a specific source instance (deterministic ref)
+- Tracks:
+  - baseline grade
+  - current improved grade
+  - attemptCount/failCount
+  - maxFails
+  - maxGrade
+- Holds pendingDrops selected from the loot table *before* grade finalization.
+- Finalization applies the best achieved grade to item instances.
+
+**Improvement Attempts**
+- Success chance depends on:
+  - skills (skinning/woodcutting/mining/etc.)
+  - tool quality + durability state
+  - knowledge (optional future)
+- Failures increment failCount; reaching maxFails forces finalize.
+- Player may “Finalize early” to accept current grade.
+
+**Finalization Rules**
+- Apply grade to item instances (`itemInstance.grade = ...`)
+- Update source state via deltas:
+  - entities: looted/consumed
+  - nodes: depleted
+  - pois: opened
+
+### Notes / dependencies
+
+- Depends on M0.3 (deterministic IDs) + M0.4 (unified interaction pipeline).
+- Session state should live in `PC.state` (e.g. `PC.state.activeLootSession`) but does not need to be saved unless necessary.
+
+### Done when
+
+- Entities/nodes/POIs spawn with deterministic baselineGrade + maxGrade.
+- A session can start → attempt improve → finalize → award graded items.
+- Grade affects resulting item quality metadata, not drop probability.
 
 ------------------------------------------------------------------------
 
@@ -362,6 +432,8 @@ Create a single timing framework for all actions.
 ### Includes
 
 -   Standard action durations
+-   Day/Night time cycle
+-   Seasons (Seasons change after x amount of days)
 -   Interrupt logic
 -   Cancel rules
 -   Pause rules
@@ -371,6 +443,7 @@ Create a single timing framework for all actions.
     -   Crafting
     -   Harvesting
     -   Lockpicking
+-   Messages after interaction: “Harvesting...”, “Inspecting...”, "Eating...", “Traveling to <object>...”, etc.
 
 ### Done when
 
@@ -386,11 +459,13 @@ Establish survival pressure before combat exists.
 
 ### Includes
 
--   Hunger drain over time
--   Thirst drain over time
+-   Hunger drain over time (passive, fixed reduction initially)
+-   Thirst drain over time (passive, fixed reduction initially)
 -   Eating/drinking interactions
+    - Eat to restore hunger (mushrooms, berries, raw meat)
+    - Drink water at tiles with water or from consumable items (water bottle, canteen)
 -   Starvation/dehydration penalties
--   Basic HP regen rules
+-   Basic HP regen rules (+ HP Reg when hunger and thrst are satisfied)
 
 ### Done when
 
@@ -414,6 +489,7 @@ Define physical interaction with the world.
 -   Simple crafting combinations
 -   Basic item durability system
 -   Modify weapons/tools to use left/right hand slots instead of weapon slot (current state).
+-   Remove Loot button (loot must come from interactions/sessions, not a global button).
 
 ### Done when
 
@@ -431,10 +507,11 @@ Inventory progression tied to survival.
 
 ### Includes
 
--   Limited hands-only carry at start
--   Backpack unlocks inventory
+-   Limited hands-only carry at start and limited weight
+-   Backpack unlocks inventory and extra weight limit
 -   Weight system
 -   Encumbrance penalties (movement/survival impact)
+-   STR contributes to encumbrance/carry capacity.
 
 ### Done when
 
@@ -452,9 +529,13 @@ Turn resources into systems.
 
 -   Tool requirements
 -   Node depletion/regeneration
--   Node grades (F0 → S9)
--   Timed harvesting / Roll system based on skills
--   Add gathering related skills (Woodcutting, skills for collecting rocks/stones etc).
+-   Node grades (F0 → S9) via the Grade System
+-   Timed harvesting
+-   Roll/Improvement system based on skills and tool
+-   Add gathering-related skills:
+    - Woodcutting
+    - Mining / Stone collecting
+    - Herbalism / Foraging (as needed)
 
 ### Done when
 
@@ -462,7 +543,7 @@ Turn resources into systems.
 
 ------------------------------------------------------------------------
 
-# M9 --- Processing (Skinning / Butchering)
+# M9 --- Processing (Skinning / Butchering / Sinew Chain)
 
 ### Goal
 
@@ -473,7 +554,14 @@ Harvest meaningfully from world entities.
 -   Skinning → hides
 -   Butchering → meat/bones/sinew
 -   Skill XP gain
--   Sinew processing chain
+-   Sinew processing chain:
+    - Harvest sinew
+    - Dry
+    - Process (stone tool)
+    - Twist into bow string
+    - Optional protection treatment (animal fat or pine pitch/sap)
+-   Tougher animals/monsters → better base modifiers for sinew bow strings (future modifier system).
+-   No more "loot and get everything". Creatures may drop extra items not related to it's "body".
 
 ### Done when
 
@@ -491,9 +579,17 @@ Establish survival crafting loop.
 
 -   Simple recipes
 -   Fire/camp interactions
--   Blueprint placement (lean-to, fire pit)
+-   Crafting menu (primitive crafting)
+    - fire drill
+    - stone tools
+    - spear
+    - club
+-   Blueprint placement (lean-to, fire pit - gives player protection and resting place)
 -   Craft timers integrated with time system
--   Separate crafting areas by different skills depending on recipe.
+-   Separate crafting areas by different skills depending on recipe
+-   Professions / Life skills integration:
+    - crafting + gathering tied to skills/XP
+    - tools needed requirements
 
 ### Done when
 
@@ -541,6 +637,33 @@ Define meaningful setbacks.
 
 ------------------------------------------------------------------------
 
+# M12.5 --- Level, XP, and Attribute Progression v1
+
+### Goal
+
+Add long-term character growth that supports survival and future combat.
+
+### Includes
+
+-   Level + XP system.
+-   Gain XP from:
+    - killing entities (later once combat exists)
+    - actions (gathering, crafting, harvesting, exploration ticks)
+    - exploring tiles / discovering content
+-   On level-up:
+    - gain attribute points to allocate (STR/DEX/INT/VIT etc.)
+-   Weapon skill XP (future or partial):
+    - gain skill XP for weapon usage (when combat arrives)
+-   Tool skill XP
+    - gain skill XP for tool usage (higher success chance etc)
+
+### Done when
+
+-   Player growth is visible over time through levels + attributes.
+-   XP gain sources support the survival-first game loop.
+
+------------------------------------------------------------------------
+
 # M13 --- Combat v1
 
 ### Goal
@@ -567,6 +690,13 @@ Layer combat onto survival foundation.
 
 Guide players through systems.
 
+### Includes
+
+-   Quest / Task system primarily for Tutorial Zone:
+    - Predefined tutorial quests required to exit the zone into the world.
+    - Tutorial zone content is curated (resources/entities/tiles) for natural progression.
+-   Later: optional randomized quests in other zones.
+
 ------------------------------------------------------------------------
 
 # M15 --- Economy v1
@@ -580,12 +710,40 @@ Guide players through systems.
 
 # Long-Term Expansion
 
--   Advanced professions
--   Enchanting
--   Weather systems
+-   Event motor (bosses, catastrophes, traveling merchants, ambush etc.)
+-   Weather changes (may be tied with the Event motor or separated. Not decided yet)
+-   Camp/Base/Housing system (construction - expansion on lean-to shelter etc)
+-   Advanced professions and crafting chains:
+    - Skinning, Tanning, Leatherworking, Tailoring, Sewing
+    - Blacksmithing (weapons/armor), Armorsmithing, Weaponsmithing
+    - Smelting, Refining, Alloying
+    - Masonry
+    - Bowcraft / Fletching
+    - Cooking, Baking, Brewing, Chemistry
+    - Alchemy
+-   Marketplace / Auction House
+-   Leaderboards
+-   Achievements
+-   Animal handling, taming, pets/companions
+-   Magic systems:
+    - Spellcrafting, Summoning, Enchanting, Magic crafting
+    - Rune/Sigilmaking, Inscription
+    - Occultism, Lycanthropy
+-   World progression / eras:
+    - Primitive → Medieval → Fantasy → Industrial → Sci-Fi
+-   More survival/life skills:
+    - Agriculture, Mycology, Hunting, Tracking, Trapping, Fishing, Butchering, Beekeeping
+-   Rare items:
+    - Gems, Artifacts
+-   Utility / progression:
+    - First Aid, Medicine, Surgery
+    - Trading, Fame/Infamy
+    - Research, Restoration, Permanent Buffs
+    - Classes, Traits, Races
+    - Climbing, Swimming, Repairing
+    - Music / Bardship
+-   Lockpicking + Trap disarming depth
 -   Ranged combat
--   Meta progression
--   Advanced AI
 
 ------------------------------------------------------------------------
 
@@ -596,3 +754,115 @@ Repeat
 
 Combat supports survival, not the other way around.
 
+------------------------------------------------------------------------
+
+# Player-Facing Roadmap (Non-Technical Summary)
+
+This section is a simplified roadmap written for players.
+It explains what to expect in upcoming updates without implementation details.
+
+Milestones are still in the same order as development, but described in gameplay terms.
+
+### M0 — Foundations & Stability
+- More reliable saves and loading
+- Fewer bugs caused by “unfinished systems underneath”
+- Cleaner, more stable interactions (things you do in the world should behave consistently)
+
+### M1 — Better Zone UI & Usability
+- Bigger zones without lag
+- Camera/viewport so you don’t render the entire world at once
+- UI panels that stay on-screen and work on more screen sizes
+
+### M2 — More Interesting Exploration (Locations & POIs)
+- Discoverable mini-locations inside zones (small dungeons / pockets / events)
+- Persistent points of interest (opened chests stay opened, etc.)
+- A new biome with its own terrain and spawns
+
+### M3 — Difficulty That Actually Matters
+- Harder areas become more meaningful and rarer
+- Enemies, loot, and resources scale in clearer ways
+- Higher difficulty = better rewards and more danger
+
+### M3.25 — Quality Grades & Better Loot Results (Not More Loot)
+- Creatures, nodes, and stashes spawn with a “quality grade”
+- Your tools and skills decide how much quality you can extract
+- Higher grades mean better-quality materials and results over time
+
+### M3.5 — The “What Is This Game?” Update (Design Lock-In)
+- A clear written vision of the long-term gameplay loop
+- Defines progression, setbacks, and scaling survival pressure
+
+### M4 — Actions Feel Like Real Time
+- All actions use the same timing rules
+- Day/Night time cycle
+- Seasons (prep for future event motor and weather system)
+- Better cancel/pause/interrupt behavior
+- Clear action messages while doing things (harvesting, traveling, inspecting)
+
+### M5 — Survival Begins
+- Hunger and thirst become real pressures
+- You’ll need to eat and drink to stay alive
+- Early buffs and penalties are meaningful but not punishing/overpowered
+- HP Regen
+
+### M6 — Hands, Tools, and Real Item Use
+- Equip items in left/right hands
+- Use tools directly on the world
+- Combine items for simple crafting
+- Looting becomes interaction-based (no global loot button)
+- Durability begins: items wear down as you use them
+
+### M7 — Carrying & Encumbrance
+- Start with limited carrying (hands-only) and limited weight limit
+- Backpacks unlock bigger inventory & higher weight limit
+- Weight matters and affects survival choices
+- STR contributes to encumbrance/carry cap
+
+### M8 — Gathering Grows
+- Harvesting takes time and depends on tools and skills
+- Nodes have quality grades
+- Gathering skills become part of progression (Woodcutting, Mining...)
+- Roll/Improvement system based on skills and tool
+
+### M9 — Processing Animals & Materials
+- Skinning and butchering become real systems
+- Sinew and other materials feed crafting paths (like bow strings)
+- No more one loot-button. Different actions/skills for different resources
+
+### M10 — Primitive Crafting & Camps
+- Early survival crafting (basic tools and shelter)
+- Fire and camp interactions expand
+- Build small survival structures
+
+### M11 — A Living World
+- Creatures roam, flee, and defend territory
+- More survival tension even before combat is added
+
+### M12 — Death = Setbacks (Not Permadeath)
+- Death causes meaningful losses (inventory, durability damage)
+- Respawn rules
+- You continue progressing, but you pay a price
+
+### M12.5 — Levels & Growth
+- Gain XP from survival actions and exploration
+- Level up to gain attribute points
+- Long-term character progression begins
+
+### M13 — Combat (Later)
+- Combat is added after survival is solid
+- Simple but expandable combat loop
+- XP and rewards tied to surviving encounters
+
+### M14 — Quests & Tutorial
+- Tutorial tasks guide new players through the systems
+- Later: optional quests in the world
+
+### M15 — Economy
+- Vendors and trade systems
+- More reasons to gather and craft long-term
+
+### Long-Term Expansion
+- Events, weather, housing/base building
+- Deeper crafting and professions
+- Pets, companions, magic, and more biomes
+- Era progression and big world goals
