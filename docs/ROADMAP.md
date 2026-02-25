@@ -360,6 +360,8 @@ Create a single timing framework for all actions.
 ### Includes
 
 -   Standard action durations
+-   Day/Night time cycle
+-   Seasons (Seasons change after x amount of days)
 -   Interrupt logic
 -   Cancel rules
 -   Pause rules
@@ -429,8 +431,8 @@ Inventory progression tied to survival.
 
 ### Includes
 
--   Limited hands-only carry at start
--   Backpack unlocks inventory
+-   Limited hands-only carry at start and limited weight
+-   Backpack unlocks inventory and extra weight limit
 -   Weight system
 -   Encumbrance penalties (movement/survival impact)
 
@@ -453,6 +455,7 @@ Turn resources into systems.
 -   Node grades (F0 → S9)
 -   Timed harvesting / Roll system based on skills
 -   Add gathering related skills (Woodcutting, skills for collecting rocks/stones etc).
+-   "Improve" resource node/entity/loot upon harvesting. (Improve to max grade or fail).
 
 ### Done when
 
@@ -472,6 +475,7 @@ Harvest meaningfully from world entities.
 -   Butchering → meat/bones/sinew
 -   Skill XP gain
 -   Sinew processing chain
+-   No more "loot and get everything". Creatures may drop extra items not related to it's "body".
 
 ### Done when
 
@@ -591,6 +595,114 @@ Guide players through systems.
 
 Explore → Survive → Gather → Craft → Improve → Expand → Adapt → Fight →
 Repeat
+
+------------------------------------------------------------------------
+
+# Player-Facing Roadmap (Non-Technical Summary)
+
+This section is a simplified roadmap written for players.
+It explains what to expect in upcoming updates without implementation details.
+
+Milestones are still in the same order as development, but described in gameplay terms.
+
+### M0 — Foundations & Stability
+- More reliable saves and loading
+- Fewer bugs caused by “unfinished systems underneath”
+- Cleaner, more stable interactions (things you do in the world should behave consistently)
+
+### M1 — Better Zone UI & Usability
+- Bigger zones without lag
+- Camera/viewport so you don’t render the entire world at once
+- UI panels that stay on-screen and work on more screen sizes
+
+### M2 — More Interesting Exploration (Locations & POIs)
+- Discoverable mini-locations inside zones (small dungeons / pockets / events)
+- Persistent points of interest (opened chests stay opened, etc.)
+- A new biome type with unique terrain + spawns (biome not decided yet)
+
+### M3 — Difficulty That Actually Matters
+- Harder areas become more meaningful and rarer
+- Enemies, loot, and resources scale in clearer ways
+- Higher difficulty = better rewards and more danger
+
+### M3.5 — The “What Is This Game?” Update (Design Lock-In)
+- A clear written vision of the long-term gameplay loop
+- Defines progression, setbacks, and how survival pressure scales
+- Helps players and devs understand the long-term direction
+
+### M4 — Actions Feel Like Real Time (Unified Timing)
+- All actions (exploring, crafting, harvesting, eating, lockpicking) follow the same timing rules
+- Day/Night time cycle
+- Seasons (Seasons change after x amount of days)
+- Better pause/cancel/interrupt behavior
+- More consistent feel across the entire game
+
+### M5 — Survival Begins (Hunger, Thirst, Regen)
+- Hunger and thirst become real pressures
+- You’ll need to eat and drink to stay alive
+- Early penalties are meaningful but not punishing
+
+### M6 — Hands, Tools, and Real Item Use
+- Equip items in left/right hands
+- Use tools directly (not just “inventory UI actions”)
+- Combine items for simple crafting
+- Durability begins: tools wear down as you use them
+
+### M7 — Carrying & Encumbrance
+- Start with limited carrying (hands-only) and limited weight
+- Backpacks unlock bigger inventory
+- Weight matters (carry too much = penalties)
+- Survival choices become more important (“What do I bring?”)
+
+### M8 — Gathering Becomes a System
+- Harvesting takes time and depends on your tools and skills
+- Nodes have grades/quality (F0 → S9)
+- Gathering skills like Woodcutting / Stone collecting become part of progression
+- "Improve" resource node/entity/loot upon harvesting. (Improve to max grade or fail).
+
+### M9 — Processing Creatures (Skinning / Butchering)
+- Creatures provide meaningful materials
+- Skinning gives hides, butchering gives meat/bones/sinew
+- Sinew can become an important crafting material
+- No more "loot and get everything". Creatures may drop extra items not related to it's "body".
+
+### M10 — Primitive Crafting & Camps
+- Early survival crafting (basic tools and shelter)
+- Fire/camp interactions expand
+- Blueprint placement for simple constructions
+- Crafting becomes part of surviving longer and exploring further
+
+### M11 — Living World Behavior (Before Combat)
+- Creatures roam, flee, or defend territory
+- The world feels alive even before combat systems are added
+- More “survival tension” just from presence and behavior
+
+### M12 — Death = Setbacks (Not Permadeath)
+- Death causes losses (backpack inventory loss, durability damage)
+- Progress continues, but you pay a price
+- Future options may include corpse retrieval or XP loss, but not at first
+
+### M13 — Combat v1 (Later, Built on Survival)
+- Combat is added after survival systems exist
+- Simple combat loop (attack/defend/flee) with meaningful rewards
+- XP and progression tied to surviving encounters (not arcade runs)
+
+### M14 — Quests & Tutorial Guidance
+- More guidance for new players
+- Tasks/quests that teach systems gradually
+
+### M15 — Economy
+- Vendors
+- Buying/selling or barter system
+- More reasons to collect and manage resources long-term
+
+### Long-Term Expansion (After Core Loop Feels Good)
+- Deeper professions and crafting
+- Weather and world events
+- Enchanting and advanced gear systems
+- Ranged combat
+- Meta progression and bigger world goals
+- Smarter AI and more biome variety
 
 Combat supports survival, not the other way around.
 
