@@ -25,7 +25,6 @@
 ## M2 — More Interesting Exploration (Locations & POIs)
 
 - Enterable mini-locations inside zones.
-- Persistent points of interest (opened chests stay opened).
 - A new biome with its own terrain and spawns.
 - More meaningful exploration structure.
 
