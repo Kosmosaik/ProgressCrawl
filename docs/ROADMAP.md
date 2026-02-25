@@ -118,6 +118,10 @@ Formalize baseline quality + improvement sessions.
 -   Quality ladder F0 → S9
 -   BaselineQuality + maxQuality on source instances
 -   Deterministic for nodes/POIs
+    - Node positions are deterministic.
+    - Node quality rerolls every refresh
+    - POIs do not reset
+    - Deterministic aspect is spatial, not state-deterministic across cycles
 -   Rerolled quality every refresh cycle (to make old zones useful now and then)
 -   Improvement sessions with attempts + fail limits (later connect skills/knowledge/tools to success/fail calculation)
 -   Finalization applies quality to items
