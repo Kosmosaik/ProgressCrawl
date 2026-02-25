@@ -7,7 +7,7 @@
 
 ## M0 — Foundations & Stability
 
-- More reliable saves and loading.
+- More reliable saves and loading. (FINISHED)
 - Cleaner internal architecture to prevent future bugs.
 - Interactions behave more consistently.
 - The groundwork for all future systems is reinforced.
