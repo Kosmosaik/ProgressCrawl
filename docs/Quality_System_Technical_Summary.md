@@ -1,18 +1,25 @@
-# ProgressCrawl — Grade System (Technical Summary for Future Implementation)
+# ProgressCrawl — Quality System (Technical Summary for Future Implementation)
 
-**Purpose:** Document the intended “Grade” system so future work can implement it consistently across **Entities**, **Resource Nodes**, **POIs**, and other loot sources.
+⚠ **Terminology Note (Important):**  
+This document historically used the term **Grade**. Going forward, the correct term is **Quality**.  
+If the word "Grade" is found anywhere in the project, treat it as "Quality".
+New code and documentation should prefer **Quality**, but the mechanics described here are the same system.
+
+
+
+**Purpose:** Document the intended “Quality” system so future work can implement it consistently across **Entities**, **Resource Nodes**, **POIs**, and other loot sources.
 
 This document is based on the current agreed design:
-- **Grade does NOT control loot rarity/weights.**
-- Grade is a **quality attribute of the spawned source** (e.g., a Rabbit, a Tree, a Stash).
-- The player can attempt to **improve** the grade of the resulting items during a harvesting/looting process, based on skills/tools/knowledge.
+- **Quality does NOT control loot rarity/weights.**
+- Quality is a **quality attribute of the spawned source** (e.g., a Rabbit, a Tree, a Stash).
+- The player can attempt to **improve** the Quality of the resulting items during a harvesting/looting process, based on skills/tools/knowledge.
 
 ---
 
 ## 1) Core Concepts
 
-### 1.1 Grade format
-- Grade is represented as a ladder: **Tier + Step**.
+### 1.1 Quality format
+- Quality is represented as a ladder: **Tier + Step**.
 - Display format: `F0 … F9`, `E0 … E9`, `D0 … D9`, `C0 … C9`, `B0 … B9`, `A0 … A9`, `S0 … S9`.
 - Tiers are ordered (lowest → highest): `F < E < D < C < B < A < S`.
 - Steps range: `0..9`.
@@ -28,43 +35,43 @@ This document is based on the current agreed design:
 
 ---
 
-## 2) Where Grade Lives
+## 2) Where Quality Lives
 
-### 2.1 Spawn-time: Grade belongs to the **source instance**
-When zone content is generated, each spawned instance (entity/node/poi/location) gets a baseline grade (a minimum and maximum grade range).
+### 2.1 Spawn-time: Quality belongs to the **source instance**
+When zone content is generated, each spawned instance (entity/node/poi/location) gets a baseline Quality (a minimum and maximum Quality range).
 
 Examples:
 - A spawned Rabbit instance has `starting grade = F4, maximum grade = F9`.
 - A spawned Oak Tree node has `starting grade = E1, maximum grade = E7`.
 - A Stash POI has `starting grade = D0, maximum grade = D9`
-- This is randomized but based on weights depending on zone difficulty. Lesser difficulty = lower tier, but with a tiny chance of either rolling a high starting grade or just increase the range by increasing maximum range.
+- This is randomized but based on weights depending on zone difficulty. Lesser difficulty = lower tier, but with a tiny chance of either rolling a high starting Quality or just increase the range by increasing maximum range.
 
-**Important:** Grade should be deterministic per instance if the game is using deterministic zone seeding.
+**Important:** Quality should be deterministic per instance if the game is using deterministic zone seeding.
 
-### 2.2 Grade is not “loot rarity”
+### 2.2 Quality is not “loot rarity”
 Loot tables define *what items* can come from a source.
-Grade defines the *quality level* of those items after extraction, subject to the improvement process.
+Quality defines the *quality level* of those items after extraction, subject to the improvement process.
 
 ---
 
 ## 3) Player-facing Flow (High Level)
 
 ### 3.1 Entity example (Rabbit)
-1. **Spawn:** Rabbit spawns with baseline grade `F4 -> E3`.
+1. **Spawn:** Rabbit spawns with baseline Quality `F4 -> E3`.
 2. **Kill:** Rabbit becomes “defeated/lootable”.
 3. **Loot process:** Player starts a “Loot Session”.
-4. Player performs improvement attempts (e.g., skinning/butchering) that may raise the grade.
+4. Player performs improvement attempts (e.g., skinning/butchering) that may raise the Quality.
 5. After:
    - the player finalizes, or
    - the attempt limit is reached (e.g., 3 fails max), or
-   - the maximum grade has been reached
-   the game awards items at the **best grade achieved**, or baseline grade if no improvements succeeded.
+   - the maximum Quality has been reached
+   the game awards items at the **best Quality achieved**, or baseline Quality if no improvements succeeded.
 
 ### 3.2 Resource node example (Tree)
 Same loop conceptually:
-- baseline grade is on the Tree node instance
+- baseline Quality is on the Tree node instance
 - harvesting is an improvement session (woodcutting/gathering)
-- final items inherit final grade
+- final items inherit final Quality
 
 ---
 
@@ -73,10 +80,10 @@ Same loop conceptually:
 ### 4.1 What is a session?
 A **session** is a temporary state machine that:
 - References a specific source instance (by `zoneId + x,y + kind + instanceId`).
-- Tracks baseline grade, current improved grade, attempt counters.
-- Decides final grade and commits resulting items to inventory.
+- Tracks baseline Quality, current improved Quality, attempt counters.
+- Decides final Quality and commits resulting items to inventory.
 
-### 4.2 Session fields (suggested) (NOTE: WE HAVE NOT ADDED MAXIMUM GRADE HERE YET. WE NEED TO DO THAT"
+### 4.2 Session fields (suggested) (NOTE: WE HAVE NOT ADDED MAXIMUM Quality HERE YET. WE NEED TO DO THAT"
 ```js
 {
   sessionId,
@@ -110,7 +117,7 @@ A **session** is a temporary state machine that:
 
 ---
 
-## 5) Inputs to the “Improve Grade” Roll
+## 5) Inputs to the “Improve Quality” Roll
 
 Each attempt’s success chance (and magnitude) depends on:
 - **Skill level** (e.g., Skinning / Woodcutting / Mining)
@@ -120,7 +127,7 @@ Each attempt’s success chance (and magnitude) depends on:
   - conditions (weather, time pressure, player status)
   - perks/traits
 
-**Design intention:** Higher baseline grades exist in harder zones, but the player must have capability to realize that potential.
+**Design intention:** Higher baseline Qualities exist in harder zones, but the player must have capability to realize that potential.
 
 ---
 
@@ -139,7 +146,7 @@ Each attempt’s success chance (and magnitude) depends on:
   - award items at `currentGrade` (which may still equal baseline).
 
 ### 6.3 Player choice
-- The player may choose “Finalize” early to accept the current grade.
+- The player may choose “Finalize” early to accept the current Quality.
 - “Cancel/Close” behavior depends on UX:
   - recommended: cancel does **not** change the source state and does not award items
   - but once an entity is killed, “cancel loot session” should still keep it lootable, or auto-finalize after leaving (design choice)
@@ -150,7 +157,7 @@ Each attempt’s success chance (and magnitude) depends on:
 
 ### 7.1 When finalizing
 - Apply `currentGrade` to each pending item.
-- Create item instances with grade metadata:
+- Create item instances with Quality metadata:
   - `itemInstance.grade = {tierIndex, step}` or `"F4"` label
 - Add to inventory.
 - Update the source instance state:
@@ -159,13 +166,13 @@ Each attempt’s success chance (and magnitude) depends on:
   - POIs: mark opened and remain visible (non-interactable).
 
 ### 7.2 Persistence
-Source instance grade must persist via the existing delta system if:
+Source instance Quality must persist via the existing delta system if:
 - the source remains in-world across sessions (e.g., killed but not yet looted)
 - or if respawn timers later need to know what was there
 
 Minimal approach:
-- Store grade on instance at spawn-time.
-- If entity is immediately killed+looted in one interaction, grade only needs to exist during that short flow.
+- Store Quality on instance at spawn-time.
+- If entity is immediately killed+looted in one interaction, Quality only needs to exist during that short flow.
 
 ---
 
@@ -174,37 +181,37 @@ Minimal approach:
 There is already some grade/quality generation used by the “Loot Button” flow:
 - `quality.js` (and possibly hooks in `game.js`) appears to generate quality/grade-like values.
 - Future work should:
-  1) Reuse/extend that logic for **source baseline grade generation**
+  1) Reuse/extend that logic for **source baseline Quality generation**
   2) Add a session-based **improvement loop**
-  3) Apply final grade to actual item instances (modifiers later)
+  3) Apply final Quality to actual item instances (modifiers later)
 
-**Important:** Avoid tying grade to loot table weighting. Grade affects the resulting item quality, not drop probabilities.
+**Important:** Avoid tying Quality to loot table weighting. Quality affects the resulting item quality, not drop probabilities.
 
 ---
 
 ## 9) Implementation Checklist (Future Work)
 
-1. **Define grade helpers**
-   - parse/format/increment/compare grade ladder
-2. **Add grade to spawned source instances**
+1. **Define Quality helpers**
+   - parse/format/increment/compare Quality ladder
+2. **Add Quality to spawned source instances**
    - entities/resource nodes/pois/locations (where appropriate)
 3. **Add a Loot/Harvest Session system**
    - start session, attempt improve, finalize
 4. **Add UI flow**
    - after “Kill/Harvest/Inspect”, open the session UI (later)
-5. **Apply grade to item instances**
-   - store grade metadata on item instances
+5. **Apply Quality to item instances**
+   - store Quality metadata on item instances
 6. **Persistence**
-   - ensure grade is included where needed in deltas/saves
+   - ensure Quality is included where needed in deltas/saves
 7. **Later: modifiers**
-   - connect grade to item stat modifiers (separate system)
+   - connect Quality to item stat modifiers (separate system)
 
 ---
 
 ## 10) Non-goals (for clarity)
-- Grade is **not** loot rarity.
-- Grade is **not** the same as zone difficulty.
-- Grade improvements are player-driven and must use skills/tools/knowledge, with fail limits.
+- Quality is **not** loot rarity.
+- Quality is **not** the same as zone difficulty.
+- Quality improvements are player-driven and must use skills/tools/knowledge, with fail limits.
 
 ---
 
