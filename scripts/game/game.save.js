@@ -189,38 +189,43 @@ function generateId() {
 }
 
 function saveCurrentGame() {
-  if (!currentCharacter) return;
+  const st = (typeof STATE === "function") ? STATE() : null;
+  const ch = st ? st.character : null;
+  if (!ch) return;
 
   const saves = loadAllSaves();
 
   // Always produce a valid ID (prevents crashes if generateId is missing for any reason).
+  const existingId = (st && st.save) ? st.save.currentSaveId : null;
   const id =
-    currentSaveId ||
+    existingId ||
     (typeof generateId === "function"
       ? generateId()
       : `save-${Date.now()}-${Math.floor(Math.random() * 1e6)}`);
 
+  const feats = (st && st.features) ? st.features : {};
+
   const snapshot = {
     schemaVersion: LATEST_SCHEMA_VERSION,
     id,
-    name: currentCharacter.name,
-    stats: { ...currentCharacter.stats },
-    skills: cloneSkills(currentCharacter.skills),
+    name: ch.name,
+    stats: { ...ch.stats },
+    skills: cloneSkills(ch.skills),
     inventory: getInventorySnapshot(),
     equipped: getEquippedSnapshot(),
     features: {
-      inventoryUnlocked: inventoryUnlocked,
-      equipmentUnlocked: equipmentUnlocked,
+      inventoryUnlocked: !!feats.inventoryUnlocked,
+      equipmentUnlocked: !!feats.equipmentUnlocked,
     },
 
     // QoL — Persist player HP (stored in PC.state)
-    currentHP: (typeof STATE === "function" ? (STATE().currentHP ?? 0) : 0),
+    currentHP: (st ? (st.currentHP ?? 0) : 0),
 
     // 0.0.70c+ — persist world map (owned by PC.state, not a global)
-    worldMap: (typeof STATE === "function" ? STATE().worldMap : null),
+    worldMap: (st ? st.worldMap : null),
 
     // 0.0.70e — persist per-zone deltas (deterministic regen + deltas)
-    zoneDeltas: (typeof STATE === "function" ? (STATE().zoneDeltas || {}) : {}),
+    zoneDeltas: (st ? (st.zoneDeltas || {}) : {}),
   };
 
   const idx = saves.findIndex(s => s.id === snapshot.id);
@@ -230,7 +235,7 @@ function saveCurrentGame() {
     saves[idx] = snapshot;
   }
 
-  currentSaveId = snapshot.id;
+  if (st && st.save) st.save.currentSaveId = snapshot.id;
   writeAllSaves(saves);
   renderSaveList(saves);
 }
@@ -243,14 +248,17 @@ function loadSave(id) {
   const save = migrateSave(rawSave);
   if (!save) return;
 
-  currentCharacter = {
-    name: save.name,
-    stats: { ...save.stats },
-    skills: save.skills
-      ? cloneSkills(save.skills)
-      : createDefaultSkills(), // fallback for old saves
-  };
-  currentSaveId = save.id;
+  const st = (typeof STATE === "function") ? STATE() : null;
+  if (st) {
+    st.character = {
+      name: save.name,
+      stats: { ...save.stats },
+      skills: save.skills
+        ? cloneSkills(save.skills)
+        : createDefaultSkills(), // fallback for old saves
+    };
+    if (st.save) st.save.currentSaveId = save.id;
+  }
 
   // QoL — Restore player HP (backward compatible)
   const savedHP = (typeof save.currentHP === "number") ? save.currentHP : 0;
@@ -310,23 +318,28 @@ function loadSave(id) {
   const hasEquippedItems =
     save.equipped && Object.values(save.equipped).some(Boolean);
 
-  inventoryUnlocked =
+  const invUnlocked =
     typeof feats.inventoryUnlocked === "boolean"
       ? feats.inventoryUnlocked
       : hasInventoryItems;
 
-  equipmentUnlocked =
+  const eqUnlocked =
     typeof feats.equipmentUnlocked === "boolean"
       ? feats.equipmentUnlocked
       : hasEquippedItems;
 
+  if (st && st.features) {
+    st.features.inventoryUnlocked = invUnlocked;
+    st.features.equipmentUnlocked = eqUnlocked;
+  }
+
   if (inventoryButton) {
-    inventoryButton.style.display = inventoryUnlocked ? "block" : "none";
+    inventoryButton.style.display = invUnlocked ? "block" : "none";
   }
   if (equipmentButton) {
-    equipmentButton.style.display = equipmentUnlocked ? "block" : "none";
+    equipmentButton.style.display = eqUnlocked ? "block" : "none";
   }
-  if (equipmentPanel && !equipmentUnlocked) {
+  if (equipmentPanel && !eqUnlocked) {
     equipmentPanel.style.display = "none";
   }
 
@@ -349,13 +362,27 @@ function deleteSave(id) {
   saves = saves.filter(s => s.id !== id);
   writeAllSaves(saves);
 
+  const st = (typeof STATE === "function") ? STATE() : null;
+  const activeId = (st && st.save) ? st.save.currentSaveId : null;
+
   // If you delete the currently loaded character, reset state
-  if (currentSaveId === id) {
-    currentCharacter = null;
-    currentSaveId = null;
+  if (activeId === id && st) {
+    st.character = null;
+    if (st.save) st.save.currentSaveId = null;
+    if (st.features) {
+      st.features.inventoryUnlocked = false;
+      st.features.equipmentUnlocked = false;
+    }
+
     loadInventoryFromSnapshot(null);
     loadEquippedFromSnapshot(null);
-    characterComputed = null;
+
+    if (typeof setCharacterComputed === "function") {
+      setCharacterComputed(null);
+    } else {
+      st.characterComputed = null;
+    }
+
     updateEquipmentPanel();
   }
 
