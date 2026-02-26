@@ -127,8 +127,7 @@ After M4 (Unified Time System):
 
 -   Gameplay tuning values should be added to `PC.config.*`
 -   Do not hardcode balance values that are likely to change.
--   Use the CONFIG_KNOBS_MAP document to determine what belongs in
-    config.
+-   Document and centralize tuning values under `PC.config.*` (and keep `scripts/config.js` as the entry point for defaults).
 
 ------------------------------------------------------------------------
 
