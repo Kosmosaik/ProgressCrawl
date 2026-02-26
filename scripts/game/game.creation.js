@@ -139,17 +139,22 @@ if (btnCreateCharacter) {
     }
 
     // currentCharacter comes from game.js (global)
-    currentCharacter = {
-      name,
-      stats: {
-        str: creationStats.str,
-        dex: creationStats.dex,
-        int: creationStats.int,
-        vit: creationStats.vit,
-      },
-      // Weapon skills
-      skills: createDefaultSkills(),
-    };
+    const st = (typeof STATE === "function") ? STATE() : null;
+    if (st) {
+      // M0.2: persistent character/save data lives in PC.state
+      st.character = {
+        name,
+        stats: {
+          str: creationStats.str,
+          dex: creationStats.dex,
+          int: creationStats.int,
+          vit: creationStats.vit,
+        },
+        // Weapon skills
+        skills: createDefaultSkills(),
+      };
+      if (st.save) st.save.currentSaveId = null;
+    }
 
     // Compute initial derived stats (unarmed)
     recomputeCharacterComputedState();
