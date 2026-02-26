@@ -1,4 +1,8 @@
 # Player-Facing Roadmap (Non-Technical Summary)
+
+> **NOTE:** This file is an optional player-facing summary. The authoritative roadmap is `docs/ROADMAP.md`.  
+> If `docs/ROADMAP.md` contains a Player-Facing section, keep this file in sync or mark it deprecated.
+
  
 
 ##### This section explains upcoming updates in gameplay terms. It mirrors the technical roadmap but avoids implementation details
