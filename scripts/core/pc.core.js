@@ -13,6 +13,16 @@
 
   // Central state (replace scattered globals with this over time)
   PC.state = PC.state || {
+    // player identity / progression (M0.2)
+    character: null,
+    save: {
+      currentSaveId: null,
+    },
+    features: {
+      inventoryUnlocked: false,
+      equipmentUnlocked: false,
+    },
+
     // core gameplay
     currentHP: 0,
     characterComputed: null,
@@ -44,4 +54,12 @@
       zoneMovementOnArrival: null,
     },
   };
+
+  // M0.2 normalization: if PC.state already existed (older builds), ensure new subtrees exist.
+  PC.state.character = PC.state.character ?? null;
+  PC.state.save = PC.state.save || { currentSaveId: null };
+  PC.state.save.currentSaveId = PC.state.save.currentSaveId ?? null;
+  PC.state.features = PC.state.features || { inventoryUnlocked: false, equipmentUnlocked: false };
+  PC.state.features.inventoryUnlocked = !!PC.state.features.inventoryUnlocked;
+  PC.state.features.equipmentUnlocked = !!PC.state.features.equipmentUnlocked;
 })();
