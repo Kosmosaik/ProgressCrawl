@@ -121,8 +121,26 @@ Follow them strictly.
 
 ---
 
-## Note on Project Summaries
+## Recommended Reading Order (Do This First)
 
-The authoritative summary file (currently named something like `0.0.70c-qol-exploration-summary.md`) **will change name over time** as branches evolve.
+1. `docs/WORKING_RULES.md` (non-negotiable constraints)
+2. `docs/ROADMAP.md` (single source of planning truth)
+3. `docs/Technical_Summary.md` (what exists in code today)
+4. `docs/M0_Architecture_Implementation_Spec.md` (if M0 work is ongoing)
 
-Always ask which summary file is current if it’s not explicitly stated.
+Then consult system specs as needed:
+- `docs/Zone_Refresh_and_Entity_Spawn_v1.md`
+- `docs/Combat_System_v1.md`
+- `docs/Grade_System_Technical_Summary.md` (Quality system)
+
+After the above, you may browse:
+- `docs/design/` (active design docs)
+- `docs/backlog/` and `docs/ideas/` (not authoritative unless promoted into ROADMAP)
+
+## Note on Project Summaries (Updated)
+
+The authoritative current-state overview is:
+
+- `docs/Technical_Summary.md`
+
+Older references to “0.0.70c” summary filenames are deprecated.
