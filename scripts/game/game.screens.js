@@ -26,15 +26,25 @@ if (btnNewGame) {
     // New character starts with empty inventory and locked features
     loadInventoryFromSnapshot(null);
     loadEquippedFromSnapshot(null);
-
-    currentCharacter = null;
-    currentSaveId = null;
-    characterComputed = null;
+    
+    const st = (typeof STATE === "function") ? STATE() : null;
+    if (st) {
+      st.character = null;
+      if (st.save) st.save.currentSaveId = null;
+      if (st.features) {
+        st.features.inventoryUnlocked = false;
+        st.features.equipmentUnlocked = false;
+      }
+    
+      if (typeof setCharacterComputed === "function") {
+        setCharacterComputed(null);
+      } else {
+        st.characterComputed = null;
+      }
+    }
+    
     updateEquipmentPanel();
-
-    inventoryUnlocked = false;
-    equipmentUnlocked = false;
-
+    
     if (inventoryButton) {
       inventoryButton.style.display = "none";
     }
@@ -44,7 +54,7 @@ if (btnNewGame) {
     if (equipmentPanel) {
       equipmentPanel.style.display = "none";
     }
-
+    
     resetCharacterCreation();
     setScreen("character");
   });
