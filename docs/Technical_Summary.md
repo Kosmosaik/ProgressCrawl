@@ -14,6 +14,19 @@ and future GPT assistants.
 
 ------------------------------------------------------------------------
 
+# Current Authoritative Design Specs (Design Docs)
+
+These documents define system rules and intended behavior:
+
+- docs/M0_Architecture_Implementation_Spec.md
+- docs/Zone_Refresh_and_Entity_Spawn_v1.md
+- docs/Combat_System_v1.md
+- docs/Grade_System_Technical_Summary.md (Terminology: “Grade” = “Quality” going forward)
+
+This Technical Summary remains a description of implemented code, not future plans.
+
+------------------------------------------------------------------------
+
 # Current Versioning
 
 Version is defined in:
@@ -26,7 +39,7 @@ Patch Notes Loader:
 
 - scripts/game/game.patchnotes.js
 - Fetch URL is constructed relative to the current site base (GitHub Pages safe)
-- Expects changelog entries to begin with: ## vX.X.X
+- Expects changelog entries to begin with: ## <version heading> (any line starting with `## `)
 
 ------------------------------------------------------------------------
 
