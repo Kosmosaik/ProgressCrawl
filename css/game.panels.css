@@ -172,7 +172,7 @@
 }
 
 .equipment-slot-label {
-  width: 80px;
+  width: 100px;
   font-weight: bold;
   color: #cbd5f5;
 }
@@ -207,7 +207,7 @@
 }
 
 .equipment-summary-row span:first-child {
-  width: 80px;
+  width: 100px;
 }
 
 .equipped-label {
