@@ -66,10 +66,12 @@ if (skillsButton && skillsPanel) {
 // Some systems (zone harvesting, POIs, etc.) add items without going through the loot button flow.
 // This centralizes the "inventory unlock" behavior so any item source can unlock it safely.
 window.ensureInventoryUnlocked = function ensureInventoryUnlocked() {
-  if (typeof inventoryUnlocked !== "boolean") return;
-  if (inventoryUnlocked) return;
+  const st = (typeof STATE === "function") ? STATE() : null;
+  const feats = st ? st.features : null;
+  if (!feats) return;
+  if (feats.inventoryUnlocked) return;
 
-  inventoryUnlocked = true;
+  feats.inventoryUnlocked = true;
 
   if (typeof inventoryButton !== "undefined" && inventoryButton) {
     inventoryButton.style.display = "block";
