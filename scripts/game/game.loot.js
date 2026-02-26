@@ -79,18 +79,20 @@ function startLoot() {
       }
 
       // Unlock equipment only when first equippable item drops
-      if (!equipmentUnlocked && instance.slot) {
-        equipmentUnlocked = true;
-        if (equipmentButton) {
-          equipmentButton.style.display = "block";
-          // same unlock effect (ring/glow) as inventory
-          equipmentButton.classList.add("inventory-unlock");
-          setTimeout(() => equipmentButton.classList.remove("inventory-unlock"), 3000);
-          setTimeout(() => equipmentButton.classList.remove("inventory-unlock"), 3000);
-          setTimeout(() => equipmentButton.focus(), 200);
+      if (instance.slot) {
+        const st = (typeof STATE === "function") ? STATE() : null;
+        const feats = st ? st.features : null;
+        if (feats && !feats.equipmentUnlocked) {
+          feats.equipmentUnlocked = true;
+          if (equipmentButton) {
+            equipmentButton.style.display = "block";
+            // same unlock effect (ring/glow) as inventory
+            equipmentButton.classList.add("inventory-unlock");
+            setTimeout(() => equipmentButton.classList.remove("inventory-unlock"), 3000);
+            setTimeout(() => equipmentButton.focus(), 200);
+          }
         }
       }
-
       // Auto-save after loot (character must exist)
       saveCurrentGame();
     }
