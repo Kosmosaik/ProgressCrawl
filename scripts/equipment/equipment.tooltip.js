@@ -71,11 +71,13 @@ function buildEquipmentItemTooltip(item, slot) {
     const required =
       typeof item.skillReq === "number" ? item.skillReq : 0;
 
+    const st = (typeof STATE === "function") ? STATE() : null;
+    const ch = st ? st.character : null;
+
     const playerSkill =
-      (window.currentCharacter &&
-        window.currentCharacter.skills &&
-        window.currentCharacter.skills[weaponType]) ||
-      0;
+      (ch && ch.skills && typeof ch.skills[weaponType] === "number")
+        ? ch.skills[weaponType]
+        : 0;
 
     if (required > 0) {
       lines.push(
