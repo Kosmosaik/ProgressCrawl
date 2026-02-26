@@ -1,5 +1,5 @@
 # ProgressCrawl — Project File Index (JS/CSS/MD)
-_Generated: 2026-02-23_
+_Generated: 2026-02-26_
 
 This document summarizes **every** `.js`, `.css`, and `.md` file in the project ZIP.
 It is meant as a navigation aid for development and for future GPT assistants.
@@ -11,8 +11,13 @@ It is meant as a navigation aid for development and for future GPT assistants.
 
 ### `README.md`
 
+### `docs/README.md`
+- **Top heading:** # ProgressCrawl Documentation Entry Point
+- **Purpose:** The starting point for reading docs; defines the recommended reading order.
+
+
 ### `docs/CHANGELOG.md`
-- **Top heading:** ## v0.0.71 — QoL Update (Phase D)
+- **Top heading:** ## 0.0.72-QoL (M0.1)
 - **Purpose:** Release notes/changelog; consumed by in-game patch notes parser.
 - **Key sections:**
   - ## v0.0.71 — QoL Update (Phase D)
@@ -39,9 +44,9 @@ It is meant as a navigation aid for development and for future GPT assistants.
   - ## Save / Persistence Safety
   - ## Communication Rules
   - ## Purpose of These Rules
-  - ## Note on Project Summaries
+  - ## Recommended Reading Order (Do This First)
 
-### `docs/ProgressCrawl_Technical_Summary.md`
+### `docs/Technical_Summary.md`
 - **Top heading:** # ProgressCrawl – Technical Summary
 - **Purpose:** Technical architecture summary (current reality).
 - **Key sections:**
