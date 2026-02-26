@@ -197,25 +197,27 @@ function unequipSlotToInventory(slotKey) {
 }
 
 function changeWeaponSkill(key, delta) {
-  if (!currentCharacter) return;
+  const st = (typeof STATE === "function") ? STATE() : null;
+  const ch = st ? st.character : null;
+  if (!ch) return;
 
   const cfg = (GAME_CONFIG.skills && GAME_CONFIG.skills.weapon) || {};
   const min = cfg.minLevel ?? 0;
   const max = cfg.maxLevel ?? 200;
 
-  if (!currentCharacter.skills && typeof createDefaultSkills === "function") {
-    currentCharacter.skills = createDefaultSkills();
+  if (!ch.skills && typeof createDefaultSkills === "function") {
+    ch.skills = createDefaultSkills();
   }
-  if (!currentCharacter.skills) return;
+  if (!ch.skills) return;
 
-  const oldVal = currentCharacter.skills[key] ?? 0;
+  const oldVal = ch.skills[key] ?? 0;
   let next = oldVal + delta;
 
   if (next < min) next = min;
   if (next > max) next = max;
   if (next === oldVal) return;
 
-  currentCharacter.skills[key] = next;
+  ch.skills[key] = next;
 
   if (typeof recomputeCharacterComputedState === "function") {
     recomputeCharacterComputedState();
@@ -227,9 +229,11 @@ function changeWeaponSkill(key, delta) {
 
 // NEW: dev helper to tweak base attributes directly from equipment panel
 function changeAttribute(key, delta) {
-  if (!currentCharacter || !currentCharacter.stats) return;
+  const st = (typeof STATE === "function") ? STATE() : null;
+  const ch = st ? st.character : null;
+  if (!ch || !ch.stats) return;
 
-  const stats = currentCharacter.stats;
+  const stats = ch.stats;
   if (typeof stats[key] !== "number") {
     stats[key] = 0;
   }
@@ -278,10 +282,13 @@ function updateHPBar() {
  * - The currently equipped items (summarized by equipment.js)
  */
 function recomputeCharacterComputedState() {
-  if (!currentCharacter) {
+  const st = (typeof STATE === "function") ? STATE() : null;
+  const ch = st ? st.character : null;
+
+  if (!ch) {
     setCharacterComputed(null);
     updateEquipmentPanel();
-    console.warn("recomputeCharacterComputedState: no currentCharacter yet");
+    console.warn("recomputeCharacterComputedState: no STATE().character yet");
     return;
   }
 
@@ -290,13 +297,13 @@ function recomputeCharacterComputedState() {
 
   // Ask character.js to build the full computed state
   setCharacterComputed(
-    buildCharacterComputedState(currentCharacter, equipmentSummary)
+    buildCharacterComputedState(ch, equipmentSummary)
   );
 
   updateEquipmentPanel();
   updateCharacterSummary();
   updateHPBar();
-  updateSkillsPanel(); // NEW
+  updateSkillsPanel();
 
   // For debugging:
   console.log("Character computed state:", getCharacterComputed());
@@ -314,8 +321,11 @@ function updateEquipmentPanel() {
   equipmentSummaryContainer.innerHTML = "";
 
   // No character or no computed state? show nothing but early exit
+  const st = (typeof STATE === "function") ? STATE() : null;
+  const ch = st ? st.character : null;
+
   const cc = getCharacterComputed();
-  if (!currentCharacter || !cc) {
+  if (!ch || !cc) {
     return;
   }
 
@@ -489,11 +499,14 @@ function updateEquipmentPanel() {
 function updateSkillsPanel() {
   if (!skillsPanel || !skillsListContainer) return;
 
+  const st = (typeof STATE === "function") ? STATE() : null;
+  const ch = st ? st.character : null;
+
   skillsListContainer.innerHTML = "";
-  if (!currentCharacter) return;
+  if (!ch) return;
 
   const skillsCfg = GAME_CONFIG.skills && GAME_CONFIG.skills.weapon;
-  const skills = currentCharacter.skills;
+  const skills = ch.skills;
 
   if (!skillsCfg || !skills) {
     skillsListContainer.textContent = "No skills available.";
@@ -529,7 +542,6 @@ function updateSkillsPanel() {
     minusBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       changeWeaponSkill(key, -1);
-      // recomputeCharacterComputedState() will update the panel
     });
 
     const plusBtn = document.createElement("button");
@@ -539,7 +551,6 @@ function updateSkillsPanel() {
     plusBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       changeWeaponSkill(key, +1);
-      // recomputeCharacterComputedState() will update the panel
     });
 
     right.appendChild(minusBtn);
@@ -550,19 +561,18 @@ function updateSkillsPanel() {
   });
 }
 
-// ----- Character model / creation state -----
-let currentCharacter = null;
-let currentSaveId = null;
-
 function updateCharacterSummary() {
-  if (!currentCharacter) {
+  const st = (typeof STATE === "function") ? STATE() : null;
+  const ch = st ? st.character : null;
+
+  if (!ch) {
     if (charSummaryName) charSummaryName.textContent = "";
     if (charSummaryStats) charSummaryStats.textContent = "";
     return;
   }
 
   if (charSummaryName) {
-    charSummaryName.textContent = currentCharacter.name;
+    charSummaryName.textContent = ch.name;
   }
 
   if (charSummaryStats) {
@@ -571,9 +581,6 @@ function updateCharacterSummary() {
 }
 
 // ----- Inventory / Loot / Equipment logic -----
-
-let inventoryUnlocked = false;
-let equipmentUnlocked = false;
 
 window.debugCharacterComputed = () => {
   console.log("Character computed state:", getCharacterComputed());
